@@ -1,0 +1,46 @@
+Name: cron
+Mode: dev
+
+# Cron 任务配置
+CronTask:
+  # Cron 执行时间表达式，例如 "0 0 2 * * *" 表示每天凌晨2点执行
+  CronExecuteTime: "0 0 2 * * *"
+  # 保留聊天记录天数，超过此天数的记录将被删除（0 表示禁用）
+  RetainChatRecords: 30
+  # 文件过期时间（天），超过此时间的文件将被删除（0 表示禁用）
+  FileExpireTime: 7
+  # 要删除的对象类型列表
+  DeleteObjectType:
+    - "image"
+    - "video"
+    - "file"
+
+# RPC 客户端配置
+MsgRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: msg.rpc
+
+ConversationRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: conversation.rpc
+
+ThirdRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: third.rpc
+
+# 管理员用户ID（用于执行定时任务）
+AdminUserIDs:
+  - "admin"
+
+Log:
+  ServiceName: cron
+  Mode: console
+  Level: info
+  Format: json
+  StackCooldownMillis: 100

@@ -1,0 +1,41 @@
+Name: admin.rpc
+ListenOn: 10.0.4.12:8087
+Mode: dev
+# Etcd 配置（开发模式下可以注释掉，如果不需要服务发现）
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: admin.rpc
+
+Mongo:
+  Url: "mongodb://root:test625@127.0.0.1:27017/openim_v3?authSource=admin"
+  Db: openim_v3
+
+Cache:
+  - Host: 127.0.0.1:6379
+    Type: node
+    Pass: "test625"
+
+Rpc:
+  User:
+    Etcd:
+      Hosts:
+        - 127.0.0.1:2379
+      Key: user.rpc
+  Auth:
+    Etcd:
+      Hosts:
+        - 127.0.0.1:2379
+      Key: auth.rpc
+
+Secret: "fdim-admin-secret-key-2024"
+
+TokenPolicy:
+  Expire: 7
+
+Log:
+  ServiceName: admin.rpc
+  Mode: console
+  Level: info
+  Format: json
+  StackCooldownMillis: 100

@@ -1,0 +1,100 @@
+# Git 相关
+.git
+.gitignore
+.gitattributes
+
+# 构建产物
+# bin/ 目录保留，用于预编译的二进制文件
+*.exe
+*.dll
+*.so
+*.dylib
+
+# 依赖和缓存
+vendor/
+node_modules/
+.npm
+.yarn
+
+# IDE 和编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 日志文件
+logs/
+*.log
+*.2026-01-*
+
+# 测试文件
+*_test.go
+test/
+tests/
+*.test
+
+# 文档
+docs/
+*.md
+!README.md
+功能描述.png
+
+# 临时文件
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+
+# Docker 相关
+docker-compose.yml
+Dockerfile*
+.dockerignore
+
+# 脚本文件（build.sh 需要，其他不需要）
+*.bat
+*.cmd
+stop.sh
+start-services.sh
+start-services.bat
+# build.sh 需要保留，因为 Dockerfile 需要它
+
+# 配置文件（通过 volume 挂载，不需要在镜像中）
+# 但 Dockerfile 需要复制 etc，所以保留
+# etc/
+
+# 协议生成脚本
+protocol/gen.*
+protocol/magefile*.go
+protocol/bootstrap_install_*
+
+# 其他不需要的文件
+help
+protoc
+*.xlsx
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# 开发相关
+FEATURE_COMPARISON.md
+IMPLEMENTATION_PLAN.md
+PROGRESS.md
+SUMMARY.md
+PROTO_STRUCTURE.md
+PROTOCOL_MIGRATION.md
+RPC_CLIENT_SUMMARY.md
+RPC_CLIENT.md
+
+# 存储相关（如果不需要，但可能某些服务需要，先保留）
+# pkg/storage/
+
+# 本地缓存
+pkg/localcache/
+
+# 日志目录
+pkg/log/logs/
+pkg/log/*.2026-01-*

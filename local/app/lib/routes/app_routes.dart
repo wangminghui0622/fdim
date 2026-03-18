@@ -1,0 +1,29 @@
+abstract class AppRoutes {
+  static const splash = '/splash';
+  static const login = '/login';
+  static const register = '/register';
+  static const forgetPassword = '/forget_password';
+  static const home = '/home';
+  static const chat = '/chat';
+  static const chatSettings = '/chat_settings';
+  static const friendApply = '/friend_apply';
+  static const addFriend = '/add_friend';
+  static const userProfile = '/user_profile';
+  static const selectContacts = '/select_contacts';
+  static const sendVerification = '/send_verification';
+  static const createGroup = '/create_group';
+  static const groupList = '/group_list';
+  static const groupProfile = '/group_profile';
+  static const groupSetup = '/group_setup';
+  static const groupRequests = '/group_requests';
+  static const globalSearch = '/global_search';
+  static const myInfo = '/my_info';
+  static const editInfo = '/edit_info';
+  static const editMyInfo = '/edit_my_info';
+  static const settings = '/settings';
+  static const serverConfig = '/server_config';
+  static const changePassword = '/change_password';
+  static const blacklist = '/blacklist';
+  static const aboutUs = '/about_us';
+  static const languageSetup = '/language_setup';
+}

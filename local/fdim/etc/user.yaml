@@ -1,0 +1,46 @@
+Name: user.rpc
+ListenOn: 10.0.4.12:8080
+Mode: dev
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: user.rpc
+
+Mongo:
+  Host: mongodb://127.0.0.1:27017
+  Database: openim_v3
+  Username: "root"
+  Password: "test625"
+
+Cache:
+  - Host: 127.0.0.1:6379
+    Type: node
+    Pass: "test625"
+
+MsgRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: msg.rpc
+  NonBlock: true
+  Timeout: 10000
+
+ConversationRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: conversation.rpc
+  NonBlock: true
+  Timeout: 10000
+
+# AdminUserIDs 管理员用户ID列表（可选）
+AdminUserIDs:
+  - "admin001"
+  - "admin002"
+
+Log:
+  ServiceName: user.rpc
+  Mode: console
+  Level: info
+  Format: json
+  StackCooldownMillis: 100

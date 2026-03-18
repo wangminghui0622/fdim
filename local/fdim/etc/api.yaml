@@ -1,0 +1,88 @@
+Name: api
+Host: 0.0.0.0
+Port: 10002
+Mode: dev
+# 日志配置
+Log:
+  ServiceName: api
+  Mode: console
+  Level: info
+  Path: logs
+  Compress: true
+  KeepDays: 7
+  StackCooldownMillis: 100
+
+# RPC 服务配置（使用etcd服务发现）
+UserRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: user.rpc
+  Timeout: 10000
+
+FriendRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: user.rpc
+  Timeout: 10000
+
+GroupRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: user.rpc
+  Timeout: 10000
+
+AuthRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: auth.rpc
+  Timeout: 10000
+
+ConversationRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: conversation.rpc
+  Timeout: 10000
+
+MsgRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: msg.rpc
+  Timeout: 10000
+
+ThirdRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: third.rpc
+  Timeout: 10000
+
+MessageGatewayRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: msggateway.rpc
+  Timeout: 10000
+
+ChatRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: chat.rpc
+  Timeout: 10000
+
+# Secret 用于Token验证
+Secret: "openIM123456"
+
+# MongoDB 配置（用于搜索用户）
+Mongo:
+  URI: "mongodb://root:test625@127.0.0.1:27017/openim_v3?authSource=admin"
+  Database: "openim_v3"
+
+# 管理员用户ID列表（可选）
+AdminUserIDs: []

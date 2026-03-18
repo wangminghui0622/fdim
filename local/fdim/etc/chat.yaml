@@ -1,0 +1,58 @@
+Name: chat.rpc
+ListenOn: 10.0.4.12:8084
+Mode: dev
+# Etcd 配置（开发模式下可以注释掉，如果不需要服务发现）
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: chat.rpc
+
+Mongo:
+  Url: "mongodb://root:test625@127.0.0.1:27017/openim_v3?authSource=admin"
+  Db: openim_v3
+
+Cache:
+  - Host: 127.0.0.1:6379
+    Type: node
+    Pass: "test625"
+
+# Secret 用于Token签名
+Secret: "openIM123456"
+
+# TokenPolicy Token策略
+TokenPolicy:
+  Expire: 7  # 7天
+
+Email:
+  Enable: false
+  SMTPAddr: ""
+  SMTPPort: 0
+  SenderMail: ""
+  SenderAuthorizationCode: ""
+  Title: "OpenIM Verification Code"
+
+SMS:
+  Enable: false
+  Provider: "ali"
+  Endpoint: ""
+  AccessKeyID: ""
+  AccessKeySecret: ""
+  SignName: ""
+  VerificationCodeTemplateCode: ""
+
+RTC:
+  ServerURL: ""
+  TokenSalt: ""
+
+AdminRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: admin.rpc
+
+Log:
+  ServiceName: chat.rpc
+  Mode: console
+  Level: info
+  Format: json
+  StackCooldownMillis: 100

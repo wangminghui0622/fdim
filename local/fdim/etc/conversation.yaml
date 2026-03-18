@@ -1,0 +1,37 @@
+Name: conversation.rpc
+ListenOn: 10.0.4.12:8083
+Mode: dev
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: conversation.rpc
+
+Mongo:
+  Url: "mongodb://root:test625@127.0.0.1:27017/openim_v3?authSource=admin"
+  Db: openim_v3
+
+Cache:
+  - Host: 127.0.0.1:6379
+    Type: node
+    Pass: "test625"
+
+MsgRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: msg.rpc
+  Timeout: 10000
+
+UserRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: user.rpc
+  Timeout: 10000
+
+Log:
+  ServiceName: conversation.rpc
+  Mode: console
+  Level: info
+  Format: json
+  StackCooldownMillis: 100

@@ -1,0 +1,8 @@
+1 = iOS
+2 = Android
+3 = Windows
+4 = Mac
+5 = Web
+7 = iPad
+
+用户消息100， 系统消息200

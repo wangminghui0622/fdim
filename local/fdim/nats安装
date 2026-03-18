@@ -1,0 +1,68 @@
+#!/bin/bash
+
+docker stop nats-server 2>/dev/null; docker rm nats-server 2>/dev/null
+
+# 启动 NATS 容器（带 JetStream）
+docker run -d \
+  --name nats-server \
+  --restart always \
+  -p 4222:4222 \
+  -p 8222:8222 \
+  -p 6222:6222 \
+  -e NATS_USER=root \
+  -e NATS_PASS=test625 \
+  -v nats-data:/data \
+  nats:latest \
+  -js -sd /data/jetstream
+
+# 等待启动
+sleep 5
+
+# 创建 Streams 和 Consumers
+docker run --rm --network host natsio/nats-box:latest \
+  /bin/sh -c "
+    SERVER='nats://root:test625@localhost:4222'
+
+    echo '创建 toRedis Stream...'
+    nats stream add toRedis \\
+      --subjects 'toRedis' \\
+      --storage file \\
+      --replicas 1 \\
+      --max-age 24h \\
+      --max-bytes 10GB \\
+      --retention limits \\
+      --discard old \\
+      --defaults \\
+      --server \$SERVER
+
+    echo '创建 toMongo Stream...'
+    nats stream add toMongo \\
+      --subjects 'toMongo' \\
+      --storage file \\
+      --replicas 1 \\
+      --max-age 24h \\
+      --max-bytes 10GB \\
+      --retention limits \\
+      --discard old \\
+      --defaults \\
+      --server \$SERVER
+
+    echo '创建 toPush Stream...'
+    nats stream add toPush \\
+      --subjects 'toPush' \\
+      --storage file \\
+      --replicas 1 \\
+      --max-age 24h \\
+      --max-bytes 5GB \\
+      --retention limits \\
+      --discard old \\
+      --defaults \\
+      --server \$SERVER
+
+    echo '\\n所有 Stream 列表：'
+    nats stream list --server \$SERVER
+  "
+
+echo "✅ NATS 部署完成！"
+echo "📊 监控地址: http://$(curl -s ifconfig.me):8222"
+echo "🔌 连接地址: nats://root:test625@$(curl -s ifconfig.me):4222"

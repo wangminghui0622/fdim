@@ -1,0 +1,39 @@
+Name: auth.rpc
+ListenOn: 10.0.4.12:8081
+Mode: dev
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: auth.rpc
+
+Mongo:
+  Host: mongodb://127.0.0.1:27017
+  Database: openim_v3
+  Username: "root"
+  Password: "test625"
+
+Cache:
+  - Host: 127.0.0.1:6379
+    Type: node
+    Pass: "test625"
+
+# Secret 用于Token签名
+Secret: "openIM123456"
+
+# TokenPolicy Token策略
+TokenPolicy:
+  Expire: 7  # 7天
+
+# MultiLogin 是否允许多设备登录
+MultiLogin: true
+
+# AdminUserIDs 管理员用户ID列表（可选）
+AdminUserIDs:
+  - "admin001"
+
+Log:
+  ServiceName: auth.rpc
+  Mode: console
+  Level: info
+  Format: json
+  StackCooldownMillis: 100

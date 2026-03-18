@@ -1,0 +1,61 @@
+Name: push.rpc
+ListenOn: 10.0.4.12:8089
+Mode: dev
+
+# Etcd 配置
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: push.rpc
+
+# Redis 配置
+Cache:
+  - Host: 127.0.0.1:6379
+    Type: node
+    Pass: "test625"
+
+# NATS 配置
+Nats:
+  Brokers:
+    - 127.0.0.1:4222
+  ToPushTopic: toPush
+  ToOfflinePushTopic: toOfflinePush
+  ToPushGroupID: push
+  ToOfflinePushGroupID: offlinePush
+
+# 推送配置
+Push:
+  Enable: dummy  # fcm, jpush, getui, dummy
+  # FCM (Firebase Cloud Messaging) 配置 - 适用于海外用户
+  FcmServerKey: "你的_FCM_Server_Key"
+  # 极光推送 (JPush) 配置 - 适用于国内用户
+  JPushAppKey: "你的_JPush_AppKey"
+  JPushMasterSecret: "你的_JPush_MasterSecret"
+  # 说明：
+  # 1. Enable 设置为 dummy 表示不发送离线推送（开发测试用）
+  # 2. 使用 FCM 需要配置 FcmServerKey
+  # 3. 使用 JPush 需要配置 JPushAppKey 和 JPushMasterSecret
+  # 4. 客户端需要上报推送 token 到 Redis：
+  #    - FCM: fcm_token:{userID}:{platformID} -> token
+  #    - JPush: jpush_token:{userID} -> registration_id
+
+
+# RPC 客户端配置
+MessageGatewayRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: msggateway.rpc
+
+GroupRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: user.rpc
+
+Log:
+  ServiceName: push.rpc
+  Mode: console
+  Level: info
+  Format: json
+  StackCooldownMillis: 100

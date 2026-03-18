@@ -1,0 +1,39 @@
+go build -o .\bin\auth.exe .\rpc\auth\
+.\bin\auth.exe -f .\etc\auth.yaml
+
+go build -o .\bin\user.exe .\rpc\user\
+.\bin\user.exe -f .\etc\user.yaml
+
+go build -o .\bin\conversation.exe .\rpc\conversation\
+.\bin\conversation.exe -f .\etc\conversation.yaml
+
+go build -o .\bin\msg.exe .\rpc\msg\
+.\bin\msg.exe -f .\etc\msg.yaml
+
+go build -o .\bin\third.exe .\rpc\third\
+.\bin\third.exe -f .\etc\third.yaml
+
+
+go build -o .\bin\admin.exe .\rpc\admin\
+.\bin\admin.exe -f .\etc\admin.yaml
+
+go build -o .\bin\bot.exe .\rpc\bot\
+.\bin\bot.exe -f .\etc\bot.yaml
+
+go build -o .\bin\chat.exe .\rpc\chat\
+.\bin\chat.exe -f .\etc\chat.yaml
+
+go build -o .\bin\msggateway.exe .\Infrastructure_service\msggateway\
+.\bin\msggateway.exe -f .\etc\msggateway.yaml
+
+go build -o .\bin\msgtransfer.exe .\Infrastructure_service\msgtransfer\
+.\bin\msgtransfer.exe -f .\etc\msgtransfer.yaml
+
+go build -o .\bin\push.exe .\Infrastructure_service\push\
+.\bin\push.exe -f .\etc\push.yaml
+
+go build -o .\bin\cron.exe .\Infrastructure_service\cron\
+.\bin\cron.exe -f .\etc\cron.yaml
+
+go build -o .\bin\api.exe .\api\
+.\bin\cron.exe -f .\etc\cron.yaml

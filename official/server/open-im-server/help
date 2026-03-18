@@ -1,0 +1,185 @@
+HTTP REST API（业务后台用）
+WebSocket / TCP 网关（客户端 SDK 用）
+Webhook 回调（你的业务服务器接收事件）
+gRPC/RPC 接口（内部微服务 / 你自己的 Go 服务可以直接调）
+1. HTTP REST API（业务后台 / 管理后台最常用）
+1.1 文档和配置在哪
+接口文档（按模块列出来的）：
+docs/contrib/api.md
+HTTP 服务配置：
+config/openim-api.yml（在 monolith 模式下，监听在 OPENIM_API_PORT，默认 10002）
+在你的 docker-compose.yml 里：
+openim-server 暴露 10002，所有 /user/* /friend/* /group/* /msg/* 的 HTTP 请求都打到这里。
+1.2 认证模型
+管理员令牌：
+POST /auth/get_admin_token
+用 secret + adminUserID 换一个后台管理用 token
+用户令牌：
+POST /auth/get_user_token
+用 userID + password/登录凭证 换聊天用 token
+后续所有需要权限的 API，都在 Header 带上 token（OpenIM SDK 已经帮你封装好了）。
+1.3 模块与典型接口
+按业务模块分，你可以在 docs/contrib/api.md 看到更完整列表，这里列关键能力：
+鉴权模块 /auth
+POST /auth/get_admin_token：获取后台管理员 token
+POST /auth/get_user_token：获取用户 IM token
+POST /auth/force_logout：强制用户下线
+用户模块 /user
+POST /user/user_register：创建/导入用户（通常由上层业务调用）
+POST /user/get_users_info：批量查询用户资料
+POST /user/update_user_info：修改头像 / 昵称 / 自定义字段
+POST /user/account_check：检查账户是否存在
+这些路径在 chat/pkg/common/imapi/api.go 里绑定成调用器：
+api.go
+Lines 24-32
+  registerUser = NewApiCaller[user.UserRegisterReq, user.UserRegisterResp]("/user/user_register")  getUserInfo  = NewApiCaller[user.GetDesignateUsersReq, user.GetDesignateUsersResp]("/user/get_users_info")  updateUserInfo = NewApiCaller[user.UpdateUserInfoReq, user.UpdateUserInfoResp]("/user/update_user_info")
+好友模块 /friend
+POST /friend/add_friend：申请加好友
+POST /friend/accept_friend：同意好友申请
+POST /friend/get_friend_list：获取好友列表
+POST /friend/get_friend_id：获取好友 ID 列表
+在 imapi 里：
+api.go
+Lines 42-43
+  friendUserIDs = NewApiCaller[relation.GetFriendIDsReq, relation.GetFriendIDsResp]("/friend/get_friend_id")  importFriend  = NewApiCaller[relation.ImportFriendReq, relation.ImportFriendResp]("/friend/import_friend")
+群组模块 /group
+POST /group/create_group：创建群
+POST /group/join_group：申请入群 / 邀请入群
+POST /group/quit_group：退群
+POST /group/get_groups_info：查询群资料
+POST /group/get_group_member_list：群成员列表
+在 imapi 里：
+api.go
+Lines 37-38
+  getGroupsInfo = NewApiCaller[group.GetGroupsInfoReq, group.GetGroupsInfoResp]("/group/get_groups_info")  inviteToGroup = NewApiCaller[group.InviteUserToGroupReq, group.InviteUserToGroupResp]("/group/invite_user_to_group")
+消息模块 /msg
+POST /msg/send_msg 或 /msg/send_simple_msg：发送单聊/群聊消息
+POST /msg/set_msg_resend 等：重发、撤回等（具体以 api.md 为准）
+在 imapi 里看到：
+api.go
+Lines 45-45
+  sendSimpleMsg = NewApiCaller[SendSingleMsgReq, SendSingleMsgResp]("/msg/send_simple_msg")
+统计 & 运维 /statistics 等
+POST /statistics/user/register：获取注册用户数量等
+也是在 imapi 里注册：
+api.go
+Lines 40-40
+  registerUserCount = NewApiCaller[user.UserRegisterCountReq, user.UserRegisterCountResp]("/statistics/user/register")
+这套 HTTP 接口，就是你以后写自己的业务后端时主要会直接调的那一层。
+2. 网关接口（客户端 SDK 用）
+这部分一般不建议你直接自己写 HTTP/WebSocket 调用，而是通过官方 SDK 使用：
+WebSocket 长连接网关：
+地址：ws://{网关IP}:{OPENIM_MSG_GATEWAY_PORT}，你当前是 10001
+用途：客户端（App / Web / 桌面）通过 SDK 连接到这里：
+登录、保持在线
+收消息、发消息
+收各种事件（好友申请、群变化等）
+对应进程：openim-msggateway（在 monolith 里由 openim-server 一起起）
+你如果只是想做业务后台/管理系统，一般完全不用管这一层，交给 SDK 就好。
+3. Webhook 回调（事件推送给你的业务）
+配置文件：config/webhooks.yml
+用途：
+在某些事件前/后，让 open-im-server 回调你的 HTTP 服务
+比如：用户发消息、建群、加好友等，你可以在回调里做：
+内容审核
+风控
+业务同步（积分、通知、记录日志等）
+典型结构（抽象一下）：
+# config/webhooks.ymleventCallbacks:  beforeMessageSend:    url: "http://your-service/beforeMessageSend"    timeout: 3s  afterMessageSend:    url: "http://your-service/afterMessageSend"
+这部分接口是 “open-im-server ➜ 你的业务 HTTP 服务”，和 HTTP API 是反方向的。
+4. gRPC / RPC 接口（内部微服务 & Go 服务）
+如果你写的是 Go 的微服务，可以不走 HTTP，直接用 RPC 调 open-im-server 的各个子服务：
+协议定义在独立仓库 github.com/openimsdk/protocol（你本地也 vendor 了）
+模块包括：
+auth、user、group、friend、conversation、msg 等
+在 internal/rpc/* 和 pkg/rpcclient/* 里有大量使用示例
+场景：
+你写一个 Go 微服务，需要：
+批量导入用户
+批量迁移/清洗消息
+高性能服务间调用
+就可以直接 import 这些 proto 生成的 client，用 gRPC 调用，而不是走 HTTP。
+5. 你现在已经在用的那条调用链
+结合你刚才看的 chat 代码，一条完整的链路大致是：
+浏览器调 chat 的 HTTP（比如 /account/register）
+chat/internal/api/chat/chat.go 里：
+先用 chatClient.RegisterUser 做业务库里的注册
+再用 imApiCaller.RegisterUser 调 open-im-server 的 /user/user_register
+加默认好友 / 群时，用 imApiCaller.ImportFriend、inviteToGroup
+用户登录时：
+chat 去 open-im-server 拿 adminToken ➜ 再拿用户 ImToken
+返回给前端，前端再用 SDK + 网关 10001 建立长连接收发消息
+也就是说：你现在做的所有“注册/登录/加好友/建群/发消息”，底下都是通过这套 HTTP API 在调 open-im-server。
+6. 如果你想看“全量接口清单”
+建议直接打开你本地这个文件细看：
+docs/contrib/api.md
+里面是按模块把 OpenIM 所有 HTTP 接口列出来的“官方版”，
+我上面帮你做的是一份「按用途归类 + 关键例子 + 代码位置」的压缩说明，方便你对着项目结构理解。
+如果你愿意，我可以下一步帮你根据你实际业务需求（比如“只要用户/好友/群/消息四块”），从这堆接口里挑一份“最小必要接口清单”出来，再画一张简单的调用关系图，作为你后面写自己业务后台的“设计底图”。
+
+
+
+
+# 1. 复制示例文件
+cp docker-compose.microservices.yml.example docker-compose.microservices.yml
+
+# 2. 启动所有服务
+docker-compose -f docker-compose.microservices.yml up -d
+
+# 3. 查看服务状态
+docker-compose -f docker-compose.microservices.yml ps
+
+# 4. 查看日志
+docker-compose -f docker-compose.microservices.yml logs -f openim-api
+
+
+
+cd /Users/xx/workspace/src/open-im-server
+
+# 停止服务
+docker compose stop openim-server
+
+# 重新构建镜像（这可能需要几分钟）
+docker compose build --no-cache openim-server
+
+# 启动服务
+docker compose up -d openim-server
+
+# 等待服务启动（约 30 秒）
+sleep 30
+
+# 验证服务是否正常
+docker exec openim-server cat /openim-server/start-config.yml
+# 应该看到 serviceBinaries 不为空，包含 openim-api, openim-msggateway 等
+
+
+
+# 停止 chat 服务
+docker compose stop openim-chat
+
+# 重新构建镜像（这可能需要几分钟）
+docker compose build --no-cache openim-chat
+
+# 启动服务
+docker compose up -d openim-chat
+
+# 等待服务启动（约 30 秒）
+sleep 30
+
+# 验证配置
+docker exec openim-chat cat /openim-chat/start-config.yml
+# 应该看到 serviceBinaries 包含 chat-api, admin-api 等
+
+# 查看服务日志
+docker logs openim-chat | tail -50
+# 应该看到服务在监听 10008, 10009 端口
+
+
+# 进 mongo 容器查 openim_v3 库
+docker exec -it mongo mongosh
+
+use admin
+db.auth("root", "openIM123")
+use openim_v3
+show collections
+db.user.find({}, { user_id: 1, nickname: 1, _id: 0 }).limit(10)

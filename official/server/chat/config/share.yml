@@ -1,0 +1,13 @@
+openIM:
+  # OpenIM API address (使用 Docker 服务名，容器内部网络)
+  apiURL: http://openim-server:10002
+  # OpenIM secret key, must be consistent with OpenIM
+  secret: openIM123
+  # OpenIM administrator userID, must be consistent with OpenIM
+  adminUserID: imAdmin
+  # Refresh OpenIM token interval
+  tokenRefreshInterval: 120  # unit: minute
+
+chatAdmin:
+   # Default username and password for the admin
+  - "chatAdmin"

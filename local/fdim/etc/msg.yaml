@@ -1,0 +1,48 @@
+Name: msg.rpc
+ListenOn: 10.0.4.12:8082
+Mode: dev
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: msg.rpc
+
+Mongo:
+  Host: mongodb://127.0.0.1:27017
+  Database: openim_v3
+  Username: "root"
+  Password: "test625"
+
+Cache:
+  - Host: 127.0.0.1:6379
+    Type: node
+    Pass: "test625"
+
+Nats:
+  Brokers:
+    - 127.0.0.1:4222
+  Topics:
+    ToRedis: "toRedis"
+    ToMongo: "toMongo"
+    ToPush: "toPush"
+    ToOfflinePush: "toOfflinePush"
+
+# Conversation RPC 配置（用于获取会话信息）
+ConversationRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: conversation.rpc
+  Timeout: 10000
+
+# Notification 配置（用于发送已读回执等通知）
+Notification:
+  IsSendMsg: true
+  ReliabilityLevel: 1
+  UnreadCount: true
+
+Log:
+  ServiceName: msg.rpc
+  Mode: console
+  Level: info
+  Format: json
+  StackCooldownMillis: 100

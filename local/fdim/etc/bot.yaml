@@ -1,0 +1,31 @@
+Name: bot.rpc
+ListenOn: 10.0.4.12:8086
+Mode: dev
+# Etcd 配置（开发模式下可以注释掉，如果不需要服务发现）
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: bot.rpc
+
+Mongo:
+  Url: "mongodb://root:test625@127.0.0.1:27017/openim_v3?authSource=admin"
+  Db: openim_v3
+
+Cache:
+  - Host: 127.0.0.1:6379
+    Type: node
+    Pass: "test625"
+
+
+MsgRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: msg.rpc
+
+Log:
+  ServiceName: bot.rpc
+  Mode: console
+  Level: info
+  Format: json
+  StackCooldownMillis: 100

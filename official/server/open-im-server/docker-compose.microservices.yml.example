@@ -1,0 +1,564 @@
+# 微服务构建示例配置
+# 如果需要使用微服务构建，可以复制此文件为 docker-compose.microservices.yml
+# 然后使用: docker-compose -f docker-compose.microservices.yml up -d
+#
+# 注意：微服务模式需要 etcd 作为服务发现，确保 etcd 服务正常运行
+# 每个服务都是独立的容器，可以单独扩展和部署
+
+networks:
+  openim:
+    driver: bridge
+
+services:
+  # ==================== 基础设施服务 ====================
+  
+  mongo:
+    image: "${MONGO_IMAGE}"
+    container_name: mongo
+    command: >
+      bash -c '
+      docker-entrypoint.sh mongod --wiredTigerCacheSizeGB $$wiredTigerCacheSizeGB --auth &
+      until mongosh -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval "db.runCommand({ ping: 1 })" &>/dev/null; do
+        echo "Waiting for MongoDB to start..."
+        sleep 1
+      done &&
+      mongosh -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval "
+      db = db.getSiblingDB(\"$$MONGO_INITDB_DATABASE\");
+      if (!db.getUser(\"$$MONGO_OPENIM_USERNAME\")) {
+        db.createUser({
+          user: \"$$MONGO_OPENIM_USERNAME\",
+          pwd: \"$$MONGO_OPENIM_PASSWORD\",
+          roles: [{role: \"readWrite\", db: \"$$MONGO_INITDB_DATABASE\"}]
+        });
+        print(\"User created successfully: \");
+        print(\"Username: $$MONGO_OPENIM_USERNAME\");
+        print(\"Password: $$MONGO_OPENIM_PASSWORD\");
+        print(\"Database: $$MONGO_INITDB_DATABASE\");
+      } else {
+        print(\"User already exists in database: $$MONGO_INITDB_DATABASE, Username: $$MONGO_OPENIM_USERNAME\");
+      }
+      " &&
+      tail -f /dev/null
+      '
+    volumes:
+      - "${DATA_DIR}/components/mongodb/data/db:/data/db"
+      - "${DATA_DIR}/components/mongodb/data/logs:/data/logs"
+      - "${DATA_DIR}/components/mongodb/data/conf:/etc/mongo"
+    environment:
+      - TZ=Asia/Shanghai
+      - wiredTigerCacheSizeGB=1
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=openIM123
+      - MONGO_INITDB_DATABASE=openim_v3
+      - MONGO_OPENIM_USERNAME=${MONGO_USERNAME}
+      - MONGO_OPENIM_PASSWORD=${MONGO_PASSWORD}
+    restart: always
+    networks:
+      - openim
+
+  redis:
+    image: "${REDIS_IMAGE}"
+    container_name: redis
+    volumes:
+      - "${DATA_DIR}/components/redis/data:/data"
+      - "${DATA_DIR}/components/redis/config/redis.conf:/usr/local/redis/config/redis.conf"
+    environment:
+      TZ: Asia/Shanghai
+    restart: always
+    sysctls:
+      net.core.somaxconn: 1024
+    command:
+      [
+        "redis-server",
+        "/usr/local/redis/config/redis.conf",
+        "--requirepass",
+        "${REDIS_PASSWORD}",
+        "--appendonly",
+        "yes",
+      ]
+    networks:
+      - openim
+
+  etcd:
+    image: "${ETCD_IMAGE}"
+    container_name: etcd
+    ports:
+      - "12379:2379"
+      - "12380:2380"
+    environment:
+      - ETCD_NAME=s1
+      - ETCD_DATA_DIR=/etcd-data
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_ADVERTISE_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_INITIAL_CLUSTER=s1=http://0.0.0.0:2380
+      - ETCD_INITIAL_CLUSTER_TOKEN=tkn
+      - ETCD_INITIAL_CLUSTER_STATE=new
+      - ALLOW_NONE_AUTHENTICATION=no
+      - ETCD_ROOT_USER=${ETCD_ROOT_USER:-root}
+      - ETCD_ROOT_PASSWORD=${ETCD_ROOT_PASSWORD:-openIM123}
+      - ETCD_USERNAME=${ETCD_USERNAME:-openIM}
+      - ETCD_PASSWORD=${ETCD_PASSWORD:-openIM123}
+    volumes:
+      - "${DATA_DIR}/components/etcd:/etcd-data"
+    command: >
+      /bin/sh -c '
+        etcd &
+        export ETCDCTL_API=3
+        echo "Waiting for etcd to become healthy..."
+        until etcdctl --endpoints=http://127.0.0.1:2379 endpoint health &>/dev/null; do
+          echo "Waiting for ETCD to start..."
+          sleep 1
+        done
+        echo "etcd is healthy."
+        tail -f /dev/null
+      '
+    restart: always
+    networks:
+      - openim
+
+  kafka:
+    image: "${KAFKA_IMAGE}"
+    container_name: kafka
+    user: root
+    restart: always
+    volumes:
+      - "${DATA_DIR}/components/kafka:/bitnami/kafka"
+    environment:
+      TZ: Asia/Shanghai
+      KAFKA_CFG_NODE_ID: 0
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@kafka:9093
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_NUM_PARTITIONS: 8
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_CFG_LISTENERS: "INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:9094"
+      KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://kafka:9092,EXTERNAL://kafka:9094"
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT"
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: "INTERNAL"
+      KAFKA_USERNAME: ${KAFKA_USERNAME:-}
+      KAFKA_PASSWORD: ${KAFKA_PASSWORD:-}
+    command: >
+      /bin/sh -c '
+        if [ -n "$${KAFKA_USERNAME}" ] && [ -n "$${KAFKA_PASSWORD}" ]; then
+          echo "=== Kafka SASL Authentication ENABLED ==="
+          export KAFKA_CFG_LISTENERS="SASL_PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094"
+          export KAFKA_CFG_ADVERTISED_LISTENERS="SASL_PLAINTEXT://kafka:9092,EXTERNAL://kafka:9094"
+          export KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP="CONTROLLER:PLAINTEXT,EXTERNAL:SASL_PLAINTEXT,SASL_PLAINTEXT:SASL_PLAINTEXT"
+          export KAFKA_CFG_SASL_ENABLED_MECHANISMS="PLAIN"
+          export KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL="PLAIN"
+          export KAFKA_CFG_INTER_BROKER_LISTENER_NAME="SASL_PLAINTEXT"
+          export KAFKA_CLIENT_USERS="$${KAFKA_USERNAME}"
+          export KAFKA_CLIENT_PASSWORDS="$${KAFKA_PASSWORD}"
+        fi
+        exec /opt/bitnami/scripts/kafka/entrypoint.sh /opt/bitnami/scripts/kafka/run.sh
+      '
+    networks:
+      - openim
+
+  minio:
+    image: "${MINIO_IMAGE}"
+    ports:
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9090"
+    container_name: minio
+    volumes:
+      - "${DATA_DIR}/components/mnt/data:/data"
+      - "${DATA_DIR}/components/mnt/config:/root/.minio"
+    environment:
+      TZ: Asia/Shanghai
+      MINIO_ROOT_USER: "${MINIO_ACCESS_KEY_ID}"
+      MINIO_ROOT_PASSWORD: "${MINIO_SECRET_ACCESS_KEY}"
+    restart: always
+    command: minio server /data --console-address ':9090'
+    networks:
+      - openim
+
+  # ==================== OpenIM 微服务 ====================
+
+  # API 服务 - 提供 REST API
+  openim-api:
+    build:
+      context: .
+      dockerfile: ./build/images/microservices/openim-api/Dockerfile
+    image: openim-api:local
+    container_name: openim-api
+    init: true
+    ports:
+      - "${OPENIM_API_PORT}:10002"
+    volumes:
+      - ./config:/openim-server/config:ro
+    environment:
+      - IMENV_MONGODB_ADDRESS=${MONGO_ADDRESS}
+      - IMENV_MONGODB_USERNAME=${MONGO_USERNAME}
+      - IMENV_MONGODB_PASSWORD=${MONGO_PASSWORD}
+      - IMENV_KAFKA_ADDRESS=${KAFKA_ADDRESS}
+      - IMENV_KAFKA_USERNAME=${KAFKA_USERNAME}
+      - IMENV_KAFKA_PASSWORD=${KAFKA_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_ADDRESS=${ETCD_ADDRESS}
+      - IMENV_REDIS_ADDRESS=${REDIS_ADDRESS}
+      - IMENV_REDIS_PASSWORD=${REDIS_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_USERNAME=${ETCD_USERNAME}
+      - IMENV_DISCOVERY_ETCD_PASSWORD=${ETCD_PASSWORD}
+      - IMENV_MINIO_INTERNALADDRESS=${MINIO_INTERNAL_ADDRESS}
+      - IMENV_MINIO_EXTERNALADDRESS=${MINIO_EXTERNAL_ADDRESS}
+      - IMENV_MINIO_ACCESSKEYID=${MINIO_ACCESS_KEY_ID}
+      - IMENV_MINIO_SECRETACCESSKEY=${MINIO_SECRET_ACCESS_KEY}
+      - IMENV_SHARE_SECRET=${OPENIM_SECRET}
+      - IMENV_LOG_ISSTDOUT=${LOG_IS_STDOUT}
+      - IMENV_LOG_REMAINLOGLEVEL=${LOG_LEVEL}
+      - IMENV_OPENIM_API_PROMETHEUS_GRAFANAURL=${GRAFANA_URL}
+    restart: always
+    depends_on:
+      - mongo
+      - redis
+      - etcd
+      - kafka
+      - minio
+    networks:
+      - openim
+
+  # 消息网关 - WebSocket 服务
+  openim-msggateway:
+    build:
+      context: .
+      dockerfile: ./build/images/microservices/openim-msggateway/Dockerfile
+    image: openim-msggateway:local
+    container_name: openim-msggateway
+    init: true
+    ports:
+      - "${OPENIM_MSG_GATEWAY_PORT}:10001"
+    volumes:
+      - ./config:/openim-server/config:ro
+    environment:
+      - IMENV_MONGODB_ADDRESS=${MONGO_ADDRESS}
+      - IMENV_MONGODB_USERNAME=${MONGO_USERNAME}
+      - IMENV_MONGODB_PASSWORD=${MONGO_PASSWORD}
+      - IMENV_KAFKA_ADDRESS=${KAFKA_ADDRESS}
+      - IMENV_KAFKA_USERNAME=${KAFKA_USERNAME}
+      - IMENV_KAFKA_PASSWORD=${KAFKA_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_ADDRESS=${ETCD_ADDRESS}
+      - IMENV_REDIS_ADDRESS=${REDIS_ADDRESS}
+      - IMENV_REDIS_PASSWORD=${REDIS_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_USERNAME=${ETCD_USERNAME}
+      - IMENV_DISCOVERY_ETCD_PASSWORD=${ETCD_PASSWORD}
+      - IMENV_SHARE_SECRET=${OPENIM_SECRET}
+      - IMENV_LOG_ISSTDOUT=${LOG_IS_STDOUT}
+      - IMENV_LOG_REMAINLOGLEVEL=${LOG_LEVEL}
+    restart: always
+    depends_on:
+      - mongo
+      - redis
+      - etcd
+      - kafka
+    networks:
+      - openim
+
+  # RPC 服务 - 用户服务
+  openim-rpc-user:
+    build:
+      context: .
+      dockerfile: ./build/images/microservices/openim-rpc-user/Dockerfile
+    image: openim-rpc-user:local
+    container_name: openim-rpc-user
+    init: true
+    volumes:
+      - ./config:/openim-server/config:ro
+    environment:
+      - IMENV_MONGODB_ADDRESS=${MONGO_ADDRESS}
+      - IMENV_MONGODB_USERNAME=${MONGO_USERNAME}
+      - IMENV_MONGODB_PASSWORD=${MONGO_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_ADDRESS=${ETCD_ADDRESS}
+      - IMENV_REDIS_ADDRESS=${REDIS_ADDRESS}
+      - IMENV_REDIS_PASSWORD=${REDIS_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_USERNAME=${ETCD_USERNAME}
+      - IMENV_DISCOVERY_ETCD_PASSWORD=${ETCD_PASSWORD}
+      - IMENV_LOG_ISSTDOUT=${LOG_IS_STDOUT}
+      - IMENV_LOG_REMAINLOGLEVEL=${LOG_LEVEL}
+    restart: always
+    depends_on:
+      - mongo
+      - redis
+      - etcd
+    networks:
+      - openim
+
+  # RPC 服务 - 好友服务
+  openim-rpc-friend:
+    build:
+      context: .
+      dockerfile: ./build/images/microservices/openim-rpc-friend/Dockerfile
+    image: openim-rpc-friend:local
+    container_name: openim-rpc-friend
+    init: true
+    volumes:
+      - ./config:/openim-server/config:ro
+    environment:
+      - IMENV_MONGODB_ADDRESS=${MONGO_ADDRESS}
+      - IMENV_MONGODB_USERNAME=${MONGO_USERNAME}
+      - IMENV_MONGODB_PASSWORD=${MONGO_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_ADDRESS=${ETCD_ADDRESS}
+      - IMENV_REDIS_ADDRESS=${REDIS_ADDRESS}
+      - IMENV_REDIS_PASSWORD=${REDIS_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_USERNAME=${ETCD_USERNAME}
+      - IMENV_DISCOVERY_ETCD_PASSWORD=${ETCD_PASSWORD}
+      - IMENV_LOG_ISSTDOUT=${LOG_IS_STDOUT}
+      - IMENV_LOG_REMAINLOGLEVEL=${LOG_LEVEL}
+    restart: always
+    depends_on:
+      - mongo
+      - redis
+      - etcd
+    networks:
+      - openim
+
+  # RPC 服务 - 群组服务
+  openim-rpc-group:
+    build:
+      context: .
+      dockerfile: ./build/images/microservices/openim-rpc-group/Dockerfile
+    image: openim-rpc-group:local
+    container_name: openim-rpc-group
+    init: true
+    volumes:
+      - ./config:/openim-server/config:ro
+    environment:
+      - IMENV_MONGODB_ADDRESS=${MONGO_ADDRESS}
+      - IMENV_MONGODB_USERNAME=${MONGO_USERNAME}
+      - IMENV_MONGODB_PASSWORD=${MONGO_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_ADDRESS=${ETCD_ADDRESS}
+      - IMENV_REDIS_ADDRESS=${REDIS_ADDRESS}
+      - IMENV_REDIS_PASSWORD=${REDIS_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_USERNAME=${ETCD_USERNAME}
+      - IMENV_DISCOVERY_ETCD_PASSWORD=${ETCD_PASSWORD}
+      - IMENV_LOG_ISSTDOUT=${LOG_IS_STDOUT}
+      - IMENV_LOG_REMAINLOGLEVEL=${LOG_LEVEL}
+    restart: always
+    depends_on:
+      - mongo
+      - redis
+      - etcd
+    networks:
+      - openim
+
+  # RPC 服务 - 消息服务
+  openim-rpc-msg:
+    build:
+      context: .
+      dockerfile: ./build/images/microservices/openim-rpc-msg/Dockerfile
+    image: openim-rpc-msg:local
+    container_name: openim-rpc-msg
+    init: true
+    volumes:
+      - ./config:/openim-server/config:ro
+    environment:
+      - IMENV_MONGODB_ADDRESS=${MONGO_ADDRESS}
+      - IMENV_MONGODB_USERNAME=${MONGO_USERNAME}
+      - IMENV_MONGODB_PASSWORD=${MONGO_PASSWORD}
+      - IMENV_KAFKA_ADDRESS=${KAFKA_ADDRESS}
+      - IMENV_KAFKA_USERNAME=${KAFKA_USERNAME}
+      - IMENV_KAFKA_PASSWORD=${KAFKA_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_ADDRESS=${ETCD_ADDRESS}
+      - IMENV_REDIS_ADDRESS=${REDIS_ADDRESS}
+      - IMENV_REDIS_PASSWORD=${REDIS_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_USERNAME=${ETCD_USERNAME}
+      - IMENV_DISCOVERY_ETCD_PASSWORD=${ETCD_PASSWORD}
+      - IMENV_LOG_ISSTDOUT=${LOG_IS_STDOUT}
+      - IMENV_LOG_REMAINLOGLEVEL=${LOG_LEVEL}
+    restart: always
+    depends_on:
+      - mongo
+      - redis
+      - etcd
+      - kafka
+    networks:
+      - openim
+
+  # RPC 服务 - 会话服务
+  openim-rpc-conversation:
+    build:
+      context: .
+      dockerfile: ./build/images/microservices/openim-rpc-conversation/Dockerfile
+    image: openim-rpc-conversation:local
+    container_name: openim-rpc-conversation
+    init: true
+    volumes:
+      - ./config:/openim-server/config:ro
+    environment:
+      - IMENV_MONGODB_ADDRESS=${MONGO_ADDRESS}
+      - IMENV_MONGODB_USERNAME=${MONGO_USERNAME}
+      - IMENV_MONGODB_PASSWORD=${MONGO_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_ADDRESS=${ETCD_ADDRESS}
+      - IMENV_REDIS_ADDRESS=${REDIS_ADDRESS}
+      - IMENV_REDIS_PASSWORD=${REDIS_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_USERNAME=${ETCD_USERNAME}
+      - IMENV_DISCOVERY_ETCD_PASSWORD=${ETCD_PASSWORD}
+      - IMENV_LOG_ISSTDOUT=${LOG_IS_STDOUT}
+      - IMENV_LOG_REMAINLOGLEVEL=${LOG_LEVEL}
+    restart: always
+    depends_on:
+      - mongo
+      - redis
+      - etcd
+    networks:
+      - openim
+
+  # RPC 服务 - 认证服务
+  openim-rpc-auth:
+    build:
+      context: .
+      dockerfile: ./build/images/microservices/openim-rpc-auth/Dockerfile
+    image: openim-rpc-auth:local
+    container_name: openim-rpc-auth
+    init: true
+    volumes:
+      - ./config:/openim-server/config:ro
+    environment:
+      - IMENV_MONGODB_ADDRESS=${MONGO_ADDRESS}
+      - IMENV_MONGODB_USERNAME=${MONGO_USERNAME}
+      - IMENV_MONGODB_PASSWORD=${MONGO_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_ADDRESS=${ETCD_ADDRESS}
+      - IMENV_REDIS_ADDRESS=${REDIS_ADDRESS}
+      - IMENV_REDIS_PASSWORD=${REDIS_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_USERNAME=${ETCD_USERNAME}
+      - IMENV_DISCOVERY_ETCD_PASSWORD=${ETCD_PASSWORD}
+      - IMENV_SHARE_SECRET=${OPENIM_SECRET}
+      - IMENV_LOG_ISSTDOUT=${LOG_IS_STDOUT}
+      - IMENV_LOG_REMAINLOGLEVEL=${LOG_LEVEL}
+    restart: always
+    depends_on:
+      - mongo
+      - redis
+      - etcd
+    networks:
+      - openim
+
+  # RPC 服务 - 第三方服务
+  openim-rpc-third:
+    build:
+      context: .
+      dockerfile: ./build/images/microservices/openim-rpc-third/Dockerfile
+    image: openim-rpc-third:local
+    container_name: openim-rpc-third
+    init: true
+    volumes:
+      - ./config:/openim-server/config:ro
+    environment:
+      - IMENV_MONGODB_ADDRESS=${MONGO_ADDRESS}
+      - IMENV_MONGODB_USERNAME=${MONGO_USERNAME}
+      - IMENV_MONGODB_PASSWORD=${MONGO_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_ADDRESS=${ETCD_ADDRESS}
+      - IMENV_REDIS_ADDRESS=${REDIS_ADDRESS}
+      - IMENV_REDIS_PASSWORD=${REDIS_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_USERNAME=${ETCD_USERNAME}
+      - IMENV_DISCOVERY_ETCD_PASSWORD=${ETCD_PASSWORD}
+      - IMENV_MINIO_INTERNALADDRESS=${MINIO_INTERNAL_ADDRESS}
+      - IMENV_MINIO_EXTERNALADDRESS=${MINIO_EXTERNAL_ADDRESS}
+      - IMENV_MINIO_ACCESSKEYID=${MINIO_ACCESS_KEY_ID}
+      - IMENV_MINIO_SECRETACCESSKEY=${MINIO_SECRET_ACCESS_KEY}
+      - IMENV_LOG_ISSTDOUT=${LOG_IS_STDOUT}
+      - IMENV_LOG_REMAINLOGLEVEL=${LOG_LEVEL}
+    restart: always
+    depends_on:
+      - mongo
+      - redis
+      - etcd
+      - minio
+    networks:
+      - openim
+
+  # 消息传输服务
+  openim-msgtransfer:
+    build:
+      context: .
+      dockerfile: ./build/images/microservices/openim-msgtransfer/Dockerfile
+    image: openim-msgtransfer:local
+    container_name: openim-msgtransfer
+    init: true
+    volumes:
+      - ./config:/openim-server/config:ro
+    environment:
+      - IMENV_MONGODB_ADDRESS=${MONGO_ADDRESS}
+      - IMENV_MONGODB_USERNAME=${MONGO_USERNAME}
+      - IMENV_MONGODB_PASSWORD=${MONGO_PASSWORD}
+      - IMENV_KAFKA_ADDRESS=${KAFKA_ADDRESS}
+      - IMENV_KAFKA_USERNAME=${KAFKA_USERNAME}
+      - IMENV_KAFKA_PASSWORD=${KAFKA_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_ADDRESS=${ETCD_ADDRESS}
+      - IMENV_REDIS_ADDRESS=${REDIS_ADDRESS}
+      - IMENV_REDIS_PASSWORD=${REDIS_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_USERNAME=${ETCD_USERNAME}
+      - IMENV_DISCOVERY_ETCD_PASSWORD=${ETCD_PASSWORD}
+      - IMENV_LOG_ISSTDOUT=${LOG_IS_STDOUT}
+      - IMENV_LOG_REMAINLOGLEVEL=${LOG_LEVEL}
+    restart: always
+    depends_on:
+      - mongo
+      - redis
+      - etcd
+      - kafka
+    networks:
+      - openim
+
+  # 推送服务
+  openim-push:
+    build:
+      context: .
+      dockerfile: ./build/images/microservices/openim-push/Dockerfile
+    image: openim-push:local
+    container_name: openim-push
+    init: true
+    volumes:
+      - ./config:/openim-server/config:ro
+    environment:
+      - IMENV_MONGODB_ADDRESS=${MONGO_ADDRESS}
+      - IMENV_MONGODB_USERNAME=${MONGO_USERNAME}
+      - IMENV_MONGODB_PASSWORD=${MONGO_PASSWORD}
+      - IMENV_KAFKA_ADDRESS=${KAFKA_ADDRESS}
+      - IMENV_KAFKA_USERNAME=${KAFKA_USERNAME}
+      - IMENV_KAFKA_PASSWORD=${KAFKA_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_ADDRESS=${ETCD_ADDRESS}
+      - IMENV_REDIS_ADDRESS=${REDIS_ADDRESS}
+      - IMENV_REDIS_PASSWORD=${REDIS_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_USERNAME=${ETCD_USERNAME}
+      - IMENV_DISCOVERY_ETCD_PASSWORD=${ETCD_PASSWORD}
+      - IMENV_LOG_ISSTDOUT=${LOG_IS_STDOUT}
+      - IMENV_LOG_REMAINLOGLEVEL=${LOG_LEVEL}
+    restart: always
+    depends_on:
+      - mongo
+      - redis
+      - etcd
+      - kafka
+    networks:
+      - openim
+
+  # 定时任务服务
+  openim-crontask:
+    build:
+      context: .
+      dockerfile: ./build/images/microservices/openim-crontask/Dockerfile
+    image: openim-crontask:local
+    container_name: openim-crontask
+    init: true
+    volumes:
+      - ./config:/openim-server/config:ro
+    environment:
+      - IMENV_MONGODB_ADDRESS=${MONGO_ADDRESS}
+      - IMENV_MONGODB_USERNAME=${MONGO_USERNAME}
+      - IMENV_MONGODB_PASSWORD=${MONGO_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_ADDRESS=${ETCD_ADDRESS}
+      - IMENV_REDIS_ADDRESS=${REDIS_ADDRESS}
+      - IMENV_REDIS_PASSWORD=${REDIS_PASSWORD}
+      - IMENV_DISCOVERY_ETCD_USERNAME=${ETCD_USERNAME}
+      - IMENV_DISCOVERY_ETCD_PASSWORD=${ETCD_PASSWORD}
+      - IMENV_LOG_ISSTDOUT=${LOG_IS_STDOUT}
+      - IMENV_LOG_REMAINLOGLEVEL=${LOG_LEVEL}
+    restart: always
+    depends_on:
+      - mongo
+      - redis
+      - etcd
+    networks:
+      - openim
