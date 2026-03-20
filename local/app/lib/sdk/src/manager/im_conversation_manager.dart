@@ -247,10 +247,16 @@ class ConversationManager {
                     msgMap['showName'] ??
                     '')
                 .toString();
-            final faceURL =
-                (msgMap['senderFaceUrl'] ?? msgMap['faceURL'] ?? '').toString();
-            final latestMsgSendTime =
-                msgMap['sendTime'] ?? msgMap['latestMsgSendTime'] ?? 0;
+            final faceURL = (msgMap['senderFaceUrl'] ??
+                    msgMap['senderFaceURL'] ??
+                    msgMap['faceURL'] ??
+                    '')
+                .toString();
+            final latestMsgSendTime = msgMap['sendTime'] ??
+                msgMap['latestMsgSendTime'] ??
+                msgMap['latestMsgRecvTime'] ??
+                msgMap['LatestMsgRecvTime'] ??
+                0;
 
             final conv = ConversationInfo.fromJson({
               'conversationID': e['conversationID'],

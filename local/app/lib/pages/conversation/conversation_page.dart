@@ -70,6 +70,13 @@ class _ConversationPageState extends State<ConversationPage> {
   }
 
   void _openChat(ConversationInfo conv) {
+    // 进入聊天页立即本地清零未读，避免红点残留到下次刷新
+    if (conv.unreadCount > 0) {
+      setState(() {
+        conv.unreadCount = 0;
+      });
+    }
+
     // 【修复问题3】从 conversationID 中提取 userID/groupID（如果会话对象中没有）
     String userID = conv.userID ?? '';
     String groupID = conv.groupID ?? '';
