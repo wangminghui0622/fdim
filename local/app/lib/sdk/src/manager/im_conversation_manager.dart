@@ -218,14 +218,53 @@ class ConversationManager {
       list = data['conversations'] ??
           data['conversationElems'] ??
           data['unreadCounts'];
-      // get_sorted_conversation_list returns {conversationElems: [{conversation: {...}, ...}]}
-      if (list != null && list.isNotEmpty && list.first is Map && list.first.containsKey('conversation')) {
-        return list.map((e) {
-          final conv = ConversationInfo.fromJson(e['conversation']);
-          // merge unreadCount if present at top level
-          if (e['unreadCount'] != null) conv.unreadCount = e['unreadCount'];
-          return conv;
-        }).toList();
+      // get_sorted_conversation_list returns {conversationElems: [{conversationID, unreadCount, msgInfo: {...}}]}
+      if (list != null && list.isNotEmpty && list.first is Map) {
+        if (list.first.containsKey('conversation')) {
+          // Old format: {conversation: {...}, unreadCount: ...}
+          return list.map((e) {
+            final conv = ConversationInfo.fromJson(e['conversation']);
+            if (e['unreadCount'] != null) conv.unreadCount = e['unreadCount'];
+            return conv;
+          }).toList();
+        } else if (list.first.containsKey('msgInfo')) {
+          // New format: {conversationID, unreadCount, msgInfo: {...latest message fields...}}
+          return list.map((e) {
+            final msgInfo = e['msgInfo'];
+            final msgMap = msgInfo is Map
+                ? Map<String, dynamic>.from(msgInfo)
+                : <String, dynamic>{};
+
+            Message? latestMsg;
+            try {
+              latestMsg = msgMap.isNotEmpty ? Message.fromJson(msgMap) : null;
+            } catch (err) {
+              debugPrint('[SDK] parse latest msg from msgInfo error: $err');
+            }
+
+            final showName = (msgMap['senderNickname'] ??
+                    msgMap['senderName'] ??
+                    msgMap['showName'] ??
+                    '')
+                .toString();
+            final faceURL =
+                (msgMap['senderFaceUrl'] ?? msgMap['faceURL'] ?? '').toString();
+            final latestMsgSendTime =
+                msgMap['sendTime'] ?? msgMap['latestMsgSendTime'] ?? 0;
+
+            final conv = ConversationInfo.fromJson({
+              'conversationID': e['conversationID'],
+              'recvMsgOpt': e['recvMsgOpt'],
+              'unreadCount': e['unreadCount'],
+              'isPinned': e['isPinned'],
+              'showName': showName,
+              'faceURL': faceURL,
+              'latestMsg': latestMsg?.toJson(),
+              'latestMsgSendTime': latestMsgSendTime,
+            });
+            return conv;
+          }).toList();
+        }
       }
     }
     if (list is List) {

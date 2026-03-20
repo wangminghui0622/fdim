@@ -24,8 +24,9 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  static final Map<String, bool> _localReadStatusCache = <String, bool>{};
-  static final Map<String, int> _localReadTimeCache = <String, int>{};
+  // 【修复问题1】使用全局静态缓存，确保退出聊天室后再进入时"已读/未读"状态不会消失
+  static final Map<String, Map<String, bool>> _globalReadStatusCache = <String, Map<String, bool>>{};
+  static final Map<String, Map<String, int>> _globalReadTimeCache = <String, Map<String, int>>{};
 
   final _inputController = TextEditingController();
   final _scrollController = ScrollController();
@@ -240,35 +241,42 @@ class _ChatPageState extends State<ChatPage> {
     final key = msg.clientMsgID;
     if (key == null || key.isEmpty) return;
 
-    final cachedRead = _localReadStatusCache[key];
+    // 【修复问题1】从全局缓存中恢复已读状态
+    final convCache = _globalReadStatusCache[conversationID];
+    final timeCache = _globalReadTimeCache[conversationID];
+    
+    final cachedRead = convCache?[key];
     if (cachedRead != null) {
       // 服务端已读优先，避免本地旧缓存 false 覆盖后端返回的 true
       if (msg.isRead == true) {
-        _localReadStatusCache[key] = true;
+        convCache![key] = true;
       } else {
         msg.isRead = cachedRead;
       }
     }
 
-    final cachedReadTime = _localReadTimeCache[key];
+    final cachedReadTime = timeCache?[key];
     if (cachedReadTime != null && (msg.hasReadTime == null || msg.hasReadTime == 0)) {
       msg.hasReadTime = cachedReadTime;
     }
 
     // 若服务端已经返回已读，但本地还没有时间，则补一个本地缓存时间，避免 UI 回退
     if (msg.isRead == true) {
-      _localReadStatusCache[key] = true;
-      _localReadTimeCache[key] ??= msg.hasReadTime ?? DateTime.now().millisecondsSinceEpoch;
-      msg.hasReadTime ??= _localReadTimeCache[key];
+      _globalReadStatusCache.putIfAbsent(conversationID, () => {})[key] = true;
+      _globalReadTimeCache.putIfAbsent(conversationID, () => {})[key] ??=
+          msg.hasReadTime ?? DateTime.now().millisecondsSinceEpoch;
+      msg.hasReadTime ??= _globalReadTimeCache[conversationID]![key];
     }
   }
 
   void _cacheReadStatus(Message msg, {required bool isRead, int? readTime}) {
     final key = msg.clientMsgID;
     if (key == null || key.isEmpty) return;
-    _localReadStatusCache[key] = isRead;
+    
+    // 【修复问题1】缓存到全局Map中，按conversationID分组
+    _globalReadStatusCache.putIfAbsent(conversationID, () => {})[key] = isRead;
     if (readTime != null) {
-      _localReadTimeCache[key] = readTime;
+      _globalReadTimeCache.putIfAbsent(conversationID, () => {})[key] = readTime;
     }
   }
 

@@ -41,7 +41,7 @@ func (l *GetSortedConversationListLogic) GetSortedConversationList(req *types.Ge
 		return nil, err
 	}
 
-	// 转换响应
+	// 转换响应，保留 MsgInfo 以便前端获取 showName/faceURL
 	var conversationElems []types.ConversationElem
 	for _, elem := range rpcResp.ConversationElems {
 		conversationElems = append(conversationElems, types.ConversationElem{
@@ -49,6 +49,7 @@ func (l *GetSortedConversationListLogic) GetSortedConversationList(req *types.Ge
 			RecvMsgOpt:     elem.RecvMsgOpt,
 			UnreadCount:    elem.UnreadCount,
 			IsPinned:       elem.IsPinned,
+			MsgInfo:        elem.MsgInfo,
 		})
 	}
 

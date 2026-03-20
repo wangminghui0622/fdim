@@ -21,10 +21,11 @@ type GetSortedConversationListReq struct {
 }
 
 type ConversationElem struct {
-	ConversationID string `json:"conversationID"`
-	RecvMsgOpt     int32  `json:"recvMsgOpt"`
-	UnreadCount    int64  `json:"unreadCount"`
-	IsPinned       bool   `json:"isPinned"`
+	ConversationID string      `json:"conversationID"`
+	RecvMsgOpt     int32       `json:"recvMsgOpt"`
+	UnreadCount    int64       `json:"unreadCount"`
+	IsPinned       bool        `json:"isPinned"`
+	MsgInfo        interface{} `json:"msgInfo,omitempty"` // 包含 senderName, faceURL 等
 }
 
 type GetSortedConversationListResp struct {
