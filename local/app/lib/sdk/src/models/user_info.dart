@@ -337,8 +337,11 @@ class ReadReceiptInfo {
   int? msgFrom;
   int? contentType;
   int? sessionType;
-  int? hasReadSeq; // 【修复问题1】添加 hasReadSeq 字段，表示已读到的最大序列号
-  String? conversationID; // 【修复问题1】添加 conversationID 字段
+
+  // 兼容后端当前 MarkAsReadTips 结构
+  List<int>? _seqs;
+  String? _conversationID;
+  int? _hasReadSeq;
 
   ReadReceiptInfo({
     this.userID,
@@ -348,26 +351,25 @@ class ReadReceiptInfo {
     this.msgFrom,
     this.contentType,
     this.sessionType,
-    this.hasReadSeq,
-    this.conversationID,
   });
 
   ReadReceiptInfo.fromJson(Map<String, dynamic> json) {
-    // 【修复问题1】后端发送的字段是 markAsReadUserID，需要正确映射
     userID = json['markAsReadUserID'] ?? json['uid'] ?? json['userID'];
     groupID = json['groupID'];
-    conversationID = json['conversationID'];
-    // 【修复问题1】后端发送的字段是 hasReadSeq，表示已读到的最大序列号
-    hasReadSeq = json['hasReadSeq'];
-    // 【修复问题1】后端发送的字段是 seqs（int64数组），需要转换为 msgIDList
+    _conversationID = json['conversationID'] as String?;
+    _hasReadSeq = json['hasReadSeq'];
+
     if (json['seqs'] is List) {
-      // seqs 是消息序列号列表，暂时不转换为 msgIDList（因为我们需要的是 seq 而不是 clientMsgID）
-      // msgIDList 保持为空，我们将使用 hasReadSeq 来判断消息是否已读
-    } else if (json['msgIDList'] is List) {
+      _seqs = (json['seqs'] as List)
+          .map((e) => e is int ? e : int.tryParse('$e') ?? 0)
+          .where((e) => e > 0)
+          .toList();
+    }
+    if (json['msgIDList'] is List) {
       msgIDList = (json['msgIDList'] as List).map((e) => '$e').toList();
     }
-    // readTime 字段用于存储 hasReadSeq（兼容旧代码）
-    readTime = json['readTime'] ?? json['hasReadSeq'];
+
+    readTime = json['readTime'];
     msgFrom = json['msgFrom'];
     contentType = json['contentType'];
     sessionType = json['sessionType'];
@@ -381,10 +383,12 @@ class ReadReceiptInfo {
     data['msgFrom'] = msgFrom;
     data['contentType'] = contentType;
     data['sessionType'] = sessionType;
-    data['hasReadSeq'] = hasReadSeq;
-    data['conversationID'] = conversationID;
     return data;
   }
+
+  List<int>? get seqs => _seqs;
+  String? get conversationID => _conversationID;
+  int? get hasReadSeq => _hasReadSeq;
 }
 
 class RevokedInfo {

@@ -458,22 +458,28 @@ class MessageManager {
 
     List<Message> messages = [];
     if (data != null && data is Map) {
-      // Backend returns: { "msgs": [{ "Msgs": [...] }] } - msgs is a List!
       final msgsList = data['msgs'];
       debugPrint('[SDK] msgsList type: ${msgsList.runtimeType}');
-      
+
       if (msgsList is List && msgsList.isNotEmpty) {
-        // Get first element which contains the actual messages
         final firstItem = msgsList[0];
         debugPrint('[SDK] firstItem type: ${firstItem.runtimeType}');
-        
-        if (firstItem is Map) {
-          final msgList = firstItem['Msgs'];  // Note: capital 'M'
+
+        if (firstItem is Map && firstItem.containsKey('Msgs')) {
+          final msgList = firstItem['Msgs'];
           debugPrint('[SDK] msgList type: ${msgList.runtimeType}, length: ${msgList is List ? msgList.length : 'N/A'}');
-          
           if (msgList is List) {
-            messages = msgList.map((e) => Message.fromJson(e as Map<String, dynamic>)).toList();
+            messages = msgList
+                .whereType<Map>()
+                .map((e) => Message.fromJson(Map<String, dynamic>.from(e)))
+                .toList();
           }
+        } else {
+          debugPrint('[SDK] Detected flat msg list format, length: ${msgsList.length}');
+          messages = msgsList
+              .whereType<Map>()
+              .map((e) => Message.fromJson(Map<String, dynamic>.from(e)))
+              .toList();
         }
       }
     }

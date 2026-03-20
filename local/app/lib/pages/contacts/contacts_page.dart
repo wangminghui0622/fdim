@@ -32,7 +32,9 @@ class _ContactsPageState extends State<ContactsPage> {
     _loadFriends();
     _loadApplyCount();
     _onlineTimer = Timer.periodic(
-        const Duration(seconds: 15), (_) => _refreshOnlineStatus());
+      const Duration(seconds: 15),
+      (_) => _refreshOnlineStatus(),
+    );
 
     // Official pattern: IMController.loadFriendApplyCount() fetches from server
     // on every friend application event. We just sync the value to local state.
@@ -105,8 +107,9 @@ class _ContactsPageState extends State<ContactsPage> {
       if (mounted) {
         setState(() {
           for (final item in result) {
-            final idx = _friends
-                .indexWhere((f) => f.friendUserID == item.userID);
+            final idx = _friends.indexWhere(
+              (f) => f.friendUserID == item.userID,
+            );
             if (idx > -1) {
               _friends[idx].isOnline = item.isOnline;
             }
@@ -121,7 +124,7 @@ class _ContactsPageState extends State<ContactsPage> {
     // Sort userIDs to match backend conversationID generation
     final ids = [Config.userID, friend.friendUserID]..sort();
     final conversationID = 'si_${ids[0]}_${ids[1]}';
-    
+
     try {
       // 尝试获取会话，如果不存在会返回一个占位符
       await OpenIM.iMManager.conversationManager.getOneConversation(
@@ -131,25 +134,41 @@ class _ContactsPageState extends State<ContactsPage> {
     } catch (e) {
       debugPrint('[Contacts] Failed to get conversation: $e');
     }
-    
-    Get.toNamed(AppRoutes.chat, arguments: {
-      'conversationID': conversationID,
-      'userID': friend.friendUserID ?? '',
-      'groupID': '',
-      'showName': friend.showName,
-      'faceURL': friend.faceURL ?? '',
-      'sessionType': ConversationType.single,
-    });
+
+    Get.toNamed(
+      AppRoutes.chat,
+      arguments: {
+        'conversationID': conversationID,
+        'userID': friend.friendUserID ?? '',
+        'groupID': '',
+        'showName': friend.showName,
+        'faceURL': friend.faceURL ?? '',
+        'sessionType': ConversationType.single,
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: const Text('联系人'),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        title: const Text(
+          '联系人',
+          style: TextStyle(
+            color: Color(0xFF0C1C33),
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_add_outlined),
+            icon: const Icon(
+              Icons.person_add_outlined,
+              color: Color(0xFF0C1C33),
+            ),
             onPressed: () => Get.toNamed(AppRoutes.addFriend),
           ),
         ],
@@ -161,37 +180,13 @@ class _ContactsPageState extends State<ContactsPage> {
         },
         child: ListView(
           children: [
-            // 搜索栏
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-              child: TextField(
-                controller: _searchCtrl,
-                decoration: InputDecoration(
-                  hintText: '搜索好友',
-                  prefixIcon: const Icon(Icons.search, size: 20),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      borderSide: BorderSide.none),
-                  filled: true,
-                  fillColor: const Color(0xFFF5F5F5),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  isDense: true,
-                ),
-                onChanged: (v) => setState(() => _searchKeyword = v),
-              ),
-            ),
+            const SizedBox(height: 10),
             // 好友申请入口
-            ListTile(
-              leading: CircleAvatar(
-                backgroundColor: const Color(0xFFFF9500),
-                child: Badge(
-                  isLabelVisible: _applyCount > 0,
-                  label: Text('$_applyCount'),
-                  child: const Icon(Icons.person_add, color: Colors.white),
-                ),
-              ),
-              title: const Text('好友申请'),
-              trailing: const Icon(Icons.chevron_right),
+            _buildMenuItem(
+              icon: Icons.person_add,
+              iconColor: const Color(0xFFFF9500),
+              label: '新的好友',
+              count: _applyCount,
               onTap: () async {
                 final imCtrl = Get.find<IMController>();
                 imCtrl.clearFriendApplyBadge();
@@ -199,84 +194,186 @@ class _ContactsPageState extends State<ContactsPage> {
                 _loadApplyCount();
               },
             ),
-            const Divider(height: 1),
             // 群组入口
-            ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: Color(0xFF4CAF50),
-                child: Icon(Icons.group, color: Colors.white),
-              ),
-              title: const Text('我的群组'),
-              trailing: const Icon(Icons.chevron_right),
+            _buildMenuItem(
+              icon: Icons.group,
+              iconColor: const Color(0xFF4CAF50),
+              label: '我的群聊',
               onTap: () => Get.toNamed(AppRoutes.groupList),
             ),
-            const Divider(height: 1),
             // 入群申请入口
-            ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: Color(0xFF2196F3),
-                child: Icon(Icons.group_add, color: Colors.white),
-              ),
-              title: const Text('入群申请'),
-              trailing: const Icon(Icons.chevron_right),
+            _buildMenuItem(
+              icon: Icons.group_add,
+              iconColor: const Color(0xFF2196F3),
+              label: '入群申请',
               onTap: () => Get.toNamed(AppRoutes.groupRequests),
             ),
-            const Divider(height: 1),
+            const SizedBox(height: 10),
             // 好友列表
-            if (_loading)
-              const Padding(
-                padding: EdgeInsets.all(32),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else if (_friends.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(48),
-                child: Center(
-                    child: Text('暂无好友', style: TextStyle(color: Colors.grey))),
-              )
-            else
-              ..._filteredFriends.map((f) => _buildFriendItem(f)),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              child: _loading
+                  ? const Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  : _friends.isEmpty
+                  ? const Padding(
+                      padding: EdgeInsets.all(48),
+                      child: Center(
+                        child: Text(
+                          '暂无好友',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    )
+                  : Column(
+                      children: _filteredFriends
+                          .asMap()
+                          .entries
+                          .map(
+                            (e) => Column(
+                              children: [
+                                _buildFriendItem(e.value),
+                                if (e.key < _filteredFriends.length - 1)
+                                  const Divider(
+                                    height: 1,
+                                    indent: 76,
+                                    endIndent: 16,
+                                  ),
+                              ],
+                            ),
+                          )
+                          .toList(),
+                    ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFriendItem(FriendInfo friend) {
-    return ListTile(
-      leading: Stack(
-        children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: Colors.grey[300],
-            backgroundImage: (friend.faceURL ?? '').isNotEmpty
-                ? NetworkImage(friend.faceURL!)
-                : null,
-            child: (friend.faceURL ?? '').isEmpty
-                ? Text(
-                    friend.showName.isNotEmpty
-                        ? friend.showName[0].toUpperCase()
-                        : '?',
-                    style: const TextStyle(color: Colors.white, fontSize: 18))
-                : null,
+  Widget _buildMenuItem({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    int count = 0,
+    VoidCallback? onTap,
+  }) {
+    return Container(
+      color: Colors.white,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          height: 60,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: iconColor,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(icon, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                label,
+                style: const TextStyle(fontSize: 17, color: Color(0xFF0C1C33)),
+              ),
+              const Spacer(),
+              if (count > 0)
+                Container(
+                  constraints: const BoxConstraints(minWidth: 16),
+                  height: 16,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF3B30),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    count > 99 ? '99+' : '$count',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right, color: Color(0xFF8E9AB0)),
+            ],
           ),
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: friend.isOnline ? Colors.green : Colors.grey,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFriendItem(FriendInfo friend) {
+    return InkWell(
+      onTap: () => _openChat(friend),
+      child: Container(
+        height: 60,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            Stack(
+              children: [
+                CircleAvatar(
+                  radius: 21,
+                  backgroundColor: const Color(0xFFE0E0E0),
+                  backgroundImage: (friend.faceURL ?? '').isNotEmpty
+                      ? NetworkImage(friend.faceURL!)
+                      : null,
+                  child: (friend.faceURL ?? '').isEmpty
+                      ? Text(
+                          friend.showName.isNotEmpty
+                              ? friend.showName[0].toUpperCase()
+                              : '?',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      : null,
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: friend.isOnline
+                          ? const Color(0xFF10CC6A)
+                          : const Color(0xFF8E9AB0),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                friend.showName,
+                style: const TextStyle(fontSize: 17, color: Color(0xFF0C1C33)),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-      title: Text(friend.showName),
-      onTap: () => _openChat(friend),
     );
   }
 }

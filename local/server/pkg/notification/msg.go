@@ -79,7 +79,7 @@ func newContentTypeConf(conf *config.Notification) map[int32]config.Notification
 		constant.ConversationPrivateChatNotification: conf.ConversationSetPrivate,
 		// msg
 		constant.MsgRevokeNotification:  {IsSendMsg: false, ReliabilityLevel: constant.ReliableNotificationNoMsg},
-		constant.HasReadReceipt:         {IsSendMsg: true, ReliabilityLevel: constant.ReliableNotificationNoMsg}, // 修复：允许已读回执发送给发送方
+		constant.HasReadReceipt:         {IsSendMsg: true, ReliabilityLevel: constant.ReliableNotificationNoMsg, UnreadCount: false}, // 修复：允许已读回执发送给发送方，但不计入未读数
 		constant.DeleteMsgsNotification: {IsSendMsg: false, ReliabilityLevel: constant.ReliableNotificationNoMsg},
 	}
 }

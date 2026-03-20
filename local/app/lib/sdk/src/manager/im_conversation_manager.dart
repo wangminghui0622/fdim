@@ -117,14 +117,23 @@ class ConversationManager {
     required String conversationID,
     String? operationID,
   }) async {
-    // Call backend API - backend will automatically get maxSeq from conversation
     try {
       await HttpClient.post('/msg/mark_conversation_as_read', data: {
         'userID': Config.userID,
         'conversationID': conversationID,
-        'hasReadSeq': 0, // Backend will get maxSeq automatically
+        'hasReadSeq': 0,
         'seqs': [],
       }, showErrorToast: false);
+
+      // 与官方体验保持一致：标记成功后立即刷新会话列表与总未读数，
+      // 不完全依赖服务端通知链路，避免本地 WS/通知时序差异导致红点残留。
+      listener.conversationChanged([]);
+      try {
+        final total = await getTotalUnreadMsgCount();
+        listener.totalUnreadMessageCountChanged(total is int ? total : 0);
+      } catch (e) {
+        debugPrint('[SDK] refresh total unread after markConversationMessageAsRead error: $e');
+      }
     } catch (e) {
       debugPrint('[SDK] markConversationMessageAsRead error: $e');
     }

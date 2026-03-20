@@ -68,10 +68,16 @@ func (l *PullMsgBySeqsLogic) PullMsgBySeqs(req *types.PullMsgBySeqsReq) (resp *t
 		return nil, err
 	}
 
-	// 转换响应
+	// 转换响应（与官方一致）
 	var msgs []interface{}
-	for _, msg := range rpcResp.Msgs {
-		msgs = append(msgs, msg)
+	for convID, pullMsgs := range rpcResp.Msgs {
+		if pullMsgs != nil && pullMsgs.Msgs != nil {
+			// 按官方结构返回：{conversationID: convID, Msgs: [...]}
+			msgs = append(msgs, map[string]interface{}{
+				"conversationID": convID,
+				"Msgs":         pullMsgs.Msgs,
+			})
+		}
 	}
 
 	resp = &types.PullMsgBySeqsResp{

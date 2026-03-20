@@ -29,11 +29,16 @@ class _ConversationPageState extends State<ConversationPage> {
     super.initState();
     _loadConversations();
     _refreshTimer = Timer.periodic(
-        const Duration(seconds: 10), (_) => _loadConversations(silent: true));
+      const Duration(seconds: 10),
+      (_) => _loadConversations(silent: true),
+    );
 
     // Listen to SDK events via IMController subjects
     final imCtrl = Get.find<IMController>();
     _convChangedSub = imCtrl.conversationChangedSubject.listen((_) {
+      debugPrint(
+        '[ConversationPage] 【DEBUG】conversationChangedSubject triggered, reloading conversations',
+      );
       _loadConversations(silent: true);
     });
     _convAddedSub = imCtrl.conversationAddedSubject.listen((_) {
@@ -68,7 +73,7 @@ class _ConversationPageState extends State<ConversationPage> {
     // 【修复问题3】从 conversationID 中提取 userID/groupID（如果会话对象中没有）
     String userID = conv.userID ?? '';
     String groupID = conv.groupID ?? '';
-    
+
     // 如果 userID 为空，尝试从 conversationID 中提取
     if (userID.isEmpty && conv.conversationID.startsWith('si_')) {
       // 单聊格式: si_userID1_userID2
@@ -86,29 +91,45 @@ class _ConversationPageState extends State<ConversationPage> {
         groupID = parts[1];
       }
     }
-    
-    Get.toNamed(AppRoutes.chat, arguments: {
-      'conversationID': conv.conversationID,
-      'userID': userID,
-      'groupID': groupID,
-      'showName': conv.showName,
-      'faceURL': conv.faceURL,
-      'sessionType': conv.conversationType,
-    });
+
+    Get.toNamed(
+      AppRoutes.chat,
+      arguments: {
+        'conversationID': conv.conversationID,
+        'userID': userID,
+        'groupID': groupID,
+        'showName': conv.showName,
+        'faceURL': conv.faceURL,
+        'sessionType': conv.conversationType,
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: const Text('消息'),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        title: const Text(
+          '消息',
+          style: TextStyle(
+            color: Color(0xFF0C1C33),
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.search, color: Color(0xFF0C1C33)),
             onPressed: () => Get.toNamed(AppRoutes.globalSearch),
           ),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.add_circle_outline),
+            icon: const Icon(
+              Icons.add_circle_outline,
+              color: Color(0xFF0C1C33),
+            ),
             onSelected: (v) {
               if (v == 'group') Get.toNamed(AppRoutes.createGroup);
               if (v == 'friend') Get.toNamed(AppRoutes.addFriend);
@@ -129,16 +150,18 @@ class _ConversationPageState extends State<ConversationPage> {
                       children: const [
                         SizedBox(height: 200),
                         Center(
-                          child: Text('暂无消息',
-                              style: TextStyle(color: Colors.grey)),
+                          child: Text(
+                            '暂无消息',
+                            style: TextStyle(color: Colors.grey),
+                          ),
                         ),
                       ],
                     )
                   : ListView.separated(
                       itemCount: _conversations.length,
-                      separatorBuilder: (_, __) => const Divider(
-                          height: 1, indent: 76, endIndent: 16),
-                      itemBuilder: (_, i) =>
+                      separatorBuilder: (context, index) =>
+                          const Divider(height: 1, indent: 76, endIndent: 16),
+                      itemBuilder: (context, i) =>
                           _buildConversationItem(_conversations[i]),
                     ),
             ),
@@ -150,7 +173,7 @@ class _ConversationPageState extends State<ConversationPage> {
       key: Key(conv.conversationID),
       direction: DismissDirection.endToStart,
       background: Container(
-        color: Colors.red,
+        color: const Color(0xFFFF3B30),
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         child: const Icon(Icons.delete, color: Colors.white),
@@ -163,86 +186,153 @@ class _ConversationPageState extends State<ConversationPage> {
             content: const Text('确定删除该会话？'),
             actions: [
               TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('取消')),
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('取消'),
+              ),
               TextButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child:
-                      const Text('删除', style: TextStyle(color: Colors.red))),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text(
+                  '删除',
+                  style: TextStyle(color: Color(0xFFFF3B30)),
+                ),
+              ),
             ],
           ),
         );
       },
       onDismissed: (_) async {
         await OpenIM.iMManager.conversationManager
-            .deleteConversationAndDeleteAllMsg(conversationID: conv.conversationID);
+            .deleteConversationAndDeleteAllMsg(
+              conversationID: conv.conversationID,
+            );
         _loadConversations();
       },
-      child: ListTile(
-        leading: CircleAvatar(
-          radius: 24,
-          backgroundColor: Colors.grey[300],
-          backgroundImage:
-              (conv.faceURL ?? '').isNotEmpty ? NetworkImage(conv.faceURL!) : null,
-          child: (conv.faceURL ?? '').isEmpty
-              ? Text(
-                  (conv.showName ?? '').isNotEmpty ? conv.showName![0].toUpperCase() : '?',
-                  style: const TextStyle(fontSize: 20, color: Colors.white))
-              : null,
-        ),
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(conv.showName ?? '',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w500)),
+      child: Container(
+        color: Colors.white,
+        child: InkWell(
+          onTap: () => _openChat(conv),
+          child: Container(
+            height: 68,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                // 左侧：头像
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: const Color(0xFFE0E0E0),
+                  backgroundImage: (conv.faceURL ?? '').isNotEmpty
+                      ? NetworkImage(conv.faceURL!)
+                      : null,
+                  child: (conv.faceURL ?? '').isEmpty
+                      ? Text(
+                          (conv.showName ?? '').isNotEmpty
+                              ? conv.showName![0].toUpperCase()
+                              : '?',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      : null,
+                ),
+                const SizedBox(width: 12),
+                // 中间：用户名和最后一条消息
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              conv.showName ?? '',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.normal,
+                                color: Color(0xFF0C1C33),
+                              ),
+                            ),
+                          ),
+                          if ((conv.latestMsgSendTime ?? 0) > 0)
+                            Text(
+                              _formatTime(conv.latestMsgSendTime ?? 0),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF8E9AB0),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              (conv.draftText ?? '').isNotEmpty
+                                  ? '[草稿] ${conv.draftText}'
+                                  : _parseLatestMsg(conv.latestMsg),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: (conv.draftText ?? '').isNotEmpty
+                                    ? const Color(0xFF0089FF)
+                                    : const Color(0xFF8E9AB0),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          // 免打扰图标或未读数
+                          if (conv.recvMsgOpt == 2)
+                            Container(
+                              width: 16,
+                              height: 16,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF8E9AB0),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.notifications_off,
+                                size: 10,
+                                color: Colors.white,
+                              ),
+                            )
+                          else if (conv.unreadCount > 0)
+                            Container(
+                              constraints: const BoxConstraints(minWidth: 16),
+                              height: 16,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF3B30),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                conv.unreadCount > 99
+                                    ? '99+'
+                                    : '${conv.unreadCount}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            if ((conv.latestMsgSendTime ?? 0) > 0)
-              Text(
-                _formatTime(conv.latestMsgSendTime ?? 0),
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-          ],
+          ),
         ),
-        subtitle: Row(
-          children: [
-            if ((conv.draftText ?? '').isNotEmpty) ...[
-              const Text('[草稿] ',
-                  style: TextStyle(color: Colors.red, fontSize: 13)),
-              Expanded(
-                child: Text(conv.draftText ?? '',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 13, color: Colors.grey)),
-              ),
-            ] else
-              Expanded(
-                child: Text(
-                  _parseLatestMsg(conv.latestMsg),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 13, color: Colors.grey),
-                ),
-              ),
-            if (conv.unreadCount > 0)
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  conv.unreadCount > 99 ? '99+' : '${conv.unreadCount}',
-                  style: const TextStyle(color: Colors.white, fontSize: 11),
-                ),
-              ),
-          ],
-        ),
-        onTap: () => _openChat(conv),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       ),
     );
   }

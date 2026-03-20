@@ -115,6 +115,7 @@ func docToMsgData(doc *model.MsgDoc) *sdkws.MsgData {
 		SendTime:         doc.SendTime,
 		CreateTime:       doc.CreateTime,  // 已经是 int64 时间戳
 		Status:           doc.Status,
+		IsRead:           doc.IsRead,      // 【修复】返回已读状态
 		Options:          doc.Options,
 		AtUserIDList:     doc.AtUserIDs,
 		AttachedInfo:     doc.AttachedInfo,

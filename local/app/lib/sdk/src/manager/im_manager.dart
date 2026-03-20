@@ -153,7 +153,7 @@ class IMManager {
   }
 
   /// Handle WSPushMsg (2001) - dispatch by MsgData.contentType
-  void _handlePushMsg(dynamic data) {
+  Future<void> _handlePushMsg(dynamic data) async {
     if (data == null) return;
 
     // data is MsgData JSON (may be raw bytes or parsed map)
@@ -171,6 +171,9 @@ class IMManager {
 
     final contentType = msgData['contentType'] as int? ?? 0;
     final content = msgData['content'];
+    
+    // 调试日志：打印所有收到的消息类型
+    debugPrint('[SDK] Received push message: contentType=$contentType, isNotification=${MessageType.isNotificationType(contentType)}');
 
     // Decode notification detail from content field
     // Backend wraps tips in NotificationElem: {"detail": "<tips_json_string>"}
@@ -266,12 +269,18 @@ class IMManager {
       // ===== Conversation notifications =====
       case MessageType.conversationChangeNotification:
       case MessageType.burnAfterReadingNotification: // 1701 - 阅后即焚/私聊设置变更
-      case 1702: // ConversationUnreadNotification
+      case 1702: // ConversationUnreadNotification - 【修复问题2】会话未读数变更通知
       case 1703: // ClearConversationNotification
       case 1704: // ConversationDeleteNotification
-        // Trigger conversation list refresh
+        // 【修复问题2】触发会话列表刷新，确保未读数实时更新
+        debugPrint('[SDK] 【DEBUG】Conversation notification received, contentType=$contentType');
+        if (detail != null) {
+          debugPrint('[SDK] 【DEBUG】Conversation notification detail: $detail');
+        }
+        debugPrint('[SDK] 【DEBUG】Triggering conversationChanged');
         conversationManager.listener.conversationChanged([]);
         // Update total unread count
+        debugPrint('[SDK] 【DEBUG】Updating total unread count');
         _updateTotalUnreadCount();
         break;
 
@@ -394,19 +403,29 @@ class IMManager {
         }
         break;
       case MessageType.hasReadReceipt:
+        debugPrint('[SDK] Received hasReadReceipt notification, detail=$detail');
         if (detail != null) {
-          // Parse MarkAsReadTips structure from server
-          // Server sends: {"markAsReadUserID": "xxx", "conversationID": "xxx", "seqs": [...], "hasReadSeq": 123}
           final info = ReadReceiptInfo.fromJson(detail);
-          // Determine if it's C2C or group based on conversationID prefix
-          final conversationID = detail['conversationID'] as String? ?? '';
-          if (conversationID.startsWith('si_') || conversationID.startsWith('n_')) {
-            // Single chat (si_) or notification chat (n_)
-            messageManager.msgListener.recvC2CReadReceipt([info]);
-          } else if (conversationID.startsWith('sg_')) {
-            // Super group chat
-            messageManager.msgListener.recvGroupReadReceipt([info]);
+          debugPrint('[SDK] ReadReceiptInfo parsed: conversationID=${info.conversationID}, seqs=${info.seqs}, userID=${info.userID}, msgIDList=${info.msgIDList}');
+
+          if ((info.msgIDList == null || info.msgIDList!.isEmpty) &&
+              info.seqs != null &&
+              info.seqs!.isNotEmpty &&
+              info.conversationID != null &&
+              info.conversationID!.isNotEmpty) {
+            await _convertSeqsToMsgIDList(info);
           }
+
+          debugPrint('[SDK] After conversion: msgIDList=${info.msgIDList}');
+
+          final conversationID = info.conversationID ?? '';
+          if (conversationID.startsWith('sg_')) {
+            messageManager.msgListener.recvGroupReadReceipt([info]);
+          } else {
+            messageManager.msgListener.recvC2CReadReceipt([info]);
+          }
+        } else {
+          debugPrint('[SDK] WARNING: hasReadReceipt detail is null!');
         }
         break;
 
@@ -425,6 +444,49 @@ class IMManager {
     }).catchError((e) {
       debugPrint('[SDK] Failed to get total unread count: $e');
     });
+  }
+
+
+  Future<void> _convertSeqsToMsgIDList(ReadReceiptInfo info) async {
+    try {
+      if (info.seqs == null || info.seqs!.isEmpty || info.conversationID == null) {
+        return;
+      }
+
+      final data = await HttpClient.post('/msg/pull_msg_by_seq', data: {
+        'userID': Config.userID,
+        'conversationID': info.conversationID,
+        'seqs': info.seqs,
+      });
+
+      final msgIDList = <String>[];
+      if (data is Map) {
+        final msgsList = data['msgs'];
+        if (msgsList is List) {
+          for (final item in msgsList) {
+            if (item is Map) {
+              final msgList = item['Msgs'];
+              if (msgList is List) {
+                for (final msgJson in msgList) {
+                  if (msgJson is Map) {
+                    final clientMsgID = msgJson['clientMsgID'] as String?;
+                    if (clientMsgID != null && clientMsgID.isNotEmpty) {
+                      msgIDList.add(clientMsgID);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      info.msgIDList = msgIDList;
+      debugPrint('[SDK] _convertSeqsToMsgIDList: converted ${info.seqs!.length} seqs to ${msgIDList.length} msgIDs');
+    } catch (e) {
+      debugPrint('[SDK] _convertSeqsToMsgIDList error: $e');
+      info.msgIDList = [];
+    }
   }
 
   /// Flatten backend FriendApplicationTips structure to flat FriendApplicationInfo fields.

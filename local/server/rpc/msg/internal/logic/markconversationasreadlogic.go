@@ -35,6 +35,22 @@ func (l *MarkConversationAsReadLogic) MarkConversationAsRead(req *msg.MarkConver
 		logx.Field("hasReadSeq", req.HasReadSeq),
 		logx.Field("seqs", req.Seqs))
 
+	// 【修复】如果前端传递 hasReadSeq 为 0，自动获取 maxSeq
+	// 使用 MsgCache.GetMaxSeq 而不是 MsgDatabase.GetMaxSeq，因为 MsgCache 是实时更新的
+	if req.HasReadSeq == 0 {
+		maxSeq, err := l.svcCtx.MsgCache.GetMaxSeq(l.ctx, req.ConversationID)
+		if err != nil {
+			l.Errorw("GetMaxSeq failed",
+				logx.Field("error", err),
+				logx.Field("conversationID", req.ConversationID))
+		} else {
+			req.HasReadSeq = maxSeq
+			l.Infow("Auto-filled hasReadSeq with maxSeq",
+				logx.Field("maxSeq", maxSeq),
+				logx.Field("conversationID", req.ConversationID))
+		}
+	}
+
 	// 获取当前已读序列号
 	hasReadSeq, err := l.svcCtx.MsgDatabase.GetHasReadSeq(l.ctx, req.UserID, req.ConversationID)
 	if err != nil && !errors.Is(err, redis.Nil) {
@@ -113,14 +129,20 @@ func (l *MarkConversationAsReadLogic) MarkConversationAsRead(req *msg.MarkConver
 		}
 		
 		// 【修复问题1】发送已读回执给消息发送方（对方用户）
-		// 这样发送方可以看到消息已被对方读取
-		recvID := l.conversationAndGetRecvID(conversationResp.Conversation, req.UserID)
-		l.Infow("Sending HasReadReceipt notification to sender",
-			logx.Field("fromUserID", req.UserID),
-			logx.Field("toUserID", recvID),
-			logx.Field("seqs", seqs),
-			logx.Field("hasReadSeq", hasReadSeq))
-		l.sendMarkAsReadNotification(l.ctx, req.ConversationID, conversationResp.Conversation.ConversationType, req.UserID, recvID, seqs, hasReadSeq)
+		// 只有当 hasReadSeq > 0 或有具体的 seqs 时才发送（避免发送空的已读回执）
+		if hasReadSeq > 0 || len(seqs) > 0 {
+			recvID := l.conversationAndGetRecvID(conversationResp.Conversation, req.UserID)
+			l.Infow("Sending HasReadReceipt notification to sender",
+				logx.Field("fromUserID", req.UserID),
+				logx.Field("toUserID", recvID),
+				logx.Field("seqs", seqs),
+				logx.Field("hasReadSeq", hasReadSeq))
+			l.sendMarkAsReadNotification(l.ctx, req.ConversationID, conversationResp.Conversation.ConversationType, req.UserID, recvID, seqs, hasReadSeq)
+		} else {
+			l.Infow("Skipping HasReadReceipt notification (no messages to mark as read)",
+				logx.Field("hasReadSeq", hasReadSeq),
+				logx.Field("seqs", seqs))
+		}
 	} else if conversationResp.Conversation.ConversationType == constant.ReadGroupChatType ||
 		conversationResp.Conversation.ConversationType == constant.NotificationChatType {
 		if req.HasReadSeq > hasReadSeq {
@@ -130,14 +152,17 @@ func (l *MarkConversationAsReadLogic) MarkConversationAsRead(req *msg.MarkConver
 			}
 			hasReadSeq = req.HasReadSeq
 		}
-		l.sendMarkAsReadNotification(l.ctx, req.ConversationID, constant.SingleChatType, req.UserID,
-			req.UserID, seqs, hasReadSeq)
+		// 只有当 hasReadSeq > 0 时才发送通知
+		if hasReadSeq > 0 {
+			l.sendMarkAsReadNotification(l.ctx, req.ConversationID, constant.SingleChatType, req.UserID,
+				req.UserID, seqs, hasReadSeq)
+		}
 	}
 
 	// 【修复问题2】发送会话未读数变更通知给自己（与官方一致）
 	// 这样自己的会话列表会更新未读数为0
 	if l.svcCtx.NotificationSender != nil {
-		maxSeq, err := l.svcCtx.MsgDatabase.GetMaxSeq(l.ctx, req.ConversationID)
+		maxSeq, err := l.svcCtx.MsgCache.GetMaxSeq(l.ctx, req.ConversationID)
 		if err != nil {
 			l.Errorw("GetMaxSeq failed", logx.Field("error", err))
 		} else {
@@ -186,6 +211,19 @@ func (l *MarkConversationAsReadLogic) sendMarkAsReadNotification(ctx context.Con
 		Seqs:             seqs,
 		HasReadSeq:       hasReadSeq,
 	}
+	
+	if l.svcCtx.NotificationSender == nil {
+		l.Errorw("NotificationSender is nil, cannot send HasReadReceipt")
+		return
+	}
+	
+	l.Infow("Sending HasReadReceipt notification",
+		logx.Field("sendID", sendID),
+		logx.Field("recvID", recvID),
+		logx.Field("conversationID", conversationID),
+		logx.Field("hasReadSeq", hasReadSeq),
+		logx.Field("seqCount", len(seqs)))
+	
 	l.svcCtx.NotificationSender.NotificationWithSessionType(ctx, sendID, recvID, constant.HasReadReceipt, sessionType, tips)
 }
 
