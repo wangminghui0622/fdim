@@ -6,6 +6,7 @@ import '../../flutter_openim_sdk.dart';
 import '../../../core/http_client.dart';
 import '../../../core/config.dart';
 import '../../../core/ws_client.dart';
+import '../../../core/local_store.dart';
 
 class IMManager {
   late ConversationManager conversationManager;
@@ -20,6 +21,15 @@ class IMManager {
   late UserInfo userInfo;
   bool isLogined = false;
   String? token;
+
+  /// 与官方 Go SDK 一致：当前正在查看的会话 ID，
+  /// 该会话的新消息不递增 unreadCount
+  String? _activeConversationID;
+
+  /// ChatPage 进入/离开时调用
+  void setActiveConversation(String? conversationID) {
+    _activeConversationID = conversationID;
+  }
 
   StreamSubscription? _wsStatusSub;
   StreamSubscription? _wsMessageSub;
@@ -196,12 +206,28 @@ class IMManager {
     }
 
     if (!MessageType.isNotificationType(contentType)) {
-      // Regular message
+      // Regular message — 与官方一致：写入本地 DB 后再通知 UI
       final msg = Message.fromJson(msgData);
+      final convID = _resolveConversationID(msg);
+      if (convID.isNotEmpty) {
+        // 0) 确保会话存在于本地 DB（新会话首条消息时创建骨架）
+        await _ensureConversationExists(convID, msg);
+        // 1) 写入本地消息 DB
+        await LocalStore.putMessage(convID, msg);
+        // 2) 更新会话 latestMsg
+        await LocalStore.updateLatestMsg(convID, msg);
+        // 3) 与官方 Go SDK 一致：
+        //    - 不是自己发的消息
+        //    - 不是当前正在查看的会话
+        //    才递增 unreadCount
+        if (msg.sendID != userID && convID != _activeConversationID) {
+          await LocalStore.incrementUnread(convID);
+        }
+      }
       messageManager.msgListener.recvNewMessage(msg);
-      // Trigger conversation list refresh to update unread counts
-      conversationManager.listener.conversationChanged([]);
-      // Update total unread count
+      // 与官方一致：推送包含真实数据的 ConversationInfo 列表
+      _notifyConversationChanged(convID);
+      // 更新总未读数（从本地 DB 计算，无需网络请求）
       _updateTotalUnreadCount();
       return;
     }
@@ -268,19 +294,12 @@ class IMManager {
 
       // ===== Conversation notifications =====
       case MessageType.conversationChangeNotification:
-      case MessageType.burnAfterReadingNotification: // 1701 - 阅后即焚/私聊设置变更
-      case 1702: // ConversationUnreadNotification - 【修复问题2】会话未读数变更通知
+      case MessageType.burnAfterReadingNotification: // 1701
+      case 1702: // ConversationUnreadNotification
       case 1703: // ClearConversationNotification
       case 1704: // ConversationDeleteNotification
-        // 【修复问题2】触发会话列表刷新，确保未读数实时更新
-        debugPrint('[SDK] 【DEBUG】Conversation notification received, contentType=$contentType');
-        if (detail != null) {
-          debugPrint('[SDK] 【DEBUG】Conversation notification detail: $detail');
-        }
-        debugPrint('[SDK] 【DEBUG】Triggering conversationChanged');
-        conversationManager.listener.conversationChanged([]);
-        // Update total unread count
-        debugPrint('[SDK] 【DEBUG】Updating total unread count');
+        // 与官方一致：从服务端拉取最新会话列表 → 写入本地 DB → 推送真实数据
+        await _syncConversationsFromServer();
         _updateTotalUnreadCount();
         break;
 
@@ -403,29 +422,42 @@ class IMManager {
         }
         break;
       case MessageType.hasReadReceipt:
-        debugPrint('[SDK] Received hasReadReceipt notification, detail=$detail');
         if (detail != null) {
           final info = ReadReceiptInfo.fromJson(detail);
-          debugPrint('[SDK] ReadReceiptInfo parsed: conversationID=${info.conversationID}, seqs=${info.seqs}, userID=${info.userID}, msgIDList=${info.msgIDList}');
+          final convID = info.conversationID ?? '';
+          final readTime = DateTime.now().millisecondsSinceEpoch;
 
+          debugPrint('[SDK] hasReadReceipt: convID=$convID, '
+              'hasReadSeq=${info.hasReadSeq}, '
+              'seqs=${info.seqs}, '
+              'msgIDList=${info.msgIDList}');
+
+          // 策略1: hasReadSeq 水位线（最常见的服务端格式）
+          // 含义：对方已读到该 seq → 我发的 seq<=该值 的消息都已被对方阅读
+          if (info.hasReadSeq != null && info.hasReadSeq! > 0 && convID.isNotEmpty) {
+            await LocalStore.setPeerReadSeq(convID, info.hasReadSeq!);
+            debugPrint('[SDK] hasReadReceipt: stored peerReadSeq=${info.hasReadSeq} for $convID');
+          }
+
+          // 策略2: seqs → 转换为 msgIDList
           if ((info.msgIDList == null || info.msgIDList!.isEmpty) &&
               info.seqs != null &&
               info.seqs!.isNotEmpty &&
-              info.conversationID != null &&
-              info.conversationID!.isNotEmpty) {
+              convID.isNotEmpty) {
             await _convertSeqsToMsgIDList(info);
           }
 
-          debugPrint('[SDK] After conversion: msgIDList=${info.msgIDList}');
+          // 策略3: 按 msgIDList 逐条标记已读（双写到 meta box）
+          if (info.msgIDList != null && info.msgIDList!.isNotEmpty && convID.isNotEmpty) {
+            await LocalStore.markMessagesRead(convID, info.msgIDList!, readTime);
+            debugPrint('[SDK] hasReadReceipt: marked ${info.msgIDList!.length} msgs read');
+          }
 
-          final conversationID = info.conversationID ?? '';
-          if (conversationID.startsWith('sg_')) {
+          if (convID.startsWith('sg_')) {
             messageManager.msgListener.recvGroupReadReceipt([info]);
           } else {
             messageManager.msgListener.recvC2CReadReceipt([info]);
           }
-        } else {
-          debugPrint('[SDK] WARNING: hasReadReceipt detail is null!');
         }
         break;
 
@@ -437,13 +469,88 @@ class IMManager {
     }
   }
 
-  /// Update total unread count by fetching from server
+  /// 与官方一致：从本地 DB 计算总未读数并推送
   void _updateTotalUnreadCount() {
-    conversationManager.getTotalUnreadMsgCount().then((count) {
-      conversationManager.listener.totalUnreadMessageCountChanged(count);
-    }).catchError((e) {
-      debugPrint('[SDK] Failed to get total unread count: $e');
-    });
+    final count = LocalStore.getTotalUnreadCount();
+    conversationManager.listener.totalUnreadMessageCountChanged(count);
+  }
+
+  /// 从消息中解析 conversationID（与官方 SDK 行为一致）
+  String _resolveConversationID(Message msg) {
+    final st = msg.sessionType;
+    if (st == ConversationType.single) {
+      final ids = [msg.sendID ?? '', msg.recvID ?? '']..sort();
+      if (ids[0].isEmpty || ids[1].isEmpty) return '';
+      return 'si_${ids[0]}_${ids[1]}';
+    }
+    if (st == ConversationType.group || st == ConversationType.superGroup) {
+      final gid = msg.groupID ?? '';
+      if (gid.isEmpty) return '';
+      return 'sg_$gid';
+    }
+    return '';
+  }
+
+  /// 确保会话存在于本地 DB（新会话首条消息时创建骨架）
+  Future<void> _ensureConversationExists(String convID, Message msg) async {
+    final existing = LocalStore.getConversation(convID);
+    if (existing != null) return;
+    // 创建骨架 ConversationInfo
+    final st = msg.sessionType;
+    String? cUserID;
+    String? cGroupID;
+    String? showName;
+    String? faceURL;
+    if (st == ConversationType.single) {
+      // 单聊：对方的信息
+      cUserID = (msg.sendID == userID) ? msg.recvID : msg.sendID;
+      showName = (msg.sendID == userID)
+          ? (msg.recvID ?? '')
+          : (msg.senderNickname ?? msg.sendID ?? '');
+      faceURL = (msg.sendID == userID) ? null : msg.senderFaceUrl;
+    } else {
+      cGroupID = msg.groupID;
+      showName = msg.groupID ?? '';
+    }
+    final conv = ConversationInfo(
+      conversationID: convID,
+      conversationType: st,
+      userID: cUserID,
+      groupID: cGroupID,
+      showName: showName,
+      faceURL: faceURL,
+      latestMsg: msg,
+      latestMsgSendTime: msg.sendTime,
+    );
+    await LocalStore.putConversation(conv);
+  }
+
+  /// 通知会话变更（推送真实 ConversationInfo，与官方一致）
+  void _notifyConversationChanged(String conversationID) {
+    if (conversationID.isEmpty) {
+      conversationManager.listener.conversationChanged([]);
+      return;
+    }
+    final conv = LocalStore.getConversation(conversationID);
+    if (conv != null) {
+      conversationManager.listener.conversationChanged([conv]);
+    } else {
+      conversationManager.listener.conversationChanged([]);
+    }
+  }
+
+  /// 从服务端同步会话列表到本地 DB，然后推送
+  Future<void> _syncConversationsFromServer() async {
+    try {
+      // getConversationListSplit 内部已调用 putConversations（会保留本地 unreadCount）
+      final list = await conversationManager.getConversationListSplit(
+        offset: 0, count: 100,
+      );
+      conversationManager.listener.conversationChanged(list);
+    } catch (e) {
+      debugPrint('[SDK] _syncConversationsFromServer error: $e');
+      conversationManager.listener.conversationChanged([]);
+    }
   }
 
 

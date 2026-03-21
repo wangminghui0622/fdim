@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../flutter_openim_sdk.dart';
 import '../../../core/http_client.dart';
 import '../../../core/config.dart';
+import '../../../core/local_store.dart';
 
 class MessageManager {
   OnMsgSendProgressListener? msgSendProgressListener;
@@ -92,6 +93,12 @@ class MessageManager {
       if (resp is Map) {
         message.serverMsgID = resp['serverMsgID'] ?? message.serverMsgID;
         message.sendTime = resp['sendTime'] ?? message.sendTime;
+      }
+      // 与官方一致：发送成功后写入本地 DB
+      final convID = _resolveConversationID(message, userID, groupID);
+      if (convID.isNotEmpty) {
+        await LocalStore.putMessage(convID, message);
+        await LocalStore.updateLatestMsg(convID, message);
       }
       return message;
     } catch (e) {
@@ -486,6 +493,14 @@ class MessageManager {
 
     // Sort by seq ascending
     messages.sort((a, b) => (a.seq ?? 0).compareTo(b.seq ?? 0));
+
+    // 与官方一致：先从本地 DB 恢复已读状态，再写入本地 DB
+    // 顺序很重要：必须先 apply 再 put，否则 put 会用服务端的 isRead=false 覆盖本地已有的 isRead=true
+    if (conversationID != null && conversationID.isNotEmpty) {
+      LocalStore.applyHasReadSeq(conversationID, messages, Config.userID);
+      await LocalStore.putMessages(conversationID, messages);
+    }
+
     debugPrint('[SDK] Returning ${messages.length} messages, isEnd: ${startSeq <= 1}');
 
     return AdvancedMessage(
@@ -557,5 +572,20 @@ class MessageManager {
   /// Set app badge
   Future setAppBadge(int count, {String? operationID}) async {
     // No-op for non-mobile
+  }
+
+  /// 从消息中解析 conversationID
+  String _resolveConversationID(Message msg, String? userID, String? groupID) {
+    final recvID = userID ?? msg.recvID ?? '';
+    final gid = groupID ?? msg.groupID ?? '';
+    final st = msg.sessionType;
+    if (st == ConversationType.single && recvID.isNotEmpty) {
+      final ids = [msg.sendID ?? Config.userID, recvID]..sort();
+      return 'si_${ids[0]}_${ids[1]}';
+    }
+    if ((st == ConversationType.group || st == ConversationType.superGroup) && gid.isNotEmpty) {
+      return 'sg_$gid';
+    }
+    return '';
   }
 }

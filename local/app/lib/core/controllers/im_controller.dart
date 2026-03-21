@@ -6,6 +6,7 @@ import 'package:rxdart/rxdart.dart' as rx;
 
 import '../../sdk/flutter_openim_sdk.dart';
 import '../config.dart';
+import '../local_store.dart';
 import '../ws_client.dart';
 
 /// IMController - mirrors the official OpenIM Flutter demo's im_controller.dart
@@ -16,6 +17,7 @@ class IMController extends GetxController {
   final friendApplyCount = 0.obs;
   final isLoggedIn = false.obs;
   final wsStatus = WsStatus.disconnected.obs;
+  final currentChatConversationID = ''.obs;
 
   // RxDart subjects for cross-page event broadcasting (same as official IMCallback)
   final conversationAddedSubject = rx.PublishSubject<List<ConversationInfo>>();
@@ -177,6 +179,8 @@ class IMController extends GetxController {
       userID: Config.userID,
       token: Config.token,
     );
+    // 与官方一致：登录后初始化本地 DB
+    await LocalStore.init();
     isLoggedIn.value = true;
     return info;
   }
@@ -184,6 +188,7 @@ class IMController extends GetxController {
   /// Logout via SDK
   Future<void> logoutSDK() async {
     await OpenIM.iMManager.logout();
+    await LocalStore.close();
     isLoggedIn.value = false;
   }
 

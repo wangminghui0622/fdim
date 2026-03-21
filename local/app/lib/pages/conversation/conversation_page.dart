@@ -19,43 +19,48 @@ class ConversationPage extends StatefulWidget {
 class _ConversationPageState extends State<ConversationPage> {
   List<ConversationInfo> _conversations = [];
   bool _loading = true;
-  Timer? _refreshTimer;
   StreamSubscription? _convChangedSub;
   StreamSubscription? _convAddedSub;
-  StreamSubscription? _newMsgSub;
 
   @override
   void initState() {
     super.initState();
     _loadConversations();
-    _refreshTimer = Timer.periodic(
-      const Duration(seconds: 10),
-      (_) => _loadConversations(silent: true),
-    );
 
-    // Listen to SDK events via IMController subjects
+    // 与官方 conversation_logic.dart 一致：事件驱动，不轮询
     final imCtrl = Get.find<IMController>();
-    _convChangedSub = imCtrl.conversationChangedSubject.listen((_) {
-      debugPrint(
-        '[ConversationPage] 【DEBUG】conversationChangedSubject triggered, reloading conversations',
-      );
-      _loadConversations(silent: true);
+    _convChangedSub = imCtrl.conversationChangedSubject.listen((newList) {
+      // 与官方 onChanged 一致：用回调中的真实 ConversationInfo 替换列表中的旧对象
+      _onConversationChanged(newList);
     });
-    _convAddedSub = imCtrl.conversationAddedSubject.listen((_) {
-      _loadConversations(silent: true);
-    });
-    _newMsgSub = imCtrl.newMessageSubject.listen((_) {
-      _loadConversations(silent: true);
+    _convAddedSub = imCtrl.conversationAddedSubject.listen((newList) {
+      _onConversationChanged(newList);
     });
   }
 
   @override
   void dispose() {
-    _refreshTimer?.cancel();
     _convChangedSub?.cancel();
     _convAddedSub?.cancel();
-    _newMsgSub?.cancel();
     super.dispose();
+  }
+
+  /// 与官方 ConversationLogic.onChanged 一致：
+  /// 用新的 ConversationInfo 替换列表中的旧对象，然后重新排序
+  void _onConversationChanged(List<ConversationInfo> newList) {
+    if (!mounted) return;
+    if (newList.isEmpty) {
+      // 空列表意味着需要全量刷新
+      _loadConversations(silent: true);
+      return;
+    }
+    // 替换已有的，添加新的
+    for (var newConv in newList) {
+      _conversations.removeWhere((e) => e.conversationID == newConv.conversationID);
+    }
+    _conversations.insertAll(0, newList);
+    final sorted = OpenIM.iMManager.conversationManager.simpleSort(_conversations);
+    setState(() => _conversations = sorted);
   }
 
   Future<void> _loadConversations({bool silent = false}) async {
@@ -70,12 +75,10 @@ class _ConversationPageState extends State<ConversationPage> {
   }
 
   void _openChat(ConversationInfo conv) {
-    // 进入聊天页立即本地清零未读，避免红点残留到下次刷新
-    if (conv.unreadCount > 0) {
-      setState(() {
-        conv.unreadCount = 0;
-      });
-    }
+    // 与官方一致：markConversationMessageAsRead 会立即清零本地 unreadCount 并通知
+    OpenIM.iMManager.conversationManager.markConversationMessageAsRead(
+      conversationID: conv.conversationID,
+    );
 
     // 【修复问题3】从 conversationID 中提取 userID/groupID（如果会话对象中没有）
     String userID = conv.userID ?? '';
@@ -308,7 +311,7 @@ class _ConversationPageState extends State<ConversationPage> {
                                 color: Colors.white,
                               ),
                             )
-                          else if (conv.unreadCount > 0)
+                          else if (_displayUnreadCount(conv) > 0)
                             Container(
                               constraints: const BoxConstraints(minWidth: 16),
                               height: 16,
@@ -321,9 +324,9 @@ class _ConversationPageState extends State<ConversationPage> {
                               ),
                               alignment: Alignment.center,
                               child: Text(
-                                conv.unreadCount > 99
+                                _displayUnreadCount(conv) > 99
                                     ? '99+'
-                                    : '${conv.unreadCount}',
+                                    : '${_displayUnreadCount(conv)}',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
@@ -351,19 +354,13 @@ class _ConversationPageState extends State<ConversationPage> {
 
   String _formatTime(int timestamp) {
     if (timestamp <= 0) return '';
-    final dt = DateTime.fromMillisecondsSinceEpoch(timestamp);
-    final now = DateTime.now();
-    final diff = now.difference(dt);
+    final normalized = timestamp < 1000000000000 ? timestamp * 1000 : timestamp;
+    final dt = DateTime.fromMillisecondsSinceEpoch(normalized);
+    return DateFormat('M月d日').format(dt);
+  }
 
-    if (diff.inDays == 0) {
-      return DateFormat('HH:mm').format(dt);
-    } else if (diff.inDays == 1) {
-      return '昨天';
-    } else if (diff.inDays < 7) {
-      const weekDays = ['一', '二', '三', '四', '五', '六', '日'];
-      return '周${weekDays[dt.weekday - 1]}';
-    } else {
-      return DateFormat('MM/dd').format(dt);
-    }
+  /// 与官方一致：直接使用 conv.unreadCount（由 LocalStore 实时维护）
+  int _displayUnreadCount(ConversationInfo conv) {
+    return conv.unreadCount;
   }
 }

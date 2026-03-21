@@ -9,6 +9,7 @@ import 'package:focus_detector_v2/focus_detector_v2.dart';
 
 import '../../core/config.dart';
 import '../../core/controllers/im_controller.dart';
+import '../../core/local_store.dart';
 import '../../sdk/flutter_openim_sdk.dart';
 import '../../routes/app_routes.dart';
 import '../../widgets/media_preview_page.dart';
@@ -24,10 +25,6 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  // 【修复问题1】使用全局静态缓存，确保退出聊天室后再进入时"已读/未读"状态不会消失
-  static final Map<String, Map<String, bool>> _globalReadStatusCache = <String, Map<String, bool>>{};
-  static final Map<String, Map<String, int>> _globalReadTimeCache = <String, Map<String, int>>{};
-
   final _inputController = TextEditingController();
   final _scrollController = ScrollController();
   final _focusNode = FocusNode();
@@ -62,6 +59,9 @@ class _ChatPageState extends State<ChatPage> {
     faceURL = args['faceURL'] ?? '';
     sessionType = args['sessionType'] ?? 1;
 
+    Get.find<IMController>().currentChatConversationID.value = conversationID;
+    // 与官方 Go SDK 一致：告知 SDK 当前活跃会话，新消息不递增 unreadCount
+    OpenIM.iMManager.setActiveConversation(conversationID);
     _loadMessages();
     _markAsRead();
 
@@ -102,6 +102,14 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   void dispose() {
+    // 与官方 ChatLogic.onClose 一致：离开时再次标记已读，确保最后收到的消息也被标记
+    _markAsRead();
+    // 清除活跃会话标记
+    OpenIM.iMManager.setActiveConversation(null);
+    final imCtrl = Get.find<IMController>();
+    if (imCtrl.currentChatConversationID.value == conversationID) {
+      imCtrl.currentChatConversationID.value = '';
+    }
     _inputController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
@@ -132,33 +140,19 @@ class _ChatPageState extends State<ChatPage> {
   void _onReadReceipt(List<ReadReceiptInfo> list) {
     if (!mounted) return;
     try {
-      debugPrint('[Chat] _onReadReceipt called with ${list.length} items');
       for (var readInfo in list) {
-        debugPrint(
-          '[Chat] ReadReceiptInfo: userID=${readInfo.userID}, msgIDList=${readInfo.msgIDList}',
-        );
-
-        int updatedCount = 0;
         if (readInfo.msgIDList != null && readInfo.msgIDList!.isNotEmpty) {
-          debugPrint('[Chat] Using msgIDList: ${readInfo.msgIDList}');
           for (var e in _messages) {
             if (readInfo.msgIDList!.contains(e.clientMsgID)) {
-              debugPrint('[Chat] Marking message ${e.clientMsgID} as read');
-              final readTime = DateTime.now().millisecondsSinceEpoch;
+              // 与官方 chat_logic.dart onRecvC2CReadReceipt 一致
               e.isRead = true;
-              e.hasReadTime = readTime;
-              _cacheReadStatus(e, isRead: true, readTime: readTime);
-              updatedCount++;
+              e.hasReadTime = DateTime.now().millisecondsSinceEpoch;
+              // 已读状态已由 IMManager._handlePushMsg 写入本地 DB
             }
           }
         }
-
-        debugPrint('[Chat] Updated $updatedCount messages to read status');
       }
-      if (mounted) {
-        debugPrint('[Chat] Calling setState to refresh UI');
-        setState(() {});
-      }
+      if (mounted) setState(() {});
     } catch (e) {
       debugPrint('[Chat] _onReadReceipt error: $e');
     }
@@ -172,13 +166,8 @@ class _ChatPageState extends State<ChatPage> {
             conversationID: conversationID,
             count: 50,
           );
+      // 与官方一致：SDK 已经从本地 DB 恢复了 isRead/hasReadTime
       final msgs = result.messageList ?? [];
-      debugPrint(
-        '[Chat] Loaded ${msgs.length} messages, isEnd: ${result.isEnd}',
-      );
-      for (final msg in msgs) {
-        _restoreLocalReadStatus(msg);
-      }
       msgs.sort((a, b) => (a.sendTime ?? 0).compareTo(b.sendTime ?? 0));
       _isEnd = result.isEnd ?? true;
       if (mounted) {
@@ -205,10 +194,8 @@ class _ChatPageState extends State<ChatPage> {
             startMsg: _messages.first,
             count: 50,
           );
+      // 与官方一致：SDK 已从本地 DB 恢复 isRead/hasReadTime
       final msgs = result.messageList ?? [];
-      for (final msg in msgs) {
-        _restoreLocalReadStatus(msg);
-      }
       msgs.sort((a, b) => (a.sendTime ?? 0).compareTo(b.sendTime ?? 0));
       _isEnd = result.isEnd ?? true;
       if (mounted && msgs.isNotEmpty) {
@@ -237,54 +224,25 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  void _restoreLocalReadStatus(Message msg) {
-    final key = msg.clientMsgID;
-    if (key == null || key.isEmpty) return;
-
-    // 【修复问题1】从全局缓存中恢复已读状态
-    final convCache = _globalReadStatusCache[conversationID];
-    final timeCache = _globalReadTimeCache[conversationID];
-    
-    final cachedRead = convCache?[key];
-    if (cachedRead != null) {
-      // 服务端已读优先，避免本地旧缓存 false 覆盖后端返回的 true
-      if (msg.isRead == true) {
-        convCache![key] = true;
-      } else {
-        msg.isRead = cachedRead;
-      }
-    }
-
-    final cachedReadTime = timeCache?[key];
-    if (cachedReadTime != null && (msg.hasReadTime == null || msg.hasReadTime == 0)) {
-      msg.hasReadTime = cachedReadTime;
-    }
-
-    // 若服务端已经返回已读，但本地还没有时间，则补一个本地缓存时间，避免 UI 回退
-    if (msg.isRead == true) {
-      _globalReadStatusCache.putIfAbsent(conversationID, () => {})[key] = true;
-      _globalReadTimeCache.putIfAbsent(conversationID, () => {})[key] ??=
-          msg.hasReadTime ?? DateTime.now().millisecondsSinceEpoch;
-      msg.hasReadTime ??= _globalReadTimeCache[conversationID]![key];
-    }
-  }
-
-  void _cacheReadStatus(Message msg, {required bool isRead, int? readTime}) {
-    final key = msg.clientMsgID;
-    if (key == null || key.isEmpty) return;
-    
-    // 【修复问题1】缓存到全局Map中，按conversationID分组
-    _globalReadStatusCache.putIfAbsent(conversationID, () => {})[key] = isRead;
-    if (readTime != null) {
-      _globalReadTimeCache.putIfAbsent(conversationID, () => {})[key] = readTime;
-    }
-  }
-
+  /// 与官方 ChatLogic._markMessageAsRead 一致：
+  /// 消息变为可见时，如果是未读的他人消息，则标记会话已读
   void _markMessageAsRead(Message message, bool visible) {
-    // 【优化】基于可见性的已读回执
-    // 只有当消息可见且未读且不是自己发送的消息时，才标记为已读
-    // 注意：不需要每条消息都调用，进入页面时已经调用过 _markAsRead()
-    // 这里的逻辑保留是为了兼容未来可能的增量已读功能
+    if (visible &&
+        message.isRead != true &&
+        message.sendID != Config.userID &&
+        (message.contentType ?? 0) < 1000) {
+      OpenIM.iMManager.conversationManager.markConversationMessageAsRead(
+        conversationID: conversationID,
+      );
+      // 与官方一致：本地立即标记已读
+      message.isRead = true;
+      message.hasReadTime = DateTime.now().millisecondsSinceEpoch;
+      if (message.clientMsgID != null) {
+        LocalStore.markMessageRead(
+            conversationID, message.clientMsgID!, message.hasReadTime!);
+      }
+      if (mounted) setState(() {});
+    }
   }
 
   void _scrollToBottom() {
@@ -312,9 +270,7 @@ class _ChatPageState extends State<ChatPage> {
     tempMsg.sessionType = sessionType;
     tempMsg.recvID = sessionType == ConversationType.single ? userID : '';
     tempMsg.groupID = sessionType != ConversationType.single ? groupID : '';
-    // Initialize as unread for sender's own message
     tempMsg.isRead = false;
-    _cacheReadStatus(tempMsg, isRead: false);
 
     setState(() => _messages.add(tempMsg));
     _scrollToBottom();
@@ -329,7 +285,6 @@ class _ChatPageState extends State<ChatPage> {
       if (mounted) {
         setState(() {
           tempMsg.status = MessageStatus.succeeded;
-          // Keep isRead as false until we receive read receipt
         });
       }
     } catch (e) {
@@ -349,9 +304,7 @@ class _ChatPageState extends State<ChatPage> {
     tempMsg.sessionType = sessionType;
     tempMsg.recvID = sessionType == ConversationType.single ? userID : '';
     tempMsg.groupID = sessionType != ConversationType.single ? groupID : '';
-    // Initialize as unread for sender's own message
     tempMsg.isRead = false;
-    _cacheReadStatus(tempMsg, isRead: false);
 
     setState(() => _messages.add(tempMsg));
     _scrollToBottom();
@@ -366,7 +319,6 @@ class _ChatPageState extends State<ChatPage> {
       if (mounted) {
         setState(() {
           tempMsg.status = MessageStatus.succeeded;
-          // Keep isRead as false until we receive read receipt
         });
       }
     } catch (e) {

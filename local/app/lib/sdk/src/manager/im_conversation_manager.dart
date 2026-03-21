@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../flutter_openim_sdk.dart';
 import '../../../core/http_client.dart';
 import '../../../core/config.dart';
+import '../../../core/local_store.dart';
 
 class ConversationManager {
   late OnConversationListener listener;
@@ -14,10 +15,30 @@ class ConversationManager {
   Future<List<ConversationInfo>> getAllConversationList({
     String? operationID,
   }) async {
+    // 与官方一致：优先返回本地缓存，同时后台同步服务端
+    final local = LocalStore.getAllConversations();
+    if (local.isNotEmpty) {
+      // 后台同步最新数据
+      _syncFromServerInBackground();
+      return local;
+    }
+    // 本地为空时从服务端拉取并写入本地
     final data = await HttpClient.post('/conversation/get_all_conversations', data: {
       'ownerUserID': Config.userID,
     });
-    return _parseConversationList(data);
+    final list = _parseConversationList(data);
+    await LocalStore.putConversations(list);
+    return list;
+  }
+
+  void _syncFromServerInBackground() async {
+    try {
+      final data = await HttpClient.post('/conversation/get_all_conversations', data: {
+        'ownerUserID': Config.userID,
+      });
+      final list = _parseConversationList(data);
+      await LocalStore.putConversations(list);
+    } catch (_) {}
   }
 
   Future<List<ConversationInfo>> getConversationListSplit({
@@ -30,7 +51,10 @@ class ConversationManager {
       'conversationIDs': <String>[],
       'pagination': {'pageNumber': offset ~/ count + 1, 'showNumber': count},
     });
-    return _parseConversationList(data);
+    final list = _parseConversationList(data);
+    // 与官方一致：拉取结果写入本地 DB
+    await LocalStore.putConversations(list);
+    return list;
   }
 
   Future<ConversationInfo> getOneConversation({
@@ -105,18 +129,25 @@ class ConversationManager {
   }
 
   Future<dynamic> getTotalUnreadMsgCount({String? operationID}) async {
-    final list = await getAllConversationList();
-    int total = 0;
-    for (final c in list) {
-      total += c.unreadCount;
-    }
-    return total;
+    // 与官方一致：从本地 DB 计算总未读数（不走网络）
+    return LocalStore.getTotalUnreadCount();
   }
 
   Future markConversationMessageAsRead({
     required String conversationID,
     String? operationID,
   }) async {
+    // 与官方一致：
+    // 1) 先在本地 DB 立即清零 unreadCount（UI 即时响应）
+    // 2) 再通知服务端
+    // 3) 推送包含真实数据的 ConversationInfo
+    await LocalStore.clearUnread(conversationID);
+    final updatedConv = LocalStore.getConversation(conversationID);
+    if (updatedConv != null) {
+      listener.conversationChanged([updatedConv]);
+    }
+    listener.totalUnreadMessageCountChanged(LocalStore.getTotalUnreadCount());
+
     try {
       await HttpClient.post('/msg/mark_conversation_as_read', data: {
         'userID': Config.userID,
@@ -124,16 +155,6 @@ class ConversationManager {
         'hasReadSeq': 0,
         'seqs': [],
       }, showErrorToast: false);
-
-      // 与官方体验保持一致：标记成功后立即刷新会话列表与总未读数，
-      // 不完全依赖服务端通知链路，避免本地 WS/通知时序差异导致红点残留。
-      listener.conversationChanged([]);
-      try {
-        final total = await getTotalUnreadMsgCount();
-        listener.totalUnreadMessageCountChanged(total is int ? total : 0);
-      } catch (e) {
-        debugPrint('[SDK] refresh total unread after markConversationMessageAsRead error: $e');
-      }
     } catch (e) {
       debugPrint('[SDK] markConversationMessageAsRead error: $e');
     }
