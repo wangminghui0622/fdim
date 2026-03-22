@@ -222,9 +222,15 @@ class _ContactsPageState extends State<ContactsPage> {
                       child: Center(child: CircularProgressIndicator()),
                     )
                   : _friends.isEmpty
-                  ? const Padding(
-                      padding: EdgeInsets.all(48),
-                      child: Center(
+                  ? ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: MediaQuery.of(context).size.height
+                            - MediaQuery.of(context).padding.top
+                            - kToolbarHeight   // AppBar
+                            - kBottomNavigationBarHeight // TabBar
+                            - 200,             // 菜单项 + 间距
+                      ),
+                      child: const Center(
                         child: Text(
                           '暂无好友',
                           style: TextStyle(color: Colors.grey),

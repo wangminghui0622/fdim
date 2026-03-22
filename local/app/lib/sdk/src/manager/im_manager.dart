@@ -504,10 +504,21 @@ class IMManager {
     if (st == ConversationType.single) {
       // 单聊：对方的信息
       cUserID = (msg.sendID == userID) ? msg.recvID : msg.sendID;
-      showName = (msg.sendID == userID)
-          ? (msg.recvID ?? '')
-          : (msg.senderNickname ?? msg.sendID ?? '');
-      faceURL = (msg.sendID == userID) ? null : msg.senderFaceUrl;
+      if (msg.sendID != userID) {
+        // 收到别人的消息：直接用发送者昵称和头像
+        showName = msg.senderNickname ?? msg.sendID ?? '';
+        faceURL = msg.senderFaceUrl;
+      } else {
+        // 自己发的消息：尝试从服务端查询对方昵称
+        showName = msg.recvID ?? '';
+        try {
+          final users = await userManager.getUsersInfo(userIDList: [cUserID ?? '']);
+          if (users.isNotEmpty) {
+            showName = users.first.nickname ?? showName;
+            faceURL = users.first.faceURL;
+          }
+        } catch (_) {}
+      }
     } else {
       cGroupID = msg.groupID;
       showName = msg.groupID ?? '';

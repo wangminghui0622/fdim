@@ -52,9 +52,10 @@ class ConversationManager {
       'pagination': {'pageNumber': offset ~/ count + 1, 'showNumber': count},
     });
     final list = _parseConversationList(data);
-    // 与官方一致：拉取结果写入本地 DB
+    // 与官方一致：拉取结果写入本地 DB（putConversations 会保留本地 unreadCount）
     await LocalStore.putConversations(list);
-    return list;
+    // 返回全部本地会话（包括本地创建但服务端尚无的会话，如好友通过后的会话）
+    return LocalStore.getAllConversations();
   }
 
   Future<ConversationInfo> getOneConversation({

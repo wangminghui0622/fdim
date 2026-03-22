@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../flutter_openim_sdk.dart';
 import '../../../core/http_client.dart';
 import '../../../core/config.dart';
@@ -45,7 +47,10 @@ class FriendshipManager {
         'showNumber': count,
       },
     });
-    return _parseFriendApplicationList(data);
+    final list = _parseFriendApplicationList(data);
+    // 服务端不返回 fromNickname/fromFaceURL，需要额外查询用户信息补全
+    await _enrichApplicationsWithUserInfo(list);
+    return list;
   }
 
   Future<List<FriendApplicationInfo>> getFriendApplicationListAsApplicant({
@@ -207,10 +212,92 @@ class FriendshipManager {
 
   List<FriendApplicationInfo> _parseFriendApplicationList(dynamic data) {
     if (data == null) return [];
+    debugPrint('[FriendshipManager] raw application data: $data');
     final list = data is Map ? (data['friendRequests'] ?? data) : data;
     if (list is List) {
-      return list.map((e) => FriendApplicationInfo.fromJson(e)).toList();
+      final result = list.map((e) {
+        debugPrint('[FriendshipManager] raw item: $e');
+        return FriendApplicationInfo.fromJson(e);
+      }).toList();
+      for (final r in result) {
+        debugPrint('[FriendshipManager] parsed: fromUserID=${r.fromUserID}, fromNickname=${r.fromNickname}, reqMsg=${r.reqMsg}');
+      }
+      return result;
     }
     return [];
+  }
+
+  /// 服务端好友申请列表不含 nickname/faceURL，需要额外查询补全
+  Future<void> _enrichApplicationsWithUserInfo(List<FriendApplicationInfo> list) async {
+    // 收集所有需要补全的 userID（fromUserID 和 toUserID）
+    final needIDs = <String>{};
+    for (final apply in list) {
+      if ((apply.fromNickname ?? '').isEmpty && (apply.fromUserID ?? '').isNotEmpty) {
+        needIDs.add(apply.fromUserID!);
+      }
+      if ((apply.toNickname ?? '').isEmpty && (apply.toUserID ?? '').isNotEmpty) {
+        needIDs.add(apply.toUserID!);
+      }
+    }
+    debugPrint('[FriendshipManager] enrich: needIDs=$needIDs');
+    if (needIDs.isEmpty) return;
+
+    try {
+      // 直接调 HTTP 接口，避免 getUsersInfo 响应格式不匹配
+      final data = await HttpClient.post('/user/get_users_info', data: {
+        'userIDs': needIDs.toList(),
+      });
+      debugPrint('[FriendshipManager] enrich raw response: $data (type: ${data.runtimeType})');
+
+      // 从响应中提取用户列表（兼容多种服务端格式）
+      final userMap = <String, Map<String, dynamic>>{};
+      List? userList;
+      if (data is List) {
+        userList = data;
+      } else if (data is Map) {
+        userList = data['users'] ?? data['usersData'] ?? data['usersInfo'] ?? data['userInfo'];
+      }
+      debugPrint('[FriendshipManager] enrich userList: $userList');
+
+      if (userList is List) {
+        for (final item in userList) {
+          if (item is Map) {
+            final m = Map<String, dynamic>.from(item);
+            // 用户信息可能直接在 item 中，也可能嵌套在 userInfo 字段中
+            final info = m.containsKey('nickname') ? m : (m['userInfo'] ?? m);
+            if (info is Map) {
+              final uid = info['userID']?.toString();
+              if (uid != null && uid.isNotEmpty) {
+                userMap[uid] = Map<String, dynamic>.from(info);
+                debugPrint('[FriendshipManager] enrich found user: $uid => nickname=${info['nickname']}');
+              }
+            }
+          }
+        }
+      }
+
+      debugPrint('[FriendshipManager] enrich: resolved ${userMap.length} users');
+
+      // 回填昵称和头像
+      for (final apply in list) {
+        if ((apply.fromNickname ?? '').isEmpty) {
+          final info = userMap[apply.fromUserID];
+          if (info != null) {
+            apply.fromNickname = info['nickname']?.toString();
+            apply.fromFaceURL = info['faceURL']?.toString();
+          }
+        }
+        if ((apply.toNickname ?? '').isEmpty) {
+          final info = userMap[apply.toUserID];
+          if (info != null) {
+            apply.toNickname = info['nickname']?.toString();
+            apply.toFaceURL = info['faceURL']?.toString();
+          }
+        }
+      }
+      debugPrint('[FriendshipManager] enrich done, first item fromNickname=${list.isNotEmpty ? list.first.fromNickname : "N/A"}');
+    } catch (e, st) {
+      debugPrint('[FriendshipManager] enrichApplicationsWithUserInfo error: $e\n$st');
+    }
   }
 }

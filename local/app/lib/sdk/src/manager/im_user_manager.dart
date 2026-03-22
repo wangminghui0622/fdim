@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../flutter_openim_sdk.dart';
 import '../../../core/http_client.dart';
 import '../../../core/config.dart';
@@ -13,16 +15,24 @@ class UserManager {
     required List<String> userIDList,
     String? operationID,
   }) async {
+    debugPrint('[UserManager] getUsersInfo request: userIDs=$userIDList');
     final data = await HttpClient.post('/user/get_users_info', data: {
       'userIDs': userIDList,
     });
+    debugPrint('[UserManager] getUsersInfo raw response: $data (type: ${data.runtimeType})');
     if (data is List) {
       return data.map((e) => PublicUserInfo.fromJson(e)).toList();
     }
-    if (data is Map && data['users'] is List) {
-      return (data['users'] as List)
-          .map((e) => PublicUserInfo.fromJson(e))
-          .toList();
+    if (data is Map) {
+      // 尝试多种可能的字段名
+      final users = data['users'] ?? data['usersData'] ?? data['usersInfo'] ?? data['userInfo'];
+      debugPrint('[UserManager] getUsersInfo users field: $users (type: ${users.runtimeType})');
+      if (users is List) {
+        return users.map((e) {
+          debugPrint('[UserManager] getUsersInfo item: $e');
+          return PublicUserInfo.fromJson(e is Map ? Map<String, dynamic>.from(e) : e);
+        }).toList();
+      }
     }
     return [];
   }

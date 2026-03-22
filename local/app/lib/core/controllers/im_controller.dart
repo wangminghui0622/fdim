@@ -141,6 +141,9 @@ class IMController extends GetxController {
             faceURL: info.fromFaceURL,
           );
           friendAddedSubject.add(friendInfo);
+
+          // 确保双方都有会话：判断对方是谁
+          _ensureConversationOnAccepted(info);
         },
         onFriendApplicationRejected: (info) {
           loadFriendApplyCount();
@@ -205,5 +208,129 @@ class IMController extends GetxController {
 
   void clearFriendApplyBadge() {
     friendApplyCount.value = 0;
+  }
+
+  /// 好友申请通过后，在 A（申请者）本地创建两条消息并创建会话：
+  /// 1) A 的申请语句（来自 A 自己，右侧）
+  /// 2) 默认问候（来自 B，左侧）
+  Future<void> _ensureConversationOnAccepted(FriendApplicationInfo info) async {
+    try {
+      final myID = Config.userID;
+
+      if (info.fromUserID != myID) {
+        // 我是 B（通过者），会话已由 _createLocalFirstMessage 创建，跳过
+        return;
+      }
+
+      // 我是 A（申请者），对方是 B（通过者）
+      final otherID = info.toUserID ?? '';
+      if (otherID.isEmpty) return;
+
+      final ids = [myID, otherID]..sort();
+      final convID = 'si_${ids[0]}_${ids[1]}';
+
+      // 如果会话已存在，不重复创建
+      if (LocalStore.getConversation(convID) != null) return;
+
+      // 推送中不含 reqMsg，需要从服务端获取完整的好友申请信息
+      String reqMsg = info.reqMsg ?? '';
+      if (reqMsg.isEmpty) {
+        try {
+          final applies = await OpenIM.iMManager.friendshipManager
+              .getFriendApplicationListAsApplicant();
+          for (final a in applies) {
+            if (a.toUserID == otherID && (a.reqMsg ?? '').isNotEmpty) {
+              reqMsg = a.reqMsg!;
+              break;
+            }
+          }
+        } catch (_) {}
+      }
+      debugPrint('[IMController] reqMsg for $otherID: "$reqMsg"');
+
+      // 查询 B 的昵称和头像（推送中 toNickname 可能为空）
+      String otherNickname = otherID;
+      String? otherFaceURL;
+      if ((info.toNickname ?? '').isNotEmpty) {
+        otherNickname = info.toNickname!;
+        otherFaceURL = info.toFaceURL;
+      } else {
+        try {
+          final users = await OpenIM.iMManager.userManager.getUsersInfo(
+            userIDList: [otherID],
+          );
+          if (users.isNotEmpty) {
+            otherNickname = users.first.nickname ?? otherID;
+            otherFaceURL = users.first.faceURL;
+          }
+        } catch (_) {}
+      }
+
+      final now = DateTime.now().millisecondsSinceEpoch;
+      int unread = 0;
+      Message? latestMsg;
+
+      // 消息1: A 的申请语句（如果有）— A 自己发的，A 聊天页右侧
+      if (reqMsg.isNotEmpty) {
+        final msg1 = Message(
+          clientMsgID: '${myID}_${now}_req',
+          sendID: myID,
+          recvID: otherID,
+          senderNickname: Config.nickname.isNotEmpty ? Config.nickname : myID,
+          senderFaceUrl: Config.faceURL,
+          sessionType: ConversationType.single,
+          contentType: MessageType.text,
+          createTime: now,
+          sendTime: now,
+          status: MessageStatus.succeeded,
+          isRead: true,
+          textElem: TextElem(content: reqMsg),
+        );
+        await LocalStore.putMessage(convID, msg1);
+        latestMsg = msg1;
+      }
+
+      // 消息2: 默认问候 — 来自 B，A 聊天页左侧
+      final msg2 = Message(
+        clientMsgID: '${otherID}_${now}_greet',
+        sendID: otherID,
+        recvID: myID,
+        senderNickname: otherNickname,
+        senderFaceUrl: otherFaceURL,
+        sessionType: ConversationType.single,
+        contentType: MessageType.text,
+        createTime: now + 1,
+        sendTime: now + 1,
+        status: MessageStatus.succeeded,
+        isRead: false,
+        textElem: TextElem(content: '我们已经是好友了，可以开始聊天了'),
+      );
+      await LocalStore.putMessage(convID, msg2);
+      latestMsg = msg2;
+      unread++;
+
+      // 创建会话（用 B 的昵称）
+      final conv = ConversationInfo(
+        conversationID: convID,
+        conversationType: ConversationType.single,
+        userID: otherID,
+        showName: otherNickname,
+        faceURL: otherFaceURL,
+        latestMsg: latestMsg,
+        latestMsgSendTime: now + 1,
+      );
+      conv.unreadCount = unread;
+      await LocalStore.putConversation(conv);
+
+      // 通知 UI 刷新
+      OpenIM.iMManager.conversationManager.listener
+          .conversationChanged([conv]);
+      OpenIM.iMManager.conversationManager.listener
+          .totalUnreadMessageCountChanged(LocalStore.getTotalUnreadCount());
+
+      debugPrint('[IMController] Created conversation $convID with 2 messages for friend $otherNickname');
+    } catch (e) {
+      debugPrint('[IMController] _ensureConversationOnAccepted error: $e');
+    }
   }
 }

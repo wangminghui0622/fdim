@@ -437,20 +437,22 @@ class MessageManager {
       });
       debugPrint('[SDK] newest_seq response: $seqData');
       if (seqData == null) {
-        debugPrint('[SDK] seqData is null, returning empty');
-        return AdvancedMessage(messageList: [], isEnd: true);
+        debugPrint('[SDK] seqData is null');
+        endSeq = 0;
+      } else {
+        endSeq = (seqData is Map ? (seqData['maxSeq'] ?? 0) : 0) as int;
       }
-      endSeq = (seqData is Map ? (seqData['maxSeq'] ?? 0) : 0) as int;
       debugPrint('[SDK] Got maxSeq: $endSeq');
     }
 
-    if (endSeq <= 0) {
-      debugPrint('[SDK] endSeq <= 0, returning empty');
-      return AdvancedMessage(messageList: [], isEnd: true);
-    }
+    List<Message> messages = [];
+    int startSeq = 1;
 
+    if (endSeq <= 0) {
+      debugPrint('[SDK] endSeq <= 0, skipping server fetch');
+    } else {
     // 2. Build seq list: [max(1, endSeq-n+1) .. endSeq]
-    final startSeq = endSeq - n + 1 > 0 ? endSeq - n + 1 : 1;
+    startSeq = endSeq - n + 1 > 0 ? endSeq - n + 1 : 1;
     final seqs = List<int>.generate(endSeq - startSeq + 1, (i) => startSeq + i);
     debugPrint('[SDK] Pulling messages from seq $startSeq to $endSeq (${seqs.length} seqs)');
 
@@ -463,7 +465,6 @@ class MessageManager {
     debugPrint('[SDK] pull_msg_by_seq response type: ${data.runtimeType}');
     debugPrint('[SDK] pull_msg_by_seq response data: $data');
 
-    List<Message> messages = [];
     if (data != null && data is Map) {
       final msgsList = data['msgs'];
       debugPrint('[SDK] msgsList type: ${msgsList.runtimeType}');
@@ -499,11 +500,26 @@ class MessageManager {
       msg.status ??= MessageStatus.succeeded;
     }
 
+    } // end if (endSeq > 0)
+
     // 与官方一致：先从本地 DB 恢复已读状态，再写入本地 DB
     // 顺序很重要：必须先 apply 再 put，否则 put 会用服务端的 isRead=false 覆盖本地已有的 isRead=true
     if (conversationID != null && conversationID.isNotEmpty) {
       LocalStore.applyHasReadSeq(conversationID, messages, Config.userID);
       await LocalStore.putMessages(conversationID, messages);
+    }
+
+    // 合并本地创建的消息（如好友通过后的申请语句和问候消息，没有 serverMsgID）
+    if (conversationID != null && conversationID.isNotEmpty) {
+      final localMsgs = LocalStore.getMessages(conversationID);
+      final existingIDs = messages.map((m) => m.clientMsgID).toSet();
+      for (final lm in localMsgs) {
+        if (lm.clientMsgID != null && !existingIDs.contains(lm.clientMsgID)) {
+          messages.add(lm);
+        }
+      }
+      // 按 sendTime 排序（本地消息没有 seq）
+      messages.sort((a, b) => (a.sendTime ?? 0).compareTo(b.sendTime ?? 0));
     }
 
     debugPrint('[SDK] Returning ${messages.length} messages, isEnd: ${startSeq <= 1}');
