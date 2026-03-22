@@ -60,6 +60,7 @@ type MsgData struct {
 	AtUserIDList     []string               `json:"atUserIDList,optional"`
 	AttachedInfo     string                 `json:"attachedInfo,optional"`
 	Ex               string                 `json:"ex,optional"`
+	SenderTimeZone   int32                  `json:"senderTimeZone,optional"` // 发送者时区偏移（秒），如 UTC+8 = 28800
 }
 
 type SendMsgResp struct {

@@ -36,7 +36,6 @@ class MessageManager {
     message.senderNickname = Config.nickname;
     message.senderFaceUrl = Config.faceURL;
     message.status = MessageStatus.sending;
-    message.sendTime = DateTime.now().millisecondsSinceEpoch;
 
     final sendMsgData = <String, dynamic>{
       'clientMsgID': message.clientMsgID,
@@ -49,7 +48,6 @@ class MessageManager {
       'senderPlatformID': Config.platformID,
       'contentType': message.contentType,
       'sessionType': message.sessionType,
-      'sendTime': message.sendTime,
       'createTime': message.createTime,
     };
 
@@ -112,9 +110,11 @@ class MessageManager {
     required String text,
     String? operationID,
   }) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
     return Message(
       clientMsgID: const Uuid().v4(),
-      createTime: DateTime.now().millisecondsSinceEpoch,
+      createTime: now,
+      sendTime: now,
       sendID: Config.userID,
       senderNickname: Config.nickname,
       senderFaceUrl: Config.faceURL,
@@ -131,9 +131,11 @@ class MessageManager {
     required String imagePath,
     String? operationID,
   }) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
     return Message(
       clientMsgID: const Uuid().v4(),
-      createTime: DateTime.now().millisecondsSinceEpoch,
+      createTime: now,
+      sendTime: now,
       sendID: Config.userID,
       contentType: MessageType.picture,
       sessionType: ConversationType.single,
@@ -155,9 +157,11 @@ class MessageManager {
     required int duration,
     String? operationID,
   }) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
     return Message(
       clientMsgID: const Uuid().v4(),
-      createTime: DateTime.now().millisecondsSinceEpoch,
+      createTime: now,
+      sendTime: now,
       sendID: Config.userID,
       contentType: MessageType.voice,
       sessionType: ConversationType.single,
@@ -182,9 +186,11 @@ class MessageManager {
     required String snapshotPath,
     String? operationID,
   }) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
     return Message(
       clientMsgID: const Uuid().v4(),
-      createTime: DateTime.now().millisecondsSinceEpoch,
+      createTime: now,
+      sendTime: now,
       sendID: Config.userID,
       contentType: MessageType.video,
       sessionType: ConversationType.single,
@@ -219,9 +225,11 @@ class MessageManager {
     required String fileName,
     String? operationID,
   }) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
     return Message(
       clientMsgID: const Uuid().v4(),
-      createTime: DateTime.now().millisecondsSinceEpoch,
+      createTime: now,
+      sendTime: now,
       sendID: Config.userID,
       contentType: MessageType.file,
       sessionType: ConversationType.single,
@@ -245,9 +253,11 @@ class MessageManager {
     required String description,
     String? operationID,
   }) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
     return Message(
       clientMsgID: const Uuid().v4(),
-      createTime: DateTime.now().millisecondsSinceEpoch,
+      createTime: now,
+      sendTime: now,
       sendID: Config.userID,
       contentType: MessageType.location,
       sessionType: ConversationType.single,
@@ -267,9 +277,11 @@ class MessageManager {
     required String description,
     String? operationID,
   }) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
     return Message(
       clientMsgID: const Uuid().v4(),
-      createTime: DateTime.now().millisecondsSinceEpoch,
+      createTime: now,
+      sendTime: now,
       sendID: Config.userID,
       contentType: MessageType.custom,
       sessionType: ConversationType.single,
@@ -288,9 +300,11 @@ class MessageManager {
     required Message quoteMsg,
     String? operationID,
   }) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
     return Message(
       clientMsgID: const Uuid().v4(),
-      createTime: DateTime.now().millisecondsSinceEpoch,
+      createTime: now,
+      sendTime: now,
       sendID: Config.userID,
       contentType: MessageType.quote,
       sessionType: ConversationType.single,
@@ -307,9 +321,11 @@ class MessageManager {
     String? ex,
     String? operationID,
   }) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
     return Message(
       clientMsgID: const Uuid().v4(),
-      createTime: DateTime.now().millisecondsSinceEpoch,
+      createTime: now,
+      sendTime: now,
       sendID: Config.userID,
       contentType: MessageType.card,
       sessionType: ConversationType.single,
@@ -329,9 +345,11 @@ class MessageManager {
     String? data,
     String? operationID,
   }) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
     return Message(
       clientMsgID: const Uuid().v4(),
-      createTime: DateTime.now().millisecondsSinceEpoch,
+      createTime: now,
+      sendTime: now,
       sendID: Config.userID,
       contentType: MessageType.customFace,
       sessionType: ConversationType.single,
@@ -345,9 +363,11 @@ class MessageManager {
     required Message message,
     String? operationID,
   }) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
     return Message(
       clientMsgID: const Uuid().v4(),
-      createTime: DateTime.now().millisecondsSinceEpoch,
+      createTime: now,
+      sendTime: now,
       sendID: Config.userID,
       contentType: message.contentType,
       sessionType: message.sessionType,
@@ -374,9 +394,11 @@ class MessageManager {
     required List<String> summaryList,
     String? operationID,
   }) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
     return Message(
       clientMsgID: const Uuid().v4(),
-      createTime: DateTime.now().millisecondsSinceEpoch,
+      createTime: now,
+      sendTime: now,
       sendID: Config.userID,
       contentType: MessageType.merger,
       sessionType: ConversationType.single,
@@ -397,9 +419,11 @@ class MessageManager {
     Message? quoteMessage,
     String? operationID,
   }) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
     return Message(
       clientMsgID: const Uuid().v4(),
-      createTime: DateTime.now().millisecondsSinceEpoch,
+      createTime: now,
+      sendTime: now,
       sendID: Config.userID,
       contentType: MessageType.atText,
       sessionType: ConversationType.superGroup,

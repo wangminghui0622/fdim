@@ -55,7 +55,7 @@ func (l *SendMessageLogic) SendMessage(req *types.SendMsgReq) (resp *types.SendM
 		ContentType:      req.SendMsg.ContentType,
 		Content:          []byte(req.SendMsg.Content),
 		Seq:              req.SendMsg.Seq,
-		SendTime:         req.SendMsg.SendTime,
+		SendTime:         0, // 不信任客户端时间，由 RPC 层用服务器时钟设置
 		CreateTime:       req.SendMsg.CreateTime,
 		Status:           req.SendMsg.Status,
 		IsRead:           req.SendMsg.IsRead,
@@ -63,6 +63,7 @@ func (l *SendMessageLogic) SendMessage(req *types.SendMsgReq) (resp *types.SendM
 		AtUserIDList:     req.SendMsg.AtUserIDList,
 		AttachedInfo:     req.SendMsg.AttachedInfo,
 		Ex:               req.SendMsg.Ex,
+		SenderTimeZone:   req.SendMsg.SenderTimeZone,
 	}
 
 	// 处理 OfflinePushInfo

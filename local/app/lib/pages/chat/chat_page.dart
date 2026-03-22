@@ -286,6 +286,7 @@ class _ChatPageState extends State<ChatPage> {
         setState(() {
           tempMsg.status = MessageStatus.succeeded;
         });
+        _scrollToBottom();
       }
     } catch (e) {
       if (mounted) setState(() => tempMsg.status = MessageStatus.failed);
@@ -320,6 +321,7 @@ class _ChatPageState extends State<ChatPage> {
         setState(() {
           tempMsg.status = MessageStatus.succeeded;
         });
+        _scrollToBottom();
       }
     } catch (e) {
       if (mounted) setState(() => tempMsg.status = MessageStatus.failed);
@@ -331,8 +333,9 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(showName, style: const TextStyle(fontSize: 17)),
             if (sessionType == 1)
@@ -374,12 +377,24 @@ class _ChatPageState extends State<ChatPage> {
                     },
                     child: ListView.builder(
                       controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
+                      padding: const EdgeInsets.only(
+                        left: 12,
+                        right: 12,
+                        top: 8,
+                        bottom: 24,
                       ),
                       itemCount: _messages.length,
-                      itemBuilder: (_, i) => _buildMessageItem(_messages[i]),
+                      itemBuilder: (_, i) {
+                        final msg = _messages[i];
+                        final showTime = _shouldShowTime(i);
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (showTime) _buildTimeSeparator(msg),
+                            _buildMessageItem(msg),
+                          ],
+                        );
+                      },
                     ),
                   ),
           ),
@@ -448,10 +463,52 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
+  /// 获取消息时间戳（毫秒），带归一化和回退
+  static int _getMsgTimestamp(Message msg) {
+    int ts = msg.sendTime ?? msg.createTime ?? 0;
+    if (ts <= 0) return 0;
+    // 秒级时间戳 < 10^12，毫秒级 >= 10^12
+    return ts < 1000000000000 ? ts * 1000 : ts;
+  }
+
+  /// 是否在该消息前显示时间分隔：第一条始终显示；与上一条间隔 >= 5 分钟时显示
+  bool _shouldShowTime(int index) {
+    if (index == 0) return true;
+    final cur = _getMsgTimestamp(_messages[index]);
+    final prev = _getMsgTimestamp(_messages[index - 1]);
+    // 如果任一时间戳无效，显示时间分隔
+    if (cur <= 0 || prev <= 0) return true;
+    final diff = (cur - prev).abs();
+    final show = diff >= 5 * 60 * 1000; // 5 分钟
+    debugPrint('[Chat] _shouldShowTime[$index]: cur=$cur prev=$prev diff=${diff}ms show=$show');
+    return show;
+  }
+
+  Widget _buildTimeSeparator(Message msg) {
+    int ms = _getMsgTimestamp(msg);
+    // 如果无有效时间戳，用当前时间作为回退
+    if (ms <= 0) ms = DateTime.now().millisecondsSinceEpoch;
+    // 显式标记为 UTC，再转为手机本地时区
+    final dt = DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true).toLocal();
+    final text = '${dt.year}年${_pad(dt.month)}月${_pad(dt.day)}日 ${_pad(dt.hour)}:${_pad(dt.minute)}';
+    debugPrint('[Chat] _buildTimeSeparator: ms=$ms utcHour=${DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true).hour} localHour=${dt.hour} text=$text sendTime=${msg.sendTime} createTime=${msg.createTime}');
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Center(
+        child: Text(
+          text,
+          style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
+        ),
+      ),
+    );
+  }
+
+  static String _pad(int n) => n.toString().padLeft(2, '0');
+
   Widget _buildReadTag(Message msg) {
     final isRead = msg.isRead == true;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.only(top: 2, bottom: 8),
       child: Text(
         isRead ? '已读' : '未读',
         style: const TextStyle(fontSize: 11, color: Color(0xFF999999)),

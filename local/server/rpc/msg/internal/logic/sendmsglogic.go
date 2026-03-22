@@ -85,12 +85,14 @@ func (l *SendMsgLogic) SendMsg(req *msg.SendMsgReq) (*msg.SendMsgResp, error) {
 		return nil, errs.WrapMsg(err, "failed to allocate seq")
 	}
 
-	// 填充 protobuf 消息字段（与官方一致）
+	// 填充 protobuf 消息字段
 	msgData.Seq = seq
-	msgData.CreateTime = timeutil.GetCurrentTimestampByMill()
-	if msgData.SendTime == 0 {
-		msgData.SendTime = msgData.CreateTime
-	}
+	// 方案A：sendTime = 服务器 UTC 毫秒（不信任客户端时间，不加时区偏移）
+	// 客户端显示时用 .toLocal() 转为手机本地时区
+	// senderTimeZone 仅作为元数据保留在消息中
+	serverNowMs := timeutil.GetCurrentTimestampByMill()
+	msgData.CreateTime = serverNowMs
+	msgData.SendTime = serverNowMs
 	msgData.ServerMsgID = idutil.GetMsgIDByMD5(msgData.SendID)
 
 	now := time.Now()

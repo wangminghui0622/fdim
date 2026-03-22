@@ -355,7 +355,12 @@ class _ConversationPageState extends State<ConversationPage> {
   String _formatTime(int timestamp) {
     if (timestamp <= 0) return '';
     final normalized = timestamp < 1000000000000 ? timestamp * 1000 : timestamp;
-    final dt = DateTime.fromMillisecondsSinceEpoch(normalized);
+    // 显式标记为 UTC，再转为手机本地时区
+    final dt = DateTime.fromMillisecondsSinceEpoch(normalized, isUtc: true).toLocal();
+    final now = DateTime.now();
+    if (dt.year == now.year && dt.month == now.month && dt.day == now.day) {
+      return DateFormat('HH:mm').format(dt);
+    }
     return DateFormat('M月d日').format(dt);
   }
 

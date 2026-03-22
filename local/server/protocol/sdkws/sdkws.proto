@@ -197,6 +197,7 @@ message MsgData {
   repeated string atUserIDList = 21;
   string attachedInfo = 22;
   string ex = 23;
+  int32 senderTimeZone = 24; // 发送者时区偏移（秒），如 UTC+8 = 28800
 }
 message PushMessages {
   map<string, PullMsgs> msgs = 1;

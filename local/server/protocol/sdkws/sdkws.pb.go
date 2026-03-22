@@ -1593,6 +1593,7 @@ type MsgData struct {
 	AtUserIDList     []string               `protobuf:"bytes,21,rep,name=atUserIDList,proto3" json:"atUserIDList,omitempty"`
 	AttachedInfo     string                 `protobuf:"bytes,22,opt,name=attachedInfo,proto3" json:"attachedInfo,omitempty"`
 	Ex               string                 `protobuf:"bytes,23,opt,name=ex,proto3" json:"ex,omitempty"`
+	SenderTimeZone   int32                  `protobuf:"varint,24,opt,name=senderTimeZone,proto3" json:"senderTimeZone,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -1779,6 +1780,13 @@ func (x *MsgData) GetEx() string {
 		return x.Ex
 	}
 	return ""
+}
+
+func (x *MsgData) GetSenderTimeZone() int32 {
+	if x != nil {
+		return x.SenderTimeZone
+	}
+	return 0
 }
 
 type PushMessages struct {
