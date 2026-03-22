@@ -111,6 +111,15 @@ class _ChatPageState extends State<ChatPage> {
       }
     });
 
+    _focusNode.addListener(() {
+      if (!mounted) return;
+      setState(() {});
+      if (_focusNode.hasFocus) {
+        Future.delayed(const Duration(milliseconds: 80), _scrollToBottom);
+        Future.delayed(const Duration(milliseconds: 220), _scrollToBottom);
+      }
+    });
+
     // Listen to input controller changes to toggle send button visibility
     _inputController.addListener(() {
       setState(() {
@@ -1316,6 +1325,15 @@ class _ChatPageState extends State<ChatPage> {
                   if (_showEmojiPicker) {
                     setState(() => _showEmojiPicker = false);
                   }
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (!mounted) return;
+                    FocusScope.of(context).requestFocus(_focusNode);
+                    SystemChannels.textInput.invokeMethod('TextInput.show');
+                    _scrollToBottom();
+                    Future.delayed(const Duration(milliseconds: 120), _scrollToBottom);
+                    Future.delayed(const Duration(milliseconds: 260), _scrollToBottom);
+                    Future.delayed(const Duration(milliseconds: 420), _scrollToBottom);
+                  });
                 },
               ),
             ),
