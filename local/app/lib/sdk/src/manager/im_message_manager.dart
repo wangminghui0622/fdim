@@ -554,6 +554,82 @@ class MessageManager {
     );
   }
 
+  /// 获取会话的 hasReadSeq 和 maxSeq（与官方一致）
+  Future<Map<String, int>> getHasReadAndMaxSeq(String conversationID) async {
+    final data = await HttpClient.post(
+      '/msg/get_conversations_has_read_and_max_seq',
+      data: {
+        'userID': Config.userID,
+        'conversationIDs': [conversationID],
+      },
+    );
+    int maxSeq = 0;
+    int hasReadSeq = 0;
+    debugPrint('[SDK] getHasReadAndMaxSeq raw response: $data');
+    if (data != null && data is Map && data['seqs'] is Map) {
+      final seqInfo = data['seqs'][conversationID];
+      debugPrint('[SDK] getHasReadAndMaxSeq seqInfo for $conversationID: $seqInfo');
+      if (seqInfo is Map) {
+        maxSeq = (seqInfo['maxSeq'] ?? seqInfo['MaxSeq'] ?? 0) as int;
+        hasReadSeq = (seqInfo['hasReadSeq'] ?? seqInfo['HasReadSeq'] ?? 0) as int;
+      }
+    }
+    debugPrint('[SDK] getHasReadAndMaxSeq: conv=$conversationID maxSeq=$maxSeq hasReadSeq=$hasReadSeq');
+    return {'maxSeq': maxSeq, 'hasReadSeq': hasReadSeq};
+  }
+
+  /// 按 seq 范围拉取消息 [fromSeq..toSeq]，返回按 seq 升序
+  Future<List<Message>> getMessagesBySeqRange({
+    required String conversationID,
+    required int fromSeq,
+    required int toSeq,
+  }) async {
+    if (fromSeq > toSeq || toSeq <= 0) return [];
+    final seqs = List<int>.generate(toSeq - fromSeq + 1, (i) => fromSeq + i);
+    debugPrint('[SDK] getMessagesBySeqRange: conv=$conversationID from=$fromSeq to=$toSeq (${seqs.length} seqs)');
+
+    final data = await HttpClient.post('/msg/pull_msg_by_seq', data: {
+      'userID': Config.userID,
+      'conversationID': conversationID,
+      'seqs': seqs,
+    });
+
+    List<Message> messages = [];
+    if (data != null && data is Map) {
+      final msgsList = data['msgs'];
+      if (msgsList is List && msgsList.isNotEmpty) {
+        final firstItem = msgsList[0];
+        if (firstItem is Map && firstItem.containsKey('Msgs')) {
+          final msgList = firstItem['Msgs'];
+          if (msgList is List) {
+            messages = msgList
+                .whereType<Map>()
+                .map((e) => Message.fromJson(Map<String, dynamic>.from(e)))
+                .toList();
+          }
+        } else {
+          messages = msgsList
+              .whereType<Map>()
+              .map((e) => Message.fromJson(Map<String, dynamic>.from(e)))
+              .toList();
+        }
+      }
+    }
+
+    messages.sort((a, b) => (a.seq ?? 0).compareTo(b.seq ?? 0));
+    for (final msg in messages) {
+      msg.status ??= MessageStatus.succeeded;
+    }
+
+    // 恢复本地已读状态并缓存
+    if (conversationID.isNotEmpty) {
+      LocalStore.applyHasReadSeq(conversationID, messages, Config.userID);
+      await LocalStore.putMessages(conversationID, messages);
+    }
+
+    return messages;
+  }
+
   /// Revoke a message (by seq)
   Future revokeMessage({
     required String conversationID,

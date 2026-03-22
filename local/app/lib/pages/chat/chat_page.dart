@@ -29,12 +29,19 @@ class _ChatPageState extends State<ChatPage> {
   final _scrollController = ScrollController();
   final _focusNode = FocusNode();
   final _messages = <Message>[];
+  final _pendingNewMessages = <Message>[];
   bool _loading = true;
   bool _loadingMore = false;
-  bool _isEnd = false;
+  bool _isOlderEnd = false;   // 已加载到最早的消息
+  bool _isNewerEnd = false;   // 已加载到最新的消息
   bool _isOnline = false;
   bool _showEmojiPicker = false;
   bool _sendButtonVisible = false;
+  bool _showScrollDown = false;
+  int _unreadBelow = 0;
+  bool _isFirstLoad = true;
+  bool _isLoadingMore = false;
+  static const int _pageSize = 40;
   Timer? _onlineTimer;
   StreamSubscription? _newMsgSub;
   StreamSubscription? _readReceiptSub;
@@ -63,7 +70,7 @@ class _ChatPageState extends State<ChatPage> {
     // 与官方 Go SDK 一致：告知 SDK 当前活跃会话，新消息不递增 unreadCount
     OpenIM.iMManager.setActiveConversation(conversationID);
     _loadMessages();
-    _markAsRead();
+    _clearUnreadCount();
 
     // Listen for new messages via SDK
     final imCtrl = Get.find<IMController>();
@@ -86,9 +93,21 @@ class _ChatPageState extends State<ChatPage> {
     }
 
     _scrollController.addListener(() {
+      // 上滑加载更早消息
       if (_scrollController.position.pixels <=
           _scrollController.position.minScrollExtent + 50) {
-        _loadHistoryMessages();
+        _loadOlderMessages();
+      }
+      // 下滑加载更新消息
+      final distToBottom = _scrollController.position.maxScrollExtent -
+          _scrollController.position.pixels;
+      if (distToBottom < 80) {
+        _loadNewerMessages();
+      }
+      // 显示/隐藏向下箭头
+      final shouldShow = distToBottom > 80;
+      if (shouldShow != _showScrollDown) {
+        setState(() => _showScrollDown = shouldShow);
       }
     });
 
@@ -125,16 +144,31 @@ class _ChatPageState extends State<ChatPage> {
     final match =
         (msg.isSingleChat && (msg.sendID == userID || msg.recvID == userID)) ||
         (msg.isGroupChat && msg.groupID == groupID);
-    // 检查消息是否已存在，避免重复添加（发送方已经添加了临时消息）
-    if (match && mounted && !_messages.contains(msg)) {
+    if (!match || !mounted) return;
+
+    final existsInMessages = _messages.contains(msg);
+    final existsInPending = _pendingNewMessages.contains(msg);
+    if (existsInMessages || existsInPending) return;
+
+    final isIncoming = msg.sendID != Config.userID;
+    final wasAtBottom = _isNearBottom();
+
+    if (!isIncoming || wasAtBottom) {
       setState(() => _messages.add(msg));
-      _scrollToBottom();
-      // 【修复】接收到新消息时立即标记为已读（因为用户正在聊天页面）
-      // 与官方实现一致：当用户在聊天页面时，新消息到达立即标记已读
-      if (msg.sendID != Config.userID) {
-        _markAsRead();
+      if (wasAtBottom) {
+        _scrollToBottom();
       }
+      if (isIncoming) {
+        _markMessageAsRead(msg, true);
+      }
+      return;
     }
+
+    setState(() {
+      _pendingNewMessages.add(msg);
+      _unreadBelow = _pendingNewMessages.where((e) => e.sendID != Config.userID).length;
+      _showScrollDown = true;
+    });
   }
 
   void _onReadReceipt(List<ReadReceiptInfo> list) {
@@ -158,25 +192,53 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+  /// 按照官方逻辑加载历史消息
   Future<void> _loadMessages() async {
     try {
-      debugPrint('[Chat] Loading messages for conversationID: $conversationID');
-      final result = await OpenIM.iMManager.messageManager
-          .getAdvancedHistoryMessageList(
-            conversationID: conversationID,
-            count: 50,
-          );
-      // 与官方一致：SDK 已经从本地 DB 恢复了 isRead/hasReadTime
-      final msgs = result.messageList ?? [];
-      msgs.sort((a, b) => (a.sendTime ?? 0).compareTo(b.sendTime ?? 0));
-      _isEnd = result.isEnd ?? true;
-      if (mounted) {
-        setState(() {
-          _messages.clear();
-          _messages.addAll(msgs);
-          _loading = false;
-        });
-        _scrollToBottom();
+      debugPrint('[Chat] Loading messages for conversationID: $conversationID, isFirstLoad: $_isFirstLoad');
+
+      final result = await OpenIM.iMManager.messageManager.getAdvancedHistoryMessageList(
+        conversationID: conversationID,
+        count: _isFirstLoad ? _pageSize : _messages.length,
+        startMsg: _isFirstLoad ? null : _messages.firstOrNull,
+      );
+
+      if (result.messageList == null || result.messageList!.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _loading = false;
+            _isOlderEnd = true;
+            _isNewerEnd = true;
+          });
+        }
+        return;
+      }
+
+      final msgs = result.messageList!;
+
+      if (_isFirstLoad) {
+        _isFirstLoad = false;
+        // 首次加载：清空并替换所有消息
+        if (mounted) {
+          setState(() {
+            _messages.clear();
+            _messages.addAll(msgs);
+            _loading = false;
+            _isOlderEnd = result.isEnd == true;
+            _isNewerEnd = true;
+          });
+          // 官方：首次加载后直接滚到底部
+          _scrollToBottom();
+        }
+      } else {
+        // 加载更多：插入到顶部
+        if (mounted) {
+          setState(() {
+            _messages.insertAll(0, msgs);
+            _loading = false;
+            _isOlderEnd = result.isEnd == true;
+          });
+        }
       }
     } catch (e) {
       debugPrint('[Chat] loadMessages error: $e');
@@ -184,25 +246,59 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  Future<void> _loadHistoryMessages() async {
-    if (_loadingMore || _isEnd || _messages.isEmpty) return;
-    _loadingMore = true;
+  /// 上滑加载更早消息（按照官方逻辑）
+  Future<void> _loadOlderMessages() async {
+    if (_isLoadingMore || _isOlderEnd) return;
+    setState(() => _isLoadingMore = true);
     try {
-      final result = await OpenIM.iMManager.messageManager
-          .getAdvancedHistoryMessageList(
-            conversationID: conversationID,
-            startMsg: _messages.first,
-            count: 50,
-          );
-      // 与官方一致：SDK 已从本地 DB 恢复 isRead/hasReadTime
-      final msgs = result.messageList ?? [];
-      msgs.sort((a, b) => (a.sendTime ?? 0).compareTo(b.sendTime ?? 0));
-      _isEnd = result.isEnd ?? true;
-      if (mounted && msgs.isNotEmpty) {
-        setState(() => _messages.insertAll(0, msgs));
+      final result = await OpenIM.iMManager.messageManager.getAdvancedHistoryMessageList(
+        conversationID: conversationID,
+        count: _pageSize,
+        startMsg: _messages.firstOrNull,
+      );
+
+      if (result.messageList != null && result.messageList!.isNotEmpty) {
+        // 保持滚动位置
+        final offset = _scrollController.offset;
+        final oldHeight = _scrollController.position.maxScrollExtent;
+        
+        setState(() {
+          _messages.insertAll(0, result.messageList!);
+          _isOlderEnd = result.isEnd == true;
+        });
+        
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final newHeight = _scrollController.position.maxScrollExtent;
+          _scrollController.jumpTo(offset + (newHeight - oldHeight));
+        });
       }
-    } catch (_) {}
-    _loadingMore = false;
+    } catch (e) {
+      debugPrint('[Chat] _loadOlderMessages error: $e');
+    } finally {
+      setState(() => _isLoadingMore = false);
+    }
+  }
+
+  /// 下滑加载更新消息
+  /// 下滑加载更新消息（按照官方逻辑，实际上不需要，因为 WebSocket 会推送）
+  Future<void> _loadNewerMessages() async {
+    if (!_isNearBottom() || _pendingNewMessages.isEmpty) return;
+    _appendPendingMessages(scrollToBottom: false);
+  }
+
+  /// 按照官方逻辑：进入时清零未读数
+  void _clearUnreadCount() {
+    final conv = LocalStore.getConversation(conversationID);
+    if (conv != null && conv.unreadCount > 0) {
+      OpenIM.iMManager.conversationManager.markConversationMessageAsRead(
+        conversationID: conversationID,
+      );
+    }
+  }
+
+  /// 移除不再需要的 seq 边界更新逻辑
+  void _updateSeqBounds(List<Message> msgs) {
+    // 官方实现中没有这个逻辑，保留空方法以避免编译错误
   }
 
   Future<void> _checkOnlineStatus() async {
@@ -217,44 +313,121 @@ class _ChatPageState extends State<ChatPage> {
     } catch (_) {}
   }
 
-  void _markAsRead() {
-    // 【修复问题2】进入聊天页面时清除未读数
-    OpenIM.iMManager.conversationManager.markConversationMessageAsRead(
-      conversationID: conversationID,
-    );
+  bool _isNearBottom() {
+    if (!_scrollController.hasClients) return true;
+    return (_scrollController.position.maxScrollExtent -
+            _scrollController.position.pixels) <=
+        80;
   }
 
-  /// 与官方 ChatLogic._markMessageAsRead 一致：
-  /// 消息变为可见时，如果是未读的他人消息，则标记会话已读
-  void _markMessageAsRead(Message message, bool visible) {
-    if (visible &&
-        message.isRead != true &&
-        message.sendID != Config.userID &&
-        (message.contentType ?? 0) < 1000) {
-      OpenIM.iMManager.conversationManager.markConversationMessageAsRead(
+  void _appendPendingMessages({bool scrollToBottom = true}) {
+    if (_pendingNewMessages.isEmpty || !mounted) return;
+
+    final incoming = _pendingNewMessages.where((e) => e.sendID != Config.userID).toList();
+    setState(() {
+      _messages.addAll(_pendingNewMessages);
+      _pendingNewMessages.clear();
+      _unreadBelow = 0;
+    });
+
+    for (final msg in incoming) {
+      _markMessageAsRead(msg, true);
+    }
+
+    if (scrollToBottom) {
+      _scrollToBottom();
+    }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted || !_scrollController.hasClients) return;
+
+      for (var i = 0; i < 6; i++) {
+        if (!mounted || !_scrollController.hasClients) return;
+        final target = _scrollController.position.maxScrollExtent;
+        _scrollController.jumpTo(target);
+        await WidgetsBinding.instance.endOfFrame;
+      }
+
+      if (_pendingNewMessages.isNotEmpty) {
+        _appendPendingMessages(scrollToBottom: false);
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (!mounted || !_scrollController.hasClients) return;
+          for (var i = 0; i < 6; i++) {
+            if (!mounted || !_scrollController.hasClients) return;
+            final target = _scrollController.position.maxScrollExtent;
+            _scrollController.jumpTo(target);
+            await WidgetsBinding.instance.endOfFrame;
+          }
+        });
+      }
+    });
+  }
+
+  Future<void> _markAsRead() async {
+    if (!mounted) return;
+    try {
+      await OpenIM.iMManager.conversationManager.markConversationMessageAsRead(
         conversationID: conversationID,
       );
-      // 与官方一致：本地立即标记已读
-      message.isRead = true;
-      message.hasReadTime = DateTime.now().millisecondsSinceEpoch;
-      if (message.clientMsgID != null) {
-        LocalStore.markMessageRead(
-            conversationID, message.clientMsgID!, message.hasReadTime!);
+      final now = DateTime.now().millisecondsSinceEpoch;
+      for (final msg in _messages) {
+        if (msg.sendID != Config.userID && msg.isRead != true) {
+          msg.isRead = true;
+          msg.hasReadTime = now;
+          if (msg.clientMsgID != null) {
+            await LocalStore.markMessageRead(
+              conversationID,
+              msg.clientMsgID!,
+              now,
+            );
+          }
+        }
+      }
+      if (mounted) setState(() {});
+    } catch (e) {
+      debugPrint('[Chat] _markAsRead error: $e');
+    }
+  }
+
+  Future<void> _markMessageAsRead(Message msg, bool visible) async {
+    if (!visible) return;
+    if ((msg.contentType ?? 0) >= 1000 || msg.contentType == MessageType.voice) {
+      return;
+    }
+    if (msg.sendID == Config.userID || msg.isRead == true) return;
+
+    final now = DateTime.now().millisecondsSinceEpoch;
+    try {
+      await OpenIM.iMManager.conversationManager.markConversationMessageAsRead(
+        conversationID: conversationID,
+      );
+    } catch (e) {
+      debugPrint('[Chat] _markMessageAsRead request error: $e');
+    } finally {
+      msg.isRead = true;
+      msg.hasReadTime = now;
+      if (msg.clientMsgID != null) {
+        await LocalStore.markMessageRead(conversationID, msg.clientMsgID!, now);
       }
       if (mounted) setState(() {});
     }
   }
 
-  void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-        );
-      }
-    });
+  /// 与官方一致：滚动到第一条未读消息位置
+  /// [firstUnreadIdx] 是未读消息在 _messages 列表中的索引
+  /// 当前实现保留接口，必要时可扩展为搜索消息定位。
+  void _scrollToFirstUnread(int firstUnreadIdx) {
+    if (!_scrollController.hasClients || firstUnreadIdx < 0 || firstUnreadIdx >= _messages.length) {
+      return;
+    }
+    final ratio = _messages.length <= 1 ? 1.0 : firstUnreadIdx / (_messages.length - 1);
+    final target = _scrollController.position.maxScrollExtent * ratio;
+    _scrollController.jumpTo(target.clamp(
+      _scrollController.position.minScrollExtent,
+      _scrollController.position.maxScrollExtent,
+    ));
   }
 
   Future<void> _pickAndSendImage() async {
@@ -368,34 +541,91 @@ class _ChatPageState extends State<ChatPage> {
           Expanded(
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
-                : GestureDetector(
-                    onTap: () {
-                      FocusScope.of(context).unfocus();
-                      if (_showEmojiPicker) {
-                        setState(() => _showEmojiPicker = false);
-                      }
-                    },
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.only(
-                        left: 12,
-                        right: 12,
-                        top: 8,
-                        bottom: 24,
+                : Stack(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          FocusScope.of(context).unfocus();
+                          if (_showEmojiPicker) {
+                            setState(() => _showEmojiPicker = false);
+                          }
+                        },
+                        child: ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.only(
+                            left: 12,
+                            right: 12,
+                            top: 8,
+                            bottom: 16,
+                          ),
+                          itemCount: _messages.length,
+                          itemBuilder: (_, i) {
+                            final msg = _messages[i];
+                            final showTime = _shouldShowTime(i);
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (showTime) _buildTimeSeparator(msg),
+                                _buildMessageItem(msg),
+                              ],
+                            );
+                          },
+                        ),
                       ),
-                      itemCount: _messages.length,
-                      itemBuilder: (_, i) {
-                        final msg = _messages[i];
-                        final showTime = _shouldShowTime(i);
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (showTime) _buildTimeSeparator(msg),
-                            _buildMessageItem(msg),
-                          ],
-                        );
-                      },
-                    ),
+                      // 向下箭头浮动按钮 + 未读数
+                      if (_showScrollDown)
+                        Positioned(
+                          right: 16,
+                          bottom: 12,
+                          child: GestureDetector(
+                            onTap: _scrollToBottom,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.15),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  const Icon(Icons.keyboard_arrow_down,
+                                      size: 28, color: Color(0xFF1B72EC)),
+                                  if (_unreadBelow > 0)
+                                    Positioned(
+                                      top: -8,
+                                      right: -8,
+                                      child: Container(
+                                        constraints: const BoxConstraints(minWidth: 18),
+                                        height: 18,
+                                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFF3B30),
+                                          borderRadius: BorderRadius.circular(9),
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          _unreadBelow > 99 ? '99+' : '$_unreadBelow',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
           ),
           _buildInputBar(),
@@ -490,8 +720,18 @@ class _ChatPageState extends State<ChatPage> {
     if (ms <= 0) ms = DateTime.now().millisecondsSinceEpoch;
     // 显式标记为 UTC，再转为手机本地时区
     final dt = DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true).toLocal();
-    final text = '${dt.year}年${_pad(dt.month)}月${_pad(dt.day)}日 ${_pad(dt.hour)}:${_pad(dt.minute)}';
-    debugPrint('[Chat] _buildTimeSeparator: ms=$ms utcHour=${DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true).hour} localHour=${dt.hour} text=$text sendTime=${msg.sendTime} createTime=${msg.createTime}');
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final msgDay = DateTime(dt.year, dt.month, dt.day);
+    final diff = today.difference(msgDay).inDays;
+    String suffix = '';
+    if (diff == 0) {
+      suffix = '(今天)';
+    } else if (diff == 1) {
+      suffix = '(昨天)';
+    }
+    final text = '${dt.year}年${_pad(dt.month)}月${_pad(dt.day)}日 ${_pad(dt.hour)}:${_pad(dt.minute)}$suffix';
+    debugPrint('[Chat] _buildTimeSeparator: ms=$ms localHour=${dt.hour} text=$text');
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Center(
@@ -508,7 +748,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget _buildReadTag(Message msg) {
     final isRead = msg.isRead == true;
     return Padding(
-      padding: const EdgeInsets.only(top: 2, bottom: 8),
+      padding: const EdgeInsets.only(top: 2, bottom: 2),
       child: Text(
         isRead ? '已读' : '未读',
         style: const TextStyle(fontSize: 11, color: Color(0xFF999999)),

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+
 
 import '../../sdk/flutter_openim_sdk.dart';
 import '../../core/config.dart';
@@ -268,11 +268,15 @@ class _ConversationPageState extends State<ConversationPage> {
                             ),
                           ),
                           if ((conv.latestMsgSendTime ?? 0) > 0)
-                            Text(
-                              _formatTime(conv.latestMsgSendTime ?? 0),
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF8E9AB0),
+                            SizedBox(
+                              width: 168,
+                              child: Text(
+                                _formatTime(conv.latestMsgSendTime ?? 0),
+                                textAlign: TextAlign.left,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF8E9AB0),
+                                ),
                               ),
                             ),
                         ],
@@ -358,10 +362,13 @@ class _ConversationPageState extends State<ConversationPage> {
     // 显式标记为 UTC，再转为手机本地时区
     final dt = DateTime.fromMillisecondsSinceEpoch(normalized, isUtc: true).toLocal();
     final now = DateTime.now();
-    if (dt.year == now.year && dt.month == now.month && dt.day == now.day) {
-      return DateFormat('HH:mm').format(dt);
-    }
-    return DateFormat('M月d日').format(dt);
+    final today = DateTime(now.year, now.month, now.day);
+    final msgDay = DateTime(dt.year, dt.month, dt.day);
+    final diff = today.difference(msgDay).inDays;
+    final base = '${dt.year}年${dt.month.toString().padLeft(2, '0')}月${dt.day.toString().padLeft(2, '0')}日 ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    if (diff == 0) return '$base(今天)';
+    if (diff == 1) return '$base(昨天)';
+    return base;
   }
 
   /// 与官方一致：直接使用 conv.unreadCount（由 LocalStore 实时维护）
