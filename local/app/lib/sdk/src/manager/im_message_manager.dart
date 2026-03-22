@@ -494,6 +494,11 @@ class MessageManager {
     // Sort by seq ascending
     messages.sort((a, b) => (a.seq ?? 0).compareTo(b.seq ?? 0));
 
+    // 服务端不返回 status 字段（这是客户端概念），但能从服务端拉到的消息一定是发送成功的
+    for (final msg in messages) {
+      msg.status ??= MessageStatus.succeeded;
+    }
+
     // 与官方一致：先从本地 DB 恢复已读状态，再写入本地 DB
     // 顺序很重要：必须先 apply 再 put，否则 put 会用服务端的 isRead=false 覆盖本地已有的 isRead=true
     if (conversationID != null && conversationID.isNotEmpty) {
