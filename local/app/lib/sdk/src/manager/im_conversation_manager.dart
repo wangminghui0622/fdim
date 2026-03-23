@@ -27,6 +27,7 @@ class ConversationManager {
       'ownerUserID': Config.userID,
     });
     final list = _parseConversationList(data);
+    await _syncConversationSeqs(list);
     await LocalStore.putConversations(list);
     return list;
   }
@@ -37,6 +38,7 @@ class ConversationManager {
         'ownerUserID': Config.userID,
       });
       final list = _parseConversationList(data);
+      await _syncConversationSeqs(list);
       await LocalStore.putConversations(list);
     } catch (_) {}
   }
@@ -52,6 +54,7 @@ class ConversationManager {
       'pagination': {'pageNumber': offset ~/ count + 1, 'showNumber': count},
     });
     final list = _parseConversationList(data);
+    await _syncConversationSeqs(list);
     // 与官方一致：拉取结果写入本地 DB（putConversations 会保留本地 unreadCount）
     await LocalStore.putConversations(list);
     // 返回全部本地会话（包括本地创建但服务端尚无的会话，如好友通过后的会话）
@@ -132,6 +135,42 @@ class ConversationManager {
   Future<dynamic> getTotalUnreadMsgCount({String? operationID}) async {
     // 与官方一致：从本地 DB 计算总未读数（不走网络）
     return LocalStore.getTotalUnreadCount();
+  }
+
+  Future<void> _syncConversationSeqs(List<ConversationInfo> list) async {
+    final conversationIDs = list
+        .map((e) => e.conversationID)
+        .where((e) => e.isNotEmpty)
+        .toList();
+    if (conversationIDs.isEmpty) return;
+
+    try {
+      final data = await HttpClient.post(
+        '/msg/get_conversations_has_read_and_max_seq',
+        data: {
+          'userID': Config.userID,
+          'conversationIDs': conversationIDs,
+        },
+        showErrorToast: false,
+      );
+      if (data is! Map || data['seqs'] is! Map) return;
+      final seqs = data['seqs'] as Map;
+
+      for (final conv in list) {
+        final seqInfo = seqs[conv.conversationID];
+        if (seqInfo is! Map) continue;
+        final maxSeq = (seqInfo['maxSeq'] ?? seqInfo['MaxSeq'] ?? 0) as int;
+        final hasReadSeq = (seqInfo['hasReadSeq'] ?? seqInfo['HasReadSeq'] ?? 0) as int;
+        if (maxSeq > 0) {
+          await LocalStore.setMaxSeq(conv.conversationID, maxSeq);
+        }
+        if (hasReadSeq > 0) {
+          await LocalStore.setHasReadSeq(conv.conversationID, hasReadSeq);
+        }
+      }
+    } catch (e) {
+      debugPrint('[ConversationManager] _syncConversationSeqs error: $e');
+    }
   }
 
   Future markConversationMessageAsRead({
