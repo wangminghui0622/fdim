@@ -214,6 +214,9 @@ class IMManager {
         await _ensureConversationExists(convID, msg);
         // 1) 写入本地消息 DB
         await LocalStore.putMessage(convID, msg);
+        if ((msg.seq ?? 0) > 0) {
+          await LocalStore.setMaxSeq(convID, msg.seq!);
+        }
         // 2) 更新会话 latestMsg
         await LocalStore.updateLatestMsg(convID, msg);
         // 3) 与官方 Go SDK 一致：

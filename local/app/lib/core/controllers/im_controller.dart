@@ -184,6 +184,17 @@ class IMController extends GetxController {
     );
     // 与官方一致：登录后初始化本地 DB
     await LocalStore.init();
+
+    try {
+      await OpenIM.iMManager.conversationManager.getConversationListSplit(
+        offset: 0,
+        count: 100,
+      );
+    } catch (e) {
+      debugPrint('[IMController] initial conversation sync failed: $e');
+    }
+
+    totalUnreadCount.value = LocalStore.getTotalUnreadCount();
     isLoggedIn.value = true;
     return info;
   }

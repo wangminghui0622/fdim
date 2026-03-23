@@ -150,10 +150,17 @@ class ConversationManager {
     listener.totalUnreadMessageCountChanged(LocalStore.getTotalUnreadCount());
 
     try {
+      final seqInfo = await OpenIM.iMManager.messageManager.getHasReadAndMaxSeq(
+        conversationID,
+      );
+      final maxSeq = seqInfo['maxSeq'] ?? LocalStore.getMaxSeq(conversationID);
+      if (maxSeq > 0) {
+        await LocalStore.setHasReadSeq(conversationID, maxSeq);
+      }
       await HttpClient.post('/msg/mark_conversation_as_read', data: {
         'userID': Config.userID,
         'conversationID': conversationID,
-        'hasReadSeq': 0,
+        'hasReadSeq': maxSeq,
         'seqs': [],
       }, showErrorToast: false);
     } catch (e) {

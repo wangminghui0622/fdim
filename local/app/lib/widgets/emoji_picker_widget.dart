@@ -298,15 +298,27 @@ class _EmojiPickerSheetState extends State<EmojiPickerSheet>
 
   Widget _buildTabBar() {
     return Container(
-      height: 44,
+      height: 34,
       color: Colors.white,
       child: TabBar(
         controller: _tabController,
         indicatorColor: const Color(0xFF0089FF),
+        indicatorWeight: 2,
         labelColor: const Color(0xFF0089FF),
         unselectedLabelColor: Colors.grey,
+        labelPadding: EdgeInsets.zero,
+        dividerColor: Colors.transparent,
+        indicatorPadding: const EdgeInsets.symmetric(horizontal: 12),
         tabs: EmojiPickerWidget._categoryIcons
-            .map((icon) => Tab(text: icon))
+            .map(
+              (icon) => Tab(
+                height: 34,
+                child: Align(
+                  alignment: const Alignment(0, -0.15),
+                  child: Text(icon, style: const TextStyle(fontSize: 18)),
+                ),
+              ),
+            )
             .toList(),
       ),
     );
@@ -314,7 +326,7 @@ class _EmojiPickerSheetState extends State<EmojiPickerSheet>
 
   Widget _buildEmojiGrid(List<String> emojis) {
     return GridView.builder(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 8,
         mainAxisSpacing: 4,

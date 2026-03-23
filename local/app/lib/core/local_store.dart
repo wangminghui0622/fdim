@@ -26,6 +26,9 @@ class LocalStore {
 
   static String get _userPrefix => Config.userID;
 
+  /// 记录用户刚主动标记已读的会话 ID，防止服务端同步时回填旧未读数
+  static final Set<String> _justReadConvIDs = {};
+
   /// 初始化（登录后调用一次）
   static Future<void> init() async {
     final uid = _userPrefix;
@@ -56,17 +59,43 @@ class LocalStore {
   }
 
   /// 批量保存会话（合并式）
-  /// 与官方 Go SDK 一致：本地 DB 是 unreadCount 的唯一权威来源。
-  /// 对于已存在于本地的会话，始终保留本地 unreadCount（我们自己维护的）；
-  /// 只有新会话（本地不存在的）才使用服务端值。
+  /// unreadCount 合并策略：
+  /// 1. 若本地已建立 maxSeq/hasReadSeq，则优先使用本地 seq 水位差计算未读，避免服务端旧 unreadCount 回灌。
+  /// 2. 若本地刚主动标记过已读，则保持 0，直到收到新的消息递增未读。
+  /// 3. 若本地还没有有效 seq 水位，则回退到本地/服务端 unreadCount 的较大值。
   static Future<void> putConversations(List<ConversationInfo> list) async {
     final box = _convBox;
     if (box == null) return;
+    debugPrint('[LocalStore] putConversations: ${list.length} conversations from server');
     for (final conv in list) {
       final local = getConversation(conv.conversationID);
+      final serverUnread = conv.unreadCount;
       if (local != null) {
-        // 已存在的会话：保留本地 unreadCount，更新其他字段
-        conv.unreadCount = local.unreadCount;
+        final localUnread = local.unreadCount;
+        final localMaxSeq = getMaxSeq(conv.conversationID);
+        final localHasReadSeq = getHasReadSeq(conv.conversationID);
+        if (localMaxSeq > 0) {
+          final derivedUnread = localMaxSeq > localHasReadSeq
+              ? localMaxSeq - localHasReadSeq
+              : 0;
+          conv.unreadCount = derivedUnread;
+          debugPrint('[LocalStore] ${conv.conversationID}: derive by seq (server=$serverUnread, local=$localUnread, maxSeq=$localMaxSeq, hasReadSeq=$localHasReadSeq) -> $derivedUnread');
+          if (derivedUnread == 0) {
+            _justReadConvIDs.remove(conv.conversationID);
+          }
+        } else if (_justReadConvIDs.contains(conv.conversationID)) {
+          conv.unreadCount = 0;
+          debugPrint('[LocalStore] ${conv.conversationID}: justRead, keep 0 (server=$serverUnread, local=$localUnread)');
+          if (serverUnread == 0) {
+            _justReadConvIDs.remove(conv.conversationID);
+            debugPrint('[LocalStore] ${conv.conversationID}: server synced, remove from justRead set');
+          }
+        } else {
+          conv.unreadCount = localUnread > serverUnread ? localUnread : serverUnread;
+          debugPrint('[LocalStore] ${conv.conversationID}: merge max (server=$serverUnread, local=$localUnread) -> ${conv.unreadCount}');
+        }
+      } else {
+        debugPrint('[LocalStore] ${conv.conversationID}: new conversation, use server unread=$serverUnread');
       }
       await box.put(conv.conversationID, jsonEncode(conv.toJson()));
     }
@@ -117,6 +146,7 @@ class LocalStore {
   static Future<int> incrementUnread(String conversationID) async {
     final conv = getConversation(conversationID);
     if (conv != null) {
+      _justReadConvIDs.remove(conversationID);
       conv.unreadCount += 1;
       await putConversation(conv);
       return conv.unreadCount;
@@ -126,6 +156,7 @@ class LocalStore {
 
   /// 本地清零 unreadCount（标记已读时调用）
   static Future<void> clearUnread(String conversationID) async {
+    _justReadConvIDs.add(conversationID);
     await setUnreadCount(conversationID, 0);
   }
 

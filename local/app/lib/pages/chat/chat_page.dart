@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +7,8 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:focus_detector_v2/focus_detector_v2.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
 
 import '../../core/config.dart';
 import '../../core/controllers/im_controller.dart';
@@ -47,6 +50,14 @@ class _ChatPageState extends State<ChatPage> {
   StreamSubscription? _readReceiptSub;
   StreamSubscription? _convChangedSub;
   final _audioPlayer = AudioPlayerManager();
+  final _audioRecorder = AudioRecorder();
+  bool _voiceMode = false;
+  bool _isRecording = false;
+  String? _recordFilePath;
+  int? _recordStartAt;
+  double _cachedKeyboardHeight = 290;
+  bool _hideEmojiWhenKeyboardShows = false;
+  bool _pendingScrollAfterKeyboardShows = false;
 
   late String conversationID;
   late String userID;
@@ -141,6 +152,7 @@ class _ChatPageState extends State<ChatPage> {
     _inputController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
+    _audioRecorder.dispose();
     _onlineTimer?.cancel();
     _newMsgSub?.cancel();
     _readReceiptSub?.cancel();
@@ -352,10 +364,15 @@ class _ChatPageState extends State<ChatPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted || !_scrollController.hasClients) return;
 
-      for (var i = 0; i < 6; i++) {
+      double? lastTarget;
+      for (var i = 0; i < 3; i++) {
         if (!mounted || !_scrollController.hasClients) return;
         final target = _scrollController.position.maxScrollExtent;
+        if (lastTarget != null && (target - lastTarget).abs() < 1) {
+          break;
+        }
         _scrollController.jumpTo(target);
+        lastTarget = target;
         await WidgetsBinding.instance.endOfFrame;
       }
 
@@ -363,10 +380,16 @@ class _ChatPageState extends State<ChatPage> {
         _appendPendingMessages(scrollToBottom: false);
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           if (!mounted || !_scrollController.hasClients) return;
-          for (var i = 0; i < 6; i++) {
+          double? lastPendingTarget;
+          for (var i = 0; i < 3; i++) {
             if (!mounted || !_scrollController.hasClients) return;
             final target = _scrollController.position.maxScrollExtent;
+            if (lastPendingTarget != null &&
+                (target - lastPendingTarget).abs() < 1) {
+              break;
+            }
             _scrollController.jumpTo(target);
+            lastPendingTarget = target;
             await WidgetsBinding.instance.endOfFrame;
           }
         });
@@ -511,9 +534,213 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+  Future<void> _toggleVoiceMode() async {
+    if (_isRecording) {
+      await _cancelVoiceRecord();
+    }
+
+    final nextVoiceMode = !_voiceMode;
+    if (nextVoiceMode) {
+      // 切换到语音模式
+      setState(() {
+        _voiceMode = true;
+        _showEmojiPicker = false;
+      });
+      _focusNode.unfocus();
+    } else {
+      // 切换到文字模式
+      setState(() {
+        _voiceMode = false;
+        _showEmojiPicker = false;
+        _pendingScrollAfterKeyboardShows = true;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        FocusScope.of(context).requestFocus(_focusNode);
+        _scrollToBottom();
+        Future.delayed(const Duration(milliseconds: 80), () {
+          if (mounted) _scrollToBottom();
+        });
+        Future.delayed(const Duration(milliseconds: 220), () {
+          if (mounted) _scrollToBottom();
+        });
+        Future.delayed(const Duration(milliseconds: 360), () {
+          if (mounted) _scrollToBottom();
+        });
+      });
+    }
+  }
+
+  Future<void> _startVoiceRecord() async {
+    try {
+      final hasPermission = await _audioRecorder.hasPermission();
+      if (!hasPermission) {
+        EasyLoading.showToast('请先开启麦克风权限');
+        return;
+      }
+
+      final dir = await getTemporaryDirectory();
+      final filePath = '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      await _audioRecorder.start(
+        const RecordConfig(
+          encoder: AudioEncoder.aacLc,
+          bitRate: 128000,
+          sampleRate: 44100,
+        ),
+        path: filePath,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _isRecording = true;
+        _recordFilePath = filePath;
+        _recordStartAt = DateTime.now().millisecondsSinceEpoch;
+      });
+    } catch (e) {
+      EasyLoading.showToast('开始录音失败');
+      debugPrint('[Chat] _startVoiceRecord error: $e');
+    }
+  }
+
+  Future<void> _stopVoiceRecordAndSend() async {
+    if (!_isRecording) return;
+    try {
+      final path = await _audioRecorder.stop();
+      final startAt = _recordStartAt;
+      final durationMs = startAt == null
+          ? 0
+          : DateTime.now().millisecondsSinceEpoch - startAt;
+      final duration = (durationMs / 1000).ceil();
+
+      if (!mounted) return;
+      setState(() {
+        _isRecording = false;
+        _recordStartAt = null;
+      });
+
+      if (path == null || path.isEmpty || duration <= 0) {
+        EasyLoading.showToast('录音失败');
+        return;
+      }
+      if (duration < 1) {
+        try {
+          final file = File(path);
+          if (await file.exists()) {
+            await file.delete();
+          }
+        } catch (_) {}
+        EasyLoading.showToast('说话时间太短');
+        return;
+      }
+
+      final tempMsg = await OpenIM.iMManager.messageManager
+          .createSoundMessageFromFullPath(
+        soundPath: path,
+        duration: duration,
+      );
+      tempMsg.sessionType = sessionType;
+      tempMsg.recvID = sessionType == ConversationType.single ? userID : '';
+      tempMsg.groupID = sessionType != ConversationType.single ? groupID : '';
+      tempMsg.isRead = false;
+      tempMsg.soundElem?.sourceUrl = path;
+      tempMsg.soundElem?.soundPath = path;
+
+      setState(() => _messages.add(tempMsg));
+      _scrollToBottom();
+
+      try {
+        await OpenIM.iMManager.messageManager.sendMessage(
+          message: tempMsg,
+          offlinePushInfo: OfflinePushInfo(),
+          userID: sessionType == ConversationType.single ? userID : null,
+          groupID: sessionType != ConversationType.single ? groupID : null,
+        );
+        if (mounted) {
+          setState(() {
+            tempMsg.status = MessageStatus.succeeded;
+          });
+          _scrollToBottom();
+        }
+      } catch (e) {
+        if (mounted) setState(() => tempMsg.status = MessageStatus.failed);
+        EasyLoading.showToast('语音发送失败');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isRecording = false;
+          _recordStartAt = null;
+        });
+      }
+      EasyLoading.showToast('结束录音失败');
+      debugPrint('[Chat] _stopVoiceRecordAndSend error: $e');
+    }
+  }
+
+  Future<void> _cancelVoiceRecord() async {
+    try {
+      if (_isRecording) {
+        final path = await _audioRecorder.stop();
+        if (path != null && path.isNotEmpty) {
+          final file = File(path);
+          if (await file.exists()) {
+            await file.delete();
+          }
+        }
+      }
+    } catch (_) {}
+    if (!mounted) return;
+    setState(() {
+      _isRecording = false;
+      _recordFilePath = null;
+      _recordStartAt = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final keyboardInset = MediaQuery.of(context).viewInsets.bottom;
+    final emojiPanelVisible = _showEmojiPicker || _hideEmojiWhenKeyboardShows;
+    final emojiPanelAnimationDuration = _hideEmojiWhenKeyboardShows
+        ? Duration.zero
+        : const Duration(milliseconds: 180);
+    final keyboardHostHeight = keyboardInset > 0
+        ? (keyboardInset > _cachedKeyboardHeight
+            ? keyboardInset
+            : _cachedKeyboardHeight)
+        : 0.0;
+    final bottomPanelHeight = emojiPanelVisible
+        ? _cachedKeyboardHeight
+        : keyboardHostHeight;
+    final bottomHostHeight = bottomPanelHeight;
+    if (keyboardInset > 180 && keyboardInset > _cachedKeyboardHeight) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() => _cachedKeyboardHeight = keyboardInset);
+      });
+    }
+    if (_hideEmojiWhenKeyboardShows && keyboardInset > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() {
+          _showEmojiPicker = false;
+          _hideEmojiWhenKeyboardShows = false;
+        });
+      });
+    }
+    if (_pendingScrollAfterKeyboardShows && keyboardInset > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _scrollToBottom();
+        Future.delayed(const Duration(milliseconds: 80), () {
+          if (mounted) _scrollToBottom();
+        });
+        setState(() => _pendingScrollAfterKeyboardShows = false);
+      });
+    }
+
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         centerTitle: true,
         title: Column(
@@ -545,9 +772,9 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
+          Positioned.fill(
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : Stack(
@@ -561,11 +788,11 @@ class _ChatPageState extends State<ChatPage> {
                         },
                         child: ListView.builder(
                           controller: _scrollController,
-                          padding: const EdgeInsets.only(
+                          padding: EdgeInsets.only(
                             left: 12,
                             right: 12,
                             top: 8,
-                            bottom: 16,
+                            bottom: 88 + bottomHostHeight,
                           ),
                           itemCount: _messages.length,
                           itemBuilder: (_, i) {
@@ -581,78 +808,56 @@ class _ChatPageState extends State<ChatPage> {
                           },
                         ),
                       ),
-                      // 向下箭头浮动按钮 + 未读数
-                      if (_showScrollDown)
-                        Positioned(
-                          right: 16,
-                          bottom: 12,
-                          child: GestureDetector(
-                            onTap: _scrollToBottom,
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.15),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  const Icon(Icons.keyboard_arrow_down,
-                                      size: 28, color: Color(0xFF1B72EC)),
-                                  if (_unreadBelow > 0)
-                                    Positioned(
-                                      top: -8,
-                                      right: -8,
-                                      child: Container(
-                                        constraints: const BoxConstraints(minWidth: 18),
-                                        height: 18,
-                                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFFF3B30),
-                                          borderRadius: BorderRadius.circular(9),
-                                        ),
-                                        alignment: Alignment.center,
-                                        child: Text(
-                                          _unreadBelow > 99 ? '99+' : '$_unreadBelow',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                ],
+                    ],
+                  ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              color: const Color(0xFFF0F2F6),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildInputBar(),
+                  SizedBox(
+                    height: bottomHostHeight,
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: IgnorePointer(
+                        ignoring: keyboardInset > 0,
+                        child: AnimatedContainer(
+                          duration: emojiPanelAnimationDuration,
+                          curve: Curves.easeOutCubic,
+                          height: emojiPanelVisible ? _cachedKeyboardHeight : 0,
+                          child: ClipRect(
+                            child: SizedBox(
+                              height: _cachedKeyboardHeight,
+                              child: IgnorePointer(
+                                ignoring: !_showEmojiPicker,
+                                child: EmojiPickerSheet(
+                                  onEmojiSelected: (emoji) {
+                                    _inputController.text += emoji;
+                                  },
+                                  onBackspacePressed: () {
+                                    final text = _inputController.text;
+                                    if (text.isNotEmpty) {
+                                      _inputController.text = text.substring(0, text.length - 1);
+                                    }
+                                  },
+                                ),
                               ),
                             ),
                           ),
                         ),
-                    ],
+                      ),
+                    ),
                   ),
-          ),
-          _buildInputBar(),
-          if (_showEmojiPicker)
-            SizedBox(
-              height: 250,
-              child: EmojiPickerSheet(
-                onEmojiSelected: (emoji) {
-                  _inputController.text += emoji;
-                },
-                onBackspacePressed: () {
-                  final text = _inputController.text;
-                  if (text.isNotEmpty) {
-                    _inputController.text = text.substring(0, text.length - 1);
-                  }
-                },
+                ],
               ),
             ),
+          ),
         ],
       ),
     );
@@ -1256,33 +1461,128 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildInputBar() {
+    final attachedToBottomPanel = _showEmojiPicker || _hideEmojiWhenKeyboardShows;
+    final safeBottom = MediaQuery.of(context).padding.bottom;
+    final bottomPadding = attachedToBottomPanel ? 8.0 : safeBottom + 8;
     return Container(
       padding: EdgeInsets.only(
         left: 12,
         right: 8,
         top: 8,
-        bottom: MediaQuery.of(context).padding.bottom + 8,
+        bottom: bottomPadding,
       ),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF0F2F6),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, -2),
-          ),
-        ],
+      decoration: const BoxDecoration(
+        color: Colors.transparent,
       ),
       child: Row(
         children: [
           GestureDetector(
+            onTap: _toggleVoiceMode,
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: const BoxDecoration(color: Colors.transparent),
+              child: Icon(
+                _voiceMode ? Icons.keyboard_alt_outlined : Icons.mic_none,
+                color: const Color(0xFF8E9AB0),
+                size: 24,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _voiceMode
+                ? GestureDetector(
+                    onLongPressStart: (_) => _startVoiceRecord(),
+                    onLongPressEnd: (_) => _stopVoiceRecordAndSend(),
+                    onLongPressCancel: _cancelVoiceRecord,
+                    child: Container(
+                      height: 40,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: _isRecording ? const Color(0xFFE8F3FF) : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: _isRecording
+                              ? const Color(0xFF0089FF)
+                              : const Color(0xFFD9DEE8),
+                        ),
+                      ),
+                      child: Text(
+                        _isRecording ? '松开 发送语音' : '按住 说话',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: _isRecording
+                              ? const Color(0xFF0089FF)
+                              : const Color(0xFF0C1C33),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: TextField(
+                      controller: _inputController,
+                      focusNode: _focusNode,
+                      maxLines: 4,
+                      minLines: 1,
+                      decoration: const InputDecoration(
+                        hintText: '输入消息...',
+                        hintStyle: TextStyle(color: Color(0xFF8E9AB0)),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                      ),
+                      style: const TextStyle(fontSize: 17, color: Color(0xFF0C1C33)),
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => _sendTextMessage(),
+                      onTap: () {
+                        if (_showEmojiPicker) {
+                          setState(() {
+                            _voiceMode = false;
+                            _hideEmojiWhenKeyboardShows = true;
+                            _pendingScrollAfterKeyboardShows = true;
+                          });
+                          FocusScope.of(context).requestFocus(_focusNode);
+                          return;
+                        }
+                        if (!_focusNode.hasFocus) {
+                          setState(() => _pendingScrollAfterKeyboardShows = true);
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) {
+                              FocusScope.of(context).requestFocus(_focusNode);
+                            }
+                          });
+                        }
+                      },
+                    ),
+                  ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
             onTap: () {
+              if (_showEmojiPicker) {
+                setState(() {
+                  _voiceMode = false;
+                  _hideEmojiWhenKeyboardShows = true;
+                });
+                FocusScope.of(context).requestFocus(_focusNode);
+                return;
+              }
+
+              _focusNode.unfocus();
               setState(() {
-                _showEmojiPicker = !_showEmojiPicker;
-                if (_showEmojiPicker) {
-                  _focusNode.unfocus();
-                }
+                _voiceMode = false;
+                _hideEmojiWhenKeyboardShows = false;
+                _showEmojiPicker = true;
               });
+              _scrollToBottom();
             },
             child: Container(
               width: 32,
@@ -1297,48 +1597,7 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: TextField(
-                controller: _inputController,
-                focusNode: _focusNode,
-                maxLines: 4,
-                minLines: 1,
-                decoration: const InputDecoration(
-                  hintText: '输入消息...',
-                  hintStyle: TextStyle(color: Color(0xFF8E9AB0)),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                ),
-                style: const TextStyle(fontSize: 17, color: Color(0xFF0C1C33)),
-                textInputAction: TextInputAction.send,
-                onSubmitted: (_) => _sendTextMessage(),
-                onTap: () {
-                  if (_showEmojiPicker) {
-                    setState(() => _showEmojiPicker = false);
-                  }
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (!mounted) return;
-                    FocusScope.of(context).requestFocus(_focusNode);
-                    SystemChannels.textInput.invokeMethod('TextInput.show');
-                    _scrollToBottom();
-                    Future.delayed(const Duration(milliseconds: 120), _scrollToBottom);
-                    Future.delayed(const Duration(milliseconds: 260), _scrollToBottom);
-                    Future.delayed(const Duration(milliseconds: 420), _scrollToBottom);
-                  });
-                },
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           GestureDetector(
             onTap: _sendButtonVisible ? _sendTextMessage : _pickAndSendImage,
             child: Container(
@@ -1354,7 +1613,7 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
         ],
       ),
     );

@@ -531,6 +531,11 @@ class MessageManager {
     if (conversationID != null && conversationID.isNotEmpty) {
       LocalStore.applyHasReadSeq(conversationID, messages, Config.userID);
       await LocalStore.putMessages(conversationID, messages);
+      for (final msg in messages) {
+        if ((msg.seq ?? 0) > 0) {
+          await LocalStore.setMaxSeq(conversationID, msg.seq!);
+        }
+      }
     }
 
     // 合并本地创建的消息（如好友通过后的申请语句和问候消息，没有 serverMsgID）
@@ -625,6 +630,11 @@ class MessageManager {
     if (conversationID.isNotEmpty) {
       LocalStore.applyHasReadSeq(conversationID, messages, Config.userID);
       await LocalStore.putMessages(conversationID, messages);
+      for (final msg in messages) {
+        if ((msg.seq ?? 0) > 0) {
+          await LocalStore.setMaxSeq(conversationID, msg.seq!);
+        }
+      }
     }
 
     return messages;
