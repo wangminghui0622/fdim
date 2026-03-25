@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -353,7 +354,28 @@ class _ConversationPageState extends State<ConversationPage> {
 
   String _parseLatestMsg(Message? latestMsg) {
     if (latestMsg == null) return '';
+    // 撤回消息：优先使用 textElem，否则从 notificationElem.detail 解析
+    if (latestMsg.contentType == MessageType.revokeMessageNotification) {
+      if (latestMsg.textElem?.content != null && latestMsg.textElem!.content!.isNotEmpty) {
+        return latestMsg.textElem!.content!;
+      }
+      try {
+        final detail = latestMsg.notificationElem?.detail;
+        if (detail != null && detail.isNotEmpty) {
+          final map = _tryJsonDecode(detail);
+          if (map is Map<String, dynamic>) {
+            final revokerID = map['revokerID'] as String?;
+            return revokerID == Config.userID ? '你撤回了一条消息' : '对方撤回了一条消息';
+          }
+        }
+      } catch (_) {}
+      return latestMsg.sendID == Config.userID ? '你撤回了一条消息' : '对方撤回了一条消息';
+    }
     return latestMsg.textContent;
+  }
+
+  dynamic _tryJsonDecode(String s) {
+    try { return const JsonDecoder().convert(s); } catch (_) { return null; }
   }
 
   String _formatTime(int timestamp) {

@@ -32,12 +32,23 @@ type MsgCache interface {
 	SetHasReadSeqs(ctx context.Context, conversationID string, userSeqMap map[string]int64) error
 	// GetHasReadSeq 获取单个用户在会话中的已读序列号
 	GetHasReadSeq(ctx context.Context, conversationID, userID string) (int64, error)
+	// DeleteMessageBySeq 删除指定消息的缓存（撤回时使用）
+	DeleteMessageBySeq(ctx context.Context, conversationID string, seq int64) error
+}
+
+// SeqProvider 序列号操作接口（可对接官方 SeqConversationCache）
+type SeqProvider interface {
+	Malloc(ctx context.Context, conversationID string, size int64) (int64, error)
+	GetMaxSeq(ctx context.Context, conversationID string) (int64, error)
+	GetMinSeq(ctx context.Context, conversationID string) (int64, error)
+	SetMinSeq(ctx context.Context, conversationID string, seq int64) error
 }
 
 // RedisMsgCache Redis消息缓存实现
 type RedisMsgCache struct {
-	client *redis.Client
-	msgDB  interface{} // TODO: 添加消息数据库
+	client      *redis.Client
+	msgDB       interface{}
+	seqProvider SeqProvider // 可选：委托给官方 SeqConversation
 }
 
 // NewRedisMsgCache 创建Redis消息缓存
@@ -46,6 +57,11 @@ func NewRedisMsgCache(client *redis.Client, msgDB interface{}) *RedisMsgCache {
 		client: client,
 		msgDB:  msgDB,
 	}
+}
+
+// SetSeqProvider 设置 SeqProvider（对接官方 SeqConversationCache，使 seq 操作走同一套 Redis key）
+func (c *RedisMsgCache) SetSeqProvider(sp SeqProvider) {
+	c.seqProvider = sp
 }
 
 // getConversationMaxSeqKey 获取会话最大序列号键
@@ -63,8 +79,46 @@ func (c *RedisMsgCache) getMessageKey(conversationID string, seq int64) string {
 	return fmt.Sprintf("msg:%s:%d", conversationID, seq)
 }
 
-// IncrMaxSeq 原子递增会话序列号，返回新的 seq（不写消息缓存）
+// atomicGetAndDelOldSeq 原子地读取并删除旧 key，避免并发迁移竞态
+func (c *RedisMsgCache) atomicGetAndDelOldSeq(ctx context.Context, conversationID string) (int64, bool) {
+	oldKey := c.getConversationMaxSeqKey(conversationID)
+	script := `
+local v = redis.call("GET", KEYS[1])
+if v then
+	redis.call("DEL", KEYS[1])
+	return tonumber(v)
+end
+return 0
+`
+	result, err := c.client.Eval(ctx, script, []string{oldKey}).Int64()
+	if err != nil || result <= 0 {
+		return 0, false
+	}
+	return result, true
+}
+
+// IncrMaxSeq 原子递增会话序列号，返回新分配的 seq（可直接赋值给消息）
 func (c *RedisMsgCache) IncrMaxSeq(ctx context.Context, conversationID string) (int64, error) {
+	if c.seqProvider != nil {
+		// 检查新系统是否已初始化
+		newMax, err := c.seqProvider.GetMaxSeq(ctx, conversationID)
+		if err != nil {
+			return 0, err
+		}
+		if newMax == 0 {
+			// 新系统无数据，检查旧 key 并迁移
+			if oldSeq, ok := c.atomicGetAndDelOldSeq(ctx, conversationID); ok {
+				// 通过 Malloc 预分配 oldSeq 个 seq，使新系统 CURR 追上旧值
+				_, _ = c.seqProvider.Malloc(ctx, conversationID, oldSeq)
+			}
+		}
+		// Malloc 返回分配前的 seq，+1 得到本次分配的新 seq（与 Redis INCR 语义一致）
+		beforeSeq, err := c.seqProvider.Malloc(ctx, conversationID, 1)
+		if err != nil {
+			return 0, err
+		}
+		return beforeSeq + 1, nil
+	}
 	maxSeqKey := c.getConversationMaxSeqKey(conversationID)
 	newSeq, err := c.client.Incr(ctx, maxSeqKey).Result()
 	if err != nil {
@@ -182,6 +236,21 @@ func (c *RedisMsgCache) GetMessagesBySeq(ctx context.Context, conversationID str
 
 // GetMaxSeq 获取最大序列号
 func (c *RedisMsgCache) GetMaxSeq(ctx context.Context, conversationID string) (int64, error) {
+	if c.seqProvider != nil {
+		seq, err := c.seqProvider.GetMaxSeq(ctx, conversationID)
+		if err != nil {
+			return 0, err
+		}
+		if seq > 0 {
+			return seq, nil
+		}
+		// 新系统无数据，回退读旧 key（只读，不删除，迁移由 IncrMaxSeq 触发）
+		oldSeq, err := c.client.Get(ctx, c.getConversationMaxSeqKey(conversationID)).Int64()
+		if err == nil && oldSeq > 0 {
+			return oldSeq, nil
+		}
+		return 0, nil
+	}
 	maxSeqKey := c.getConversationMaxSeqKey(conversationID)
 	seq, err := c.client.Get(ctx, maxSeqKey).Int64()
 	if err == redis.Nil {
@@ -198,6 +267,9 @@ func (c *RedisMsgCache) SetMaxSeq(ctx context.Context, conversationID string, se
 
 // GetMinSeq 获取最小保留序列号
 func (c *RedisMsgCache) GetMinSeq(ctx context.Context, conversationID string) (int64, error) {
+	if c.seqProvider != nil {
+		return c.seqProvider.GetMinSeq(ctx, conversationID)
+	}
 	minSeqKey := c.getConversationMinSeqKey(conversationID)
 	seq, err := c.client.Get(ctx, minSeqKey).Int64()
 	if err == redis.Nil {
@@ -208,6 +280,9 @@ func (c *RedisMsgCache) GetMinSeq(ctx context.Context, conversationID string) (i
 
 // SetMinSeq 设置最小保留序列号
 func (c *RedisMsgCache) SetMinSeq(ctx context.Context, conversationID string, seq int64) error {
+	if c.seqProvider != nil {
+		return c.seqProvider.SetMinSeq(ctx, conversationID, seq)
+	}
 	minSeqKey := c.getConversationMinSeqKey(conversationID)
 	return c.client.Set(ctx, minSeqKey, seq, 0).Err()
 }
@@ -233,4 +308,10 @@ func (c *RedisMsgCache) GetHasReadSeq(ctx context.Context, conversationID, userI
 		return 0, nil
 	}
 	return seq, err
+}
+
+// DeleteMessageBySeq 删除指定消息的缓存
+func (c *RedisMsgCache) DeleteMessageBySeq(ctx context.Context, conversationID string, seq int64) error {
+	key := c.getMessageKey(conversationID, seq)
+	return c.client.Del(ctx, key).Err()
 }

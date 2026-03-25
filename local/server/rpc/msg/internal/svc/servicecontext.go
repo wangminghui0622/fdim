@@ -9,6 +9,7 @@ import (
 	"fdim/pkg/database"
 	"fdim/pkg/mq"
 	"fdim/pkg/notification"
+	storagecache "fdim/pkg/storage/cache"
 	"fdim/pkg/storage/cache/redis"
 	"fdim/pkg/storage/controller"
 	"fdim/pkg/storage/database/mgo"
@@ -28,6 +29,7 @@ type ServiceContext struct {
 	MsgDatabase        controller.CommonMsgDatabase
 	MsgCache           cache.MsgCache                // 使用 pkg/cache 接口（兼容旧代码）
 	MsgDB              database.MsgDatabase          // 简化的数据库接口（兼容旧代码）
+	SeqConversation    storagecache.SeqConversationCache // 官方 seq 分配器（SendMsg 必须使用此接口）
 	// NATS producers
 	ToRedisProducer mq.Producer // 发送到 toRedis topic，触发 msgtransfer 链路
 	ToPushProducer  mq.Producer // 直接发送到 toPush topic，用于回退时推送
@@ -100,10 +102,16 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	msgDatabase := controller.NewCommonMsgDatabase(msgDocModel, msgCacheModel, seqUserCache, seqConversationCache, toRedisProducer)
 	
 	// 为了兼容旧代码，同时保留简化的 MsgCache 接口
+	// 通过 SetSeqProvider 将 seq 操作委托给官方 SeqConversationCache，确保 seq 读写一致
 	var simpleMsgCache cache.MsgCache
 	if redisClient != nil {
 		simpleMsgDocDB := database.NewMsgDocDatabase(mongoDB)
-		simpleMsgCache = cache.NewRedisMsgCache(redisClient, simpleMsgDocDB)
+		rmc := cache.NewRedisMsgCache(redisClient, simpleMsgDocDB)
+		if seqConversationCache != nil {
+			rmc.SetSeqProvider(seqConversationCache)
+			logx.Info("MsgCache SeqProvider set to official SeqConversationCache")
+		}
+		simpleMsgCache = rmc
 	}
 
 	// 初始化 Conversation RPC 客户端（增加超时和重试）
@@ -145,6 +153,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		MsgDatabase:        msgDatabase,
 		MsgCache:           simpleMsgCache,
 		MsgDB:              database.NewMsgDocDatabase(mongoDB),
+		SeqConversation:    seqConversationCache,
 		ToRedisProducer:    toRedisProducer,
 		ToPushProducer:     toPushProducer,
 		ConversationClient: convClient,

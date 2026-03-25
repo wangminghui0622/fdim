@@ -2,18 +2,17 @@ package logic
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
+	"fdim/pkg/authverify"
 	"fdim/pkg/errs"
-	"fdim/pkg/model"
-	"fdim/pkg/util/idutil"
+	pkgmodel "fdim/pkg/model"
+	"fdim/pkg/util/jsonutil"
 	"fdim/protocol/constant"
 	"fdim/protocol/msg"
 	"fdim/protocol/sdkws"
 	"fdim/rpc/msg/internal/svc"
 	"github.com/zeromicro/go-zero/core/logx"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 type RevokeMsgLogic struct {
@@ -30,10 +29,13 @@ func NewRevokeMsgLogic(ctx context.Context, svcCtx *svc.ServiceContext) *RevokeM
 	}
 }
 
-// RevokeMsg 撤回消息：
-// - 在 Mongo 中找到对应会话+seq 的消息，将其 contentType 标记为"撤回通知"，并清空内容；
-// - 发送 MsgRevokeNotification (2101) 通知所有客户端。
+// RevokeMsg 处理消息撤回：
+// 1. 校验权限
+// 2. 从简化存储层（MsgCache/MsgDB）查找原消息
+// 3. 更新 MongoDB 中的消息（标记为已撤回）并清除 Redis 缓存
+// 4. 发送 MsgRevokeNotification 给会话另一端/群
 func (l *RevokeMsgLogic) RevokeMsg(req *msg.RevokeMsgReq) (*msg.RevokeMsgResp, error) {
+	l.Infof("[Revoke][Server] request: userID=%s conversationID=%s seq=%d", req.UserID, req.ConversationID, req.Seq)
 	if req.UserID == "" {
 		return nil, errs.ErrArgs.WrapMsg("userID is required")
 	}
@@ -43,90 +45,105 @@ func (l *RevokeMsgLogic) RevokeMsg(req *msg.RevokeMsgReq) (*msg.RevokeMsgResp, e
 	if req.Seq < 0 {
 		return nil, errs.ErrArgs.WrapMsg("seq is invalid")
 	}
-
-	coll := l.svcCtx.MongoDB.GetCollection("stream_msg")
-	if coll == nil {
-		return nil, errs.ErrInternalServer.WrapMsg("message collection not initialized")
+	if err := authverify.CheckAccess(l.ctx, req.UserID); err != nil {
+		return nil, err
 	}
 
-	// 查找消息
-	filter := bson.M{
-		"conversation_id": req.ConversationID,
-		"seq":             req.Seq,
+	// 从简化存储层查找原消息（MsgCache → 简化 Redis 缓存 + MongoDB stream_msg）
+	msgDocs, err := l.svcCtx.MsgCache.GetMessagesBySeq(l.ctx, req.ConversationID, []int64{req.Seq})
+	if err != nil {
+		l.Errorf("[Revoke][Server] MsgCache.GetMessagesBySeq failed: %v", err)
+		return nil, err
 	}
-	var doc model.MsgDoc
-	if err := coll.FindOne(l.ctx, filter).Decode(&doc); err != nil {
-		l.Errorw("revoke FindOne failed", logx.Field("conversationID", req.ConversationID), logx.Field("seq", req.Seq), logx.Field("error", err))
+	if len(msgDocs) == 0 || msgDocs[0] == nil {
+		// 缓存未命中，尝试从 MongoDB 查找
+		if l.svcCtx.MsgDB != nil {
+			msgDocs, err = l.svcCtx.MsgDB.GetMessagesBySeq(l.ctx, req.ConversationID, []int64{req.Seq})
+			if err != nil {
+				l.Errorf("[Revoke][Server] MsgDB.GetMessagesBySeq failed: %v", err)
+				return nil, err
+			}
+		}
+	}
+	if len(msgDocs) == 0 || msgDocs[0] == nil {
 		return nil, errs.ErrRecordNotFound.WrapMsg("msg not found")
 	}
 
-	// 将消息标记为"已撤回"：保留 Seq 等元数据，清空内容和附加字段。
-	update := bson.M{
-		"$set": bson.M{
-			"content_type": 0,
-			"content":      []byte{},
-			"ex":           "",
-		},
-	}
-	if _, err := coll.UpdateOne(l.ctx, filter, update); err != nil {
-		l.Errorw("revoke UpdateOne failed", logx.Field("conversationID", req.ConversationID), logx.Field("seq", req.Seq), logx.Field("error", err))
-		return nil, errs.WrapMsg(err, "failed to revoke message")
+	origMsg := msgDocs[0]
+	l.Infof("[Revoke][Server] target msg: clientMsgID=%s sendID=%s recvID=%s groupID=%s sessionType=%d contentType=%d seq=%d",
+		origMsg.ClientMsgID, origMsg.SendID, origMsg.RecvID, origMsg.GroupID, origMsg.SessionType, origMsg.ContentType, origMsg.Seq)
+
+	if origMsg.ContentType == constant.MsgRevokeNotification {
+		return nil, errs.ErrMsgAlreadyRevoke.WrapMsg("msg already revoke")
 	}
 
-	// 发送 MsgRevokeNotification 通知（与官方一致）
-	if l.svcCtx.SendMsgFunc != nil {
-		go l.sendRevokeNotification(req.UserID, req.ConversationID, &doc)
+	var role int32
+	if authverify.IsAdmin(l.ctx) {
+		role = constant.AppAdmin
 	}
 
+	now := time.Now().UnixMilli()
+
+	// 构建撤回后的消息内容（与官方格式一致）
+	revokeContent := sdkws.MessageRevokedContent{
+		RevokerID:                   req.UserID,
+		RevokerRole:                 role,
+		ClientMsgID:                 origMsg.ClientMsgID,
+		RevokeTime:                  now,
+		SourceMessageSendTime:       origMsg.SendTime,
+		SourceMessageSendID:         origMsg.SendID,
+		SourceMessageSenderNickname: origMsg.SenderNickname,
+		SessionType:                 origMsg.SessionType,
+		Seq:                         origMsg.Seq,
+		Ex:                          origMsg.Ex,
+	}
+	revokeData, _ := jsonutil.JsonMarshal(&revokeContent)
+	elem := sdkws.NotificationElem{Detail: string(revokeData)}
+	contentBytes, _ := jsonutil.JsonMarshal(&elem)
+
+	// 更新 MongoDB 中的消息（标记为已撤回）
+	if l.svcCtx.MsgDB != nil {
+		if err := l.svcCtx.MsgDB.RevokeMsg(l.ctx, req.ConversationID, req.Seq, constant.MsgRevokeNotification, contentBytes); err != nil {
+			l.Errorf("[Revoke][Server] MsgDB.RevokeMsg failed: %v", err)
+			return nil, err
+		}
+	}
+
+	// 更新 Redis 缓存中的消息为已撤回状态（覆盖原缓存，保证 PullMsgBySeqs 返回正确状态）
+	if l.svcCtx.MsgCache != nil {
+		revokedMsg := *origMsg
+		revokedMsg.ContentType = constant.MsgRevokeNotification
+		revokedMsg.Content = contentBytes
+		if err := l.svcCtx.MsgCache.SetMessagesToCache(l.ctx, req.ConversationID, []*pkgmodel.MsgDoc{&revokedMsg}); err != nil {
+			l.Errorf("[Revoke][Server] MsgCache.SetMessagesToCache (revoked) failed: %v", err)
+		}
+	}
+	l.Infof("[Revoke][Server] revoke stored: conversationID=%s seq=%d", req.ConversationID, req.Seq)
+
+	// 发送撤回通知
+	// 注意：官方架构中 Go SDK 会将 RevokeMsgTips 转换为 MessageRevokedContent 再回调给 Flutter 层
+	// 本地架构无 Go SDK 中间层，所以直接发送 MessageRevokedContent，字段名与客户端 RevokedInfo 一致
+	if l.svcCtx.NotificationSender != nil {
+		var recvID string
+		if origMsg.SessionType == constant.ReadGroupChatType {
+			recvID = origMsg.GroupID
+		} else {
+			recvID = origMsg.RecvID
+		}
+		l.Infof("[Revoke][Server] notify: sendID=%s recvID=%s sessionType=%d clientMsgID=%s", req.UserID, recvID, origMsg.SessionType, origMsg.ClientMsgID)
+		l.svcCtx.NotificationSender.NotificationWithSessionType(
+			l.ctx,
+			req.UserID,
+			recvID,
+			constant.MsgRevokeNotification,
+			origMsg.SessionType,
+			&revokeContent,
+		)
+	} else {
+		l.Errorf("[Revoke][Server] NotificationSender is nil")
+	}
+
+	l.Infof("[Revoke][Server] request done: conversationID=%s seq=%d", req.ConversationID, req.Seq)
 	return &msg.RevokeMsgResp{}, nil
 }
 
-func (l *RevokeMsgLogic) sendRevokeNotification(revokerID, conversationID string, doc *model.MsgDoc) {
-	tips := &sdkws.MessageRevokedContent{
-		RevokerID:                   revokerID,
-		ClientMsgID:                 doc.ClientMsgID,
-		RevokeTime:                  time.Now().UnixMilli(),
-		Seq:                         doc.Seq,
-		SessionType:                 doc.SessionType,
-		SourceMessageSendID:         doc.SendID,
-		SourceMessageSendTime:       doc.SendTime,
-	}
-
-	n := sdkws.NotificationElem{Detail: marshalRevokeToString(tips)}
-	content, err := json.Marshal(&n)
-	if err != nil {
-		l.Errorw("marshal MsgRevokeNotification failed", logx.Field("error", err))
-		return
-	}
-
-	// 撤回通知发给自己（多设备同步），sessionType=SingleChat
-	msgData := &sdkws.MsgData{
-		SendID:      revokerID,
-		RecvID:      revokerID,
-		Content:     content,
-		MsgFrom:     constant.SysMsgType,
-		ContentType: constant.MsgRevokeNotification,
-		SessionType: constant.SingleChatType,
-		CreateTime:  time.Now().UnixMilli(),
-		ClientMsgID: idutil.GetMsgIDByMD5(revokerID),
-		Options: map[string]bool{
-			constant.IsNotNotification:          false,
-			constant.IsConversationUpdate:       false,
-			constant.IsSenderConversationUpdate: false,
-			constant.IsUnreadCount:              false,
-			constant.IsOfflinePush:              false,
-		},
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if _, err := l.svcCtx.SendMsgFunc(ctx, &msg.SendMsgReq{MsgData: msgData}); err != nil {
-		l.Errorw("send MsgRevokeNotification failed", logx.Field("error", err))
-	}
-}
-
-func marshalRevokeToString(v interface{}) string {
-	b, _ := json.Marshal(v)
-	return string(b)
-}

@@ -74,7 +74,7 @@ func (l *SendMsgLogic) SendMsg(req *msg.SendMsgReq) (*msg.SendMsgResp, error) {
 		}
 	}
 
-	// 3. 分配 seq（只递增序列号，不写消息缓存）
+	// 3. 分配 seq（通过 MsgCache.IncrMaxSeq，内部委托给官方 SeqConversation.Malloc）
 	if l.svcCtx.MsgCache == nil {
 		return nil, errs.ErrInternalServer.WrapMsg("message cache not initialized")
 	}

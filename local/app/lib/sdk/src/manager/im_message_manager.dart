@@ -87,16 +87,31 @@ class MessageManager {
         'recvID': userID ?? '',
         'sendMsg': sendMsgData,
       });
+      debugPrint('[SendMessage] raw resp: $resp');
       message.status = MessageStatus.succeeded;
       if (resp is Map) {
         message.serverMsgID = resp['serverMsgID'] ?? message.serverMsgID;
         message.sendTime = resp['sendTime'] ?? message.sendTime;
+        final modify = resp['modify'];
+        debugPrint('[SendMessage] modify field: $modify');
+        if (modify is Map) {
+          final modifyMap = Map<String, dynamic>.from(modify);
+          message.serverMsgID = modifyMap['serverMsgID'] ?? message.serverMsgID;
+          message.sendTime = modifyMap['sendTime'] ?? message.sendTime;
+          message.seq = modifyMap['seq'] ?? message.seq;
+          message.createTime = modifyMap['createTime'] ?? message.createTime;
+        }
       }
+      debugPrint('[SendMessage] mapped message: clientMsgID=${message.clientMsgID} serverMsgID=${message.serverMsgID} seq=${message.seq} sendTime=${message.sendTime}');
       // 与官方一致：发送成功后写入本地 DB
       final convID = _resolveConversationID(message, userID, groupID);
       if (convID.isNotEmpty) {
         await LocalStore.putMessage(convID, message);
         await LocalStore.updateLatestMsg(convID, message);
+        if ((message.seq ?? 0) > 0) {
+          await LocalStore.setMaxSeq(convID, message.seq!);
+        }
+        debugPrint('[SendMessage] persisted convID=$convID seq=${message.seq}');
       }
       return message;
     } catch (e) {

@@ -422,6 +422,29 @@ class IMManager {
         if (detail != null) {
           final info = RevokedInfo.fromJson(detail);
           messageManager.msgListener.newRecvMessageRevoked(info);
+
+          // 更新会话列表的 latestMsg（B 不在聊天页时也能看到撤回提示）
+          final notifMsg = Message.fromJson(msgData);
+          final revokeConvID = _resolveConversationID(notifMsg);
+          if (revokeConvID.isNotEmpty) {
+            final isSelfRevoke = info.revokerID == userID;
+            final revokeText = isSelfRevoke ? '你撤回了一条消息' : '对方撤回了一条消息';
+            final revokedMsg = Message(
+              clientMsgID: info.clientMsgID,
+              sendTime: info.revokeTime ?? DateTime.now().millisecondsSinceEpoch,
+              sendID: info.revokerID,
+              sessionType: info.sessionType,
+              contentType: MessageType.revokeMessageNotification,
+              status: MessageStatus.succeeded,
+              textElem: TextElem(content: revokeText),
+            );
+            // 仅当被撤回的消息是该会话的最后一条时才更新 latestMsg
+            final conv = LocalStore.getConversation(revokeConvID);
+            if (conv != null && conv.latestMsg?.clientMsgID == info.clientMsgID) {
+              await LocalStore.updateLatestMsg(revokeConvID, revokedMsg);
+            }
+            _notifyConversationChanged(revokeConvID);
+          }
         }
         break;
       case MessageType.hasReadReceipt:

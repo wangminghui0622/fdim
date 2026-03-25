@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 
@@ -9,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
+	"fdim/pkg/grpcinterceptor"
 	"fdim/pkg/notification"
 	"fdim/protocol/msg"
 	"fdim/rpc/msg/internal/config"
@@ -37,6 +39,13 @@ func main() {
 			reflection.Register(grpcServer)
 		}
 	})
+
+	// 添加服务端拦截器：从 gRPC metadata 中提取 OpUserID 等信息到 context（与 user.go 一致）
+	s.AddUnaryInterceptors(func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		ctx = grpcinterceptor.ExtractContextFromMetadata(ctx)
+		return handler(ctx, req)
+	})
+
 	defer s.Stop()
 
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)

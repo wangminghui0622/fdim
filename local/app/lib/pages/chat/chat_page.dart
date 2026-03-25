@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -49,6 +50,7 @@ class _ChatPageState extends State<ChatPage> {
   StreamSubscription? _newMsgSub;
   StreamSubscription? _readReceiptSub;
   StreamSubscription? _convChangedSub;
+  StreamSubscription? _msgRevokedSub;
   final _audioPlayer = AudioPlayerManager();
   final _audioRecorder = AudioRecorder();
   bool _voiceMode = false;
@@ -89,6 +91,7 @@ class _ChatPageState extends State<ChatPage> {
 
     // Listen for read receipts (C2C only)
     _readReceiptSub = imCtrl.c2cReadReceiptSubject.listen(_onReadReceipt);
+    _msgRevokedSub = imCtrl.msgRevokedSubject.listen(_onMessageRevoked);
 
     // 【修复问题2】监听会话变更通知，确保未读数实时更新
     _convChangedSub = imCtrl.conversationChangedSubject.listen((_) {
@@ -157,6 +160,7 @@ class _ChatPageState extends State<ChatPage> {
     _newMsgSub?.cancel();
     _readReceiptSub?.cancel();
     _convChangedSub?.cancel();
+    _msgRevokedSub?.cancel();
     _audioPlayer.dispose();
     super.dispose();
   }
@@ -167,15 +171,59 @@ class _ChatPageState extends State<ChatPage> {
         (msg.isGroupChat && msg.groupID == groupID);
     if (!match || !mounted) return;
 
-    final existsInMessages = _messages.contains(msg);
-    final existsInPending = _pendingNewMessages.contains(msg);
-    if (existsInMessages || existsInPending) return;
+    final existingMessageIndex = _messages.indexWhere(
+      (e) => e.clientMsgID != null && e.clientMsgID == msg.clientMsgID,
+    );
+    if (existingMessageIndex >= 0) {
+      final existing = _messages[existingMessageIndex];
+      final shouldMergeSelfEcho =
+          msg.sendID == Config.userID &&
+          ((msg.seq ?? 0) > 0 || (msg.serverMsgID ?? '').isNotEmpty);
+      if (shouldMergeSelfEcho) {
+        setState(() {
+          existing.serverMsgID = msg.serverMsgID ?? existing.serverMsgID;
+          existing.sendTime = msg.sendTime ?? existing.sendTime;
+          existing.createTime = msg.createTime ?? existing.createTime;
+          existing.seq = msg.seq ?? existing.seq;
+          existing.status = MessageStatus.succeeded;
+        });
+        if ((existing.seq ?? 0) > 0) {
+          LocalStore.setMaxSeq(conversationID, existing.seq!);
+          LocalStore.putMessage(conversationID, existing);
+          LocalStore.updateLatestMsg(conversationID, existing);
+        }
+      }
+      return;
+    }
+
+    final existingPendingIndex = _pendingNewMessages.indexWhere(
+      (e) => e.clientMsgID != null && e.clientMsgID == msg.clientMsgID,
+    );
+    if (existingPendingIndex >= 0) {
+      final existing = _pendingNewMessages[existingPendingIndex];
+      final shouldMergeSelfEcho =
+          msg.sendID == Config.userID &&
+          ((msg.seq ?? 0) > 0 || (msg.serverMsgID ?? '').isNotEmpty);
+      if (shouldMergeSelfEcho) {
+        setState(() {
+          existing.serverMsgID = msg.serverMsgID ?? existing.serverMsgID;
+          existing.sendTime = msg.sendTime ?? existing.sendTime;
+          existing.createTime = msg.createTime ?? existing.createTime;
+          existing.seq = msg.seq ?? existing.seq;
+          existing.status = MessageStatus.succeeded;
+        });
+      }
+      return;
+    }
 
     final isIncoming = msg.sendID != Config.userID;
     final wasAtBottom = _isNearBottom();
 
     if (!isIncoming || wasAtBottom) {
       setState(() => _messages.add(msg));
+      if ((msg.seq ?? 0) > 0) {
+        LocalStore.setMaxSeq(conversationID, msg.seq!);
+      }
       if (wasAtBottom) {
         _scrollToBottom();
       }
@@ -190,6 +238,53 @@ class _ChatPageState extends State<ChatPage> {
       _unreadBelow = _pendingNewMessages.where((e) => e.sendID != Config.userID).length;
       _showScrollDown = true;
     });
+  }
+
+  void _onMessageRevoked(RevokedInfo info) {
+    if (!mounted) return;
+    debugPrint(
+      '[Revoke][Client] notification received: '
+      'clientMsgID=${info.clientMsgID} revokerID=${info.revokerID} '
+      'revokeTime=${info.revokeTime} sessionType=${info.sessionType}',
+    );
+    final clientMsgID = info.clientMsgID;
+    if (clientMsgID == null || clientMsgID.isEmpty) return;
+
+    final revokeTime = info.revokeTime ?? DateTime.now().millisecondsSinceEpoch;
+    final isSelfRevoke = info.revokerID == Config.userID;
+    final revokeText = isSelfRevoke ? '你撤回了一条消息' : '对方撤回了一条消息';
+
+    final index = _messages.indexWhere((e) => e.clientMsgID == clientMsgID);
+    if (index < 0) return;
+
+    final old = _messages[index];
+    // 已经是撤回状态则跳过（发送方本地已先更新，服务端推送到达时不重复处理）
+    if (old.contentType == MessageType.revokeMessageNotification) return;
+    final revokedMsg = Message(
+      clientMsgID: old.clientMsgID,
+      serverMsgID: old.serverMsgID,
+      createTime: old.createTime,
+      sendTime: revokeTime,
+      sendID: info.revokerID ?? old.sendID,
+      senderNickname: info.revokerNickname ?? old.senderNickname,
+      senderFaceUrl: old.senderFaceUrl,
+      senderPlatformID: old.senderPlatformID,
+      sessionType: old.sessionType,
+      contentType: MessageType.revokeMessageNotification,
+      status: MessageStatus.succeeded,
+      textElem: TextElem(content: revokeText),
+    )
+      ..seq = old.seq
+      ..isRead = true
+      ..recvID = old.recvID
+      ..groupID = old.groupID;
+
+    setState(() {
+      _messages[index] = revokedMsg;
+    });
+
+    LocalStore.putMessage(conversationID, revokedMsg);
+    LocalStore.updateLatestMsg(conversationID, revokedMsg);
   }
 
   void _onReadReceipt(List<ReadReceiptInfo> list) {
@@ -213,6 +308,7 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+ 
   /// 按照官方逻辑加载历史消息
   Future<void> _loadMessages() async {
     try {
@@ -865,6 +961,15 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildMessageItem(Message msg) {
     final isMe = msg.sendID == Config.userID;
+
+    // 通知类型消息（contentType > 1000）：居中显示，无头像/已读标签（与官方一致）
+    if ((msg.contentType ?? 0) > 1000) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: _buildBubble(msg, isMe),
+      );
+    }
+
     // 【修复问题3】使用 FocusDetector 检测消息可见性（与官方一致）
     return FocusDetector(
       onVisibilityGained: () {
@@ -984,54 +1089,141 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  void _showMessageMenu(Message msg, bool isMe) {
-    showModalBottomSheet(
+  Future<void> _showMessageMenu(
+    Message msg,
+    bool isMe,
+    LongPressStartDetails details,
+  ) async {
+    final canCopy = msg.contentType == MessageType.text && msg.textContent.isNotEmpty;
+    final msgSendTime = msg.sendTime ?? msg.createTime ?? 0;
+    final msgTimeMs = msgSendTime < 1000000000000 ? msgSendTime * 1000 : msgSendTime;
+    final canRevoke = isMe;
+    if (!canCopy && !canRevoke) return;
+
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final selected = await showMenu<String>(
       context: context,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (msg.contentType == MessageType.text)
-              ListTile(
-                leading: const Icon(Icons.copy),
-                title: const Text('复制'),
-                onTap: () {
-                  Clipboard.setData(ClipboardData(text: msg.textContent));
-                  Navigator.pop(context);
-                  EasyLoading.showToast('已复制');
-                },
-              ),
-            if (isMe)
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('删除', style: TextStyle(color: Colors.red)),
-                onTap: () async {
-                  Navigator.pop(context);
-                  try {
-                    await OpenIM.iMManager.messageManager
-                        .deleteMessageFromLocalAndSvr(
-                          conversationID: conversationID,
-                          seq: msg.seq ?? 0,
-                        );
-                    setState(() => _messages.remove(msg));
-                  } catch (_) {
-                    EasyLoading.showToast('删除失败');
-                  }
-                },
-              ),
-            ListTile(
-              leading: const Icon(Icons.cancel_outlined),
-              title: const Text('取消'),
-              onTap: () => Navigator.pop(context),
-            ),
-          ],
+      position: RelativeRect.fromRect(
+        Rect.fromCenter(
+          center: details.globalPosition,
+          width: 1,
+          height: 1,
         ),
+        Offset.zero & overlay.size,
       ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      items: [
+        if (canCopy)
+          const PopupMenuItem<String>(
+            value: 'copy',
+            child: Text('复制'),
+          ),
+        if (canRevoke)
+          const PopupMenuItem<String>(
+            value: 'revoke',
+            child: Text('撤回'),
+          ),
+      ],
     );
+
+    if (!mounted || selected == null) return;
+    if (selected == 'copy') {
+      Clipboard.setData(ClipboardData(text: msg.textContent));
+      EasyLoading.showToast('已复制');
+      return;
+    }
+    if (selected == 'revoke') {
+      final canRevokeNow =
+          (DateTime.now().millisecondsSinceEpoch - msgTimeMs) <=
+          const Duration(minutes: 1).inMilliseconds;
+      if (!canRevokeNow) {
+        debugPrint(
+          '[Revoke][Client] blocked by time window: '
+          'clientMsgID=${msg.clientMsgID} seq=${msg.seq} '
+          'sendTime=$msgTimeMs now=${DateTime.now().millisecondsSinceEpoch}',
+        );
+        EasyLoading.showToast('仅支持1分钟内撤回');
+        return;
+      }
+      if ((msg.seq ?? 0) <= 0) {
+        debugPrint(
+          '[Revoke][Client] blocked by missing seq: '
+          'clientMsgID=${msg.clientMsgID} serverMsgID=${msg.serverMsgID} '
+          'seq=${msg.seq} sendTime=${msg.sendTime}',
+        );
+        EasyLoading.showToast('消息尚未同步完成，暂时不能撤回');
+        return;
+      }
+      try {
+        debugPrint(
+          '[Revoke][Client] request start: '
+          'conversationID=$conversationID clientMsgID=${msg.clientMsgID} '
+          'serverMsgID=${msg.serverMsgID} seq=${msg.seq}',
+        );
+        await OpenIM.iMManager.messageManager.revokeMessage(
+          conversationID: conversationID,
+          seq: msg.seq!,
+        );
+        debugPrint(
+          '[Revoke][Client] request success: '
+          'conversationID=$conversationID clientMsgID=${msg.clientMsgID} seq=${msg.seq}',
+        );
+        // 立即本地更新（不等服务端推送回来），与官方 SDK 行为一致
+        _onMessageRevoked(RevokedInfo(
+          revokerID: Config.userID,
+          clientMsgID: msg.clientMsgID,
+          revokeTime: DateTime.now().millisecondsSinceEpoch,
+          sessionType: msg.sessionType,
+          sourceMessageSendID: msg.sendID,
+          sourceMessageSenderNickname: msg.senderNickname,
+          sourceMessageSendTime: msg.sendTime,
+        ));
+      } catch (e) {
+        debugPrint(
+          '[Revoke][Client] request failed: '
+          'conversationID=$conversationID clientMsgID=${msg.clientMsgID} '
+          'seq=${msg.seq} error=$e',
+        );
+        EasyLoading.showToast('撤回失败');
+      }
+    }
+  }
+
+  /// 从历史拉取的撤回消息中解析显示文本
+  String _parseRevokeDisplayText(Message msg) {
+    try {
+      final detail = msg.notificationElem?.detail;
+      if (detail != null && detail.isNotEmpty) {
+        final map = jsonDecode(detail);
+        if (map is Map<String, dynamic>) {
+          final revokerID = map['revokerID'] as String?;
+          if (revokerID == Config.userID) {
+            return '你撤回了一条消息';
+          }
+          return '对方撤回了一条消息';
+        }
+      }
+    } catch (_) {}
+    // 无法解析时根据 sendID 判断
+    if (msg.sendID == Config.userID) {
+      return '你撤回了一条消息';
+    }
+    return '对方撤回了一条消息';
   }
 
   Widget _buildBubble(Message msg, bool isMe) {
     if ((msg.contentType ?? 0) > 1000) {
+      String displayText = msg.textContent;
+
+      // 撤回消息：从 notificationElem.detail 解析出 RevokedInfo，显示友好文本
+      if (msg.contentType == MessageType.revokeMessageNotification) {
+        if (msg.textElem?.content != null && msg.textElem!.content!.isNotEmpty) {
+          displayText = msg.textElem!.content!;
+        } else {
+          displayText = _parseRevokeDisplayText(msg);
+        }
+      }
+
       return Center(
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 8),
@@ -1041,7 +1233,7 @@ class _ChatPageState extends State<ChatPage> {
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(
-            msg.textContent,
+            displayText,
             style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ),
@@ -1085,7 +1277,7 @@ class _ChatPageState extends State<ChatPage> {
             ),
           );
         },
-        onLongPress: () => _showMessageMenu(msg, isMe),
+        onLongPressStart: (details) => _showMessageMenu(msg, isMe, details),
         child: Container(
           width: displayWidth,
           height: displayHeight,
@@ -1184,7 +1376,7 @@ class _ChatPageState extends State<ChatPage> {
             EasyLoading.showToast('视频地址无效');
           }
         },
-        onLongPress: () => _showMessageMenu(msg, isMe),
+        onLongPressStart: (details) => _showMessageMenu(msg, isMe, details),
         child: Container(
           width: displayWidth,
           height: displayHeight,
@@ -1292,7 +1484,7 @@ class _ChatPageState extends State<ChatPage> {
             EasyLoading.showToast('语音地址无效');
           }
         },
-        onLongPress: () => _showMessageMenu(msg, isMe),
+        onLongPressStart: (details) => _showMessageMenu(msg, isMe, details),
         child: Container(
           constraints: BoxConstraints(
             minWidth: 100,
@@ -1349,7 +1541,7 @@ class _ChatPageState extends State<ChatPage> {
             EasyLoading.showToast('文件地址无效');
           }
         },
-        onLongPress: () => _showMessageMenu(msg, isMe),
+        onLongPressStart: (details) => _showMessageMenu(msg, isMe, details),
         child: Container(
           constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width * 0.65,
@@ -1407,7 +1599,7 @@ class _ChatPageState extends State<ChatPage> {
 
     // Text message (default)
     return GestureDetector(
-      onLongPress: () => _showMessageMenu(msg, isMe),
+      onLongPressStart: (details) => _showMessageMenu(msg, isMe, details),
       child: Container(
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.65,

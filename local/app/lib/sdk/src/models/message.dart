@@ -162,7 +162,9 @@ class Message {
         : null;
     notificationElem = json['notificationElem'] != null
         ? NotificationElem.fromJson(json['notificationElem'])
-        : null;
+        : (contentMap != null && (contentType ?? 0) > 1000
+            ? NotificationElem.fromJson(contentMap)
+            : null);
     faceElem = json['faceElem'] != null
         ? FaceElem.fromJson(json['faceElem'])
         : (contentMap != null && contentType == 107 ? FaceElem.fromJson(contentMap) : null);

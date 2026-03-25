@@ -3,6 +3,7 @@ package middleware
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"fdim/pkg/mcontext"
@@ -18,21 +19,34 @@ type claims struct {
 	jwt.RegisteredClaims
 }
 
+var whitelist = []string{
+	"/auth/get_admin_token",
+	"/auth/parse_token",
+	"/auth/get_user_token",
+	"/account/login",
+	"/account/register",
+	"/account/change_password",
+	"/account/send_verify_code",
+	"/account/verify_code",
+	"/account/reset_password",
+}
+
+func isWhitelisted(path string) bool {
+	for _, item := range whitelist {
+		if strings.HasPrefix(path, item) {
+			return true
+		}
+	}
+	return false
+}
+
 // AuthMiddleware 认证中间件，从 token 中提取用户信息并设置到 context
 func AuthMiddleware(secret string) rest.Middleware {
 	fmt.Printf("[AuthMiddleware] Initialized with secret length: %d\n", len(secret))
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
-			
-			// 从 header 中获取 token
-			tokenStr := r.Header.Get("token")
-			if tokenStr == "" {
-				tokenStr = r.Header.Get("Token")
-			}
-			fmt.Printf("[AuthMiddleware] Request: %s, Token present: %v, Token length: %d\n", r.URL.Path, tokenStr != "", len(tokenStr))
-			
-			// 从 header 中获取 operationID
+
 			operationID := r.Header.Get("operationID")
 			if operationID == "" {
 				operationID = r.Header.Get("OperationID")
@@ -40,30 +54,49 @@ func AuthMiddleware(secret string) rest.Middleware {
 			if operationID != "" {
 				ctx = mcontext.SetOperationID(ctx, operationID)
 			}
-			
-			// 设置默认 operationID
 			if mcontext.GetOperationID(ctx) == "" {
 				ctx = mcontext.SetOperationID(ctx, time.Now().Format("20060102150405"))
 			}
-			
-			// 解析 token 获取用户信息
-			if tokenStr != "" {
-				token, err := jwt.ParseWithClaims(tokenStr, &claims{}, func(token *jwt.Token) (interface{}, error) {
-					return []byte(secret), nil
-				})
-				if err != nil {
-					fmt.Printf("[AuthMiddleware] Token parse error: %v\n", err)
-				} else if token.Valid {
-					if c, ok := token.Claims.(*claims); ok {
-						fmt.Printf("[AuthMiddleware] Token parsed, UserID: %s\n", c.UserID)
-						ctx = mcontext.SetOpUserID(ctx, c.UserID)
-					}
-				} else {
-					fmt.Printf("[AuthMiddleware] Token invalid\n")
-				}
+
+			if isWhitelisted(r.URL.Path) {
+				next.ServeHTTP(w, r.WithContext(ctx))
+				return
 			}
-			
-			// 使用更新后的 context 继续处理请求
+
+			tokenStr := r.Header.Get("token")
+			if tokenStr == "" {
+				tokenStr = r.Header.Get("Token")
+			}
+			fmt.Printf("[AuthMiddleware] Request: %s, Token present: %v, Token length: %d\n", r.URL.Path, tokenStr != "", len(tokenStr))
+
+			if tokenStr == "" {
+				http.Error(w, "header must have token", http.StatusUnauthorized)
+				return
+			}
+
+			token, err := jwt.ParseWithClaims(tokenStr, &claims{}, func(token *jwt.Token) (interface{}, error) {
+				return []byte(secret), nil
+			})
+			if err != nil {
+				fmt.Printf("[AuthMiddleware] Token parse error: %v\n", err)
+				http.Error(w, "token parse failed", http.StatusUnauthorized)
+				return
+			}
+			if !token.Valid {
+				fmt.Printf("[AuthMiddleware] Token invalid\n")
+				http.Error(w, "token invalid", http.StatusUnauthorized)
+				return
+			}
+
+			c, ok := token.Claims.(*claims)
+			if !ok || c.UserID == "" {
+				fmt.Printf("[AuthMiddleware] Token claims invalid or userID empty\n")
+				http.Error(w, "token invalid", http.StatusUnauthorized)
+				return
+			}
+
+			fmt.Printf("[AuthMiddleware] Token parsed, UserID: %s\n", c.UserID)
+			ctx = mcontext.SetOpUserID(ctx, c.UserID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}
 	}

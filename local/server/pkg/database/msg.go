@@ -23,6 +23,8 @@ type MsgDatabase interface {
 	DeleteMessagesBySeq(ctx context.Context, conversationID string, seqs []int64) error
 	// DeleteMessagesByTimeBefore 删除某个时间戳之前的消息（用于物理清理）
 	DeleteMessagesByTimeBefore(ctx context.Context, conversationIDs []string, timestamp int64) error
+	// RevokeMsg 撤回消息：更新 content_type 和 content
+	RevokeMsg(ctx context.Context, conversationID string, seq int64, contentType int32, content []byte) error
 }
 
 // MsgDocDatabase 消息文档数据库实现
@@ -154,5 +156,21 @@ func (d *MsgDocDatabase) DeleteMessagesByTimeBefore(ctx context.Context, convers
 		"send_time":       bson.M{"$lte": timestamp},
 	}
 	_, err := d.collection.DeleteMany(ctx, filter)
+	return err
+}
+
+// RevokeMsg 撤回消息：更新 content_type 和 content
+func (d *MsgDocDatabase) RevokeMsg(ctx context.Context, conversationID string, seq int64, contentType int32, content []byte) error {
+	filter := bson.M{
+		"conversation_id": conversationID,
+		"seq":             seq,
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"content_type": contentType,
+			"content":      content,
+		},
+	}
+	_, err := d.collection.UpdateOne(ctx, filter, update)
 	return err
 }
