@@ -343,6 +343,24 @@ class LocalStore {
     }
   }
 
+  // ======================= Voice Played =======================
+
+  /// 获取已播放语音消息ID集合
+  static Set<String> getPlayedVoiceIds(String conversationID) {
+    final raw = _metaBox?.get('playedVoice:$conversationID');
+    if (raw is String && raw.isNotEmpty) {
+      return Set<String>.from(jsonDecode(raw));
+    }
+    return {};
+  }
+
+  /// 标记语音消息为已播放
+  static Future<void> addPlayedVoiceId(String conversationID, String msgId) async {
+    final ids = getPlayedVoiceIds(conversationID);
+    ids.add(msgId);
+    await _metaBox?.put('playedVoice:$conversationID', jsonEncode(ids.toList()));
+  }
+
   // ======================= Meta =======================
 
   /// 获取 maxSeq

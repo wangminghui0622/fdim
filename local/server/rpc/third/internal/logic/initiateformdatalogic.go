@@ -39,7 +39,8 @@ func (l *InitiateFormDataLogic) InitiateFormData(req *third.InitiateFormDataReq)
 			return nil, fmt.Errorf("failed to get form data: %w", err)
 		}
 
-		uploadID := fmt.Sprintf("form-%d", time.Now().UnixNano())
+		// 把对象名编码进 uploadID，CompleteFormData 用它来构造访问 URL
+		uploadID := fmt.Sprintf("form:%s", req.Name)
 		successCodes := make([]int32, len(formData.SuccessCodes))
 		for i, code := range formData.SuccessCodes {
 			successCodes[i] = int32(code)

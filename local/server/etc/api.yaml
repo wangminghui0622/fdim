@@ -86,3 +86,9 @@ Mongo:
 
 # 管理员用户ID列表（可选）
 AdminUserIDs: []
+
+# LiveKit 音视频通话配置
+LiveKit:
+  URL: "ws://42.192.129.44:7880"
+  Key: "APIGPW3gnFTzqHH"
+  Secret: "23ztfSqsfQ8hKkHzHTl3Z4bvaxro0snjk5jwbp5p6Q3"

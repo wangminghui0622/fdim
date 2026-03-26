@@ -56,6 +56,39 @@ func (l *SendMsgLogic) SendMsg(req *msg.SendMsgReq) (*msg.SendMsgResp, error) {
 		return nil, errs.ErrArgs.WrapMsg("groupID is required for group chat")
 	}
 
+	// isOnlineOnly: 信令消息，仅推送不落库
+	if msgData.Options["isOnlineOnly"] {
+		msgData.ServerMsgID = idutil.GetMsgIDByMD5(msgData.SendID)
+		msgData.SendTime = timeutil.GetCurrentTimestampByMill()
+		msgData.CreateTime = msgData.SendTime
+
+		// 仅推送给在线用户
+		ctx := l.ctx
+		if mcontext.GetOperationID(ctx) == "" {
+			ctx = mcontext.SetOperationID(ctx, msgData.ClientMsgID)
+		}
+		if l.svcCtx.ToPushProducer != nil {
+			pushMsg := &msg.PushMsgDataToMQ{
+				MsgData:        msgData,
+				ConversationID: "online_only",
+			}
+			pushData, err := proto.Marshal(pushMsg)
+			if err == nil {
+				_ = l.svcCtx.ToPushProducer.SendMessage(ctx, msgData.RecvID, pushData)
+			}
+		}
+		l.Infow("isOnlineOnly message pushed (no persistence)",
+			logx.Field("sendID", msgData.SendID),
+			logx.Field("recvID", msgData.RecvID),
+			logx.Field("contentType", msgData.ContentType))
+
+		return &msg.SendMsgResp{
+			ServerMsgID: msgData.ServerMsgID,
+			ClientMsgID: msgData.ClientMsgID,
+			SendTime:    msgData.SendTime,
+		}, nil
+	}
+
 	// 2. 计算会话 ID（与官方一致：通知消息使用 n_ 前缀，普通消息使用 si_/sg_ 前缀）
 	conversationID := msgprocessor.GetConversationIDByMsg(msgData)
 	if conversationID == "" {

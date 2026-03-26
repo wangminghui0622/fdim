@@ -8,6 +8,7 @@ import (
 	"fdim/pkg/database"
 	"fdim/pkg/grpcinterceptor"
 	"fdim/pkg/model"
+	"fdim/pkg/rtc"
 	"fdim/protocol/admin"
 	"fdim/protocol/auth"
 	"fdim/protocol/chat"
@@ -37,6 +38,7 @@ type ServiceContext struct {
 	AdminClient        admin.AdminClient
 	FavoriteDB         model.FavoriteMsgModel
 	UserDB             *database.UserDatabase
+	LiveKit            *rtc.LiveKit
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -84,6 +86,12 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		}
 	}
 
+	var liveKit *rtc.LiveKit
+	if c.LiveKit.Key != "" && c.LiveKit.Secret != "" {
+		liveKit = rtc.NewLiveKit(c.LiveKit.Key, c.LiveKit.Secret, c.LiveKit.URL)
+		logx.Info("LiveKit RTC configured: " + c.LiveKit.URL)
+	}
+
 	return &ServiceContext{
 		Config:             c,
 		UserClient:         userClient,
@@ -98,5 +106,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		AdminClient:        adminClient,
 		FavoriteDB:         favoriteDB,
 		UserDB:             userDB,
+		LiveKit:            liveKit,
 	}
 }

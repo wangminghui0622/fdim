@@ -27,4 +27,10 @@ type Config struct {
 	} `json:",optional"`
 	// AdminUserIDs 管理员用户ID列表
 	AdminUserIDs []string `json:",optional"`
+	// LiveKit 音视频通话配置
+	LiveKit struct {
+		URL    string `json:",optional"` // ws://your-server-ip:7880
+		Key    string `json:",optional"` // API Key
+		Secret string `json:",optional"` // API Secret
+	} `json:",optional"`
 }

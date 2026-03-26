@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-
+import '../../models/signaling_info.dart';
 import '../../sdk/flutter_openim_sdk.dart';
 import '../../core/config.dart';
 import '../../core/controllers/im_controller.dart';
@@ -370,6 +370,21 @@ class _ConversationPageState extends State<ConversationPage> {
         }
       } catch (_) {}
       return latestMsg.sendID == Config.userID ? '你撤回了一条消息' : '对方撤回了一条消息';
+    }
+    // 通话结果自定义消息：显示友好文本
+    if (latestMsg.contentType == MessageType.custom) {
+      try {
+        final raw = latestMsg.customElem?.data;
+        if (raw != null) {
+          final map = jsonDecode(raw);
+          if (map['customType'] == CustomMessageType.callResult) {
+            final info = CallResultInfo.fromJson(map['data']);
+            final isMe = latestMsg.sendID == Config.userID;
+            final icon = info.isVideo ? '📹' : '📞';
+            return '[通话] ${info.getDisplayText(isMe)} $icon';
+          }
+        }
+      } catch (_) {}
     }
     return latestMsg.textContent;
   }

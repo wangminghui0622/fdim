@@ -13,6 +13,8 @@ import 'package:record/record.dart';
 
 import '../../core/config.dart';
 import '../../core/controllers/im_controller.dart';
+import '../../core/upload_service.dart';
+import '../../models/signaling_info.dart';
 import '../../core/local_store.dart';
 import '../../sdk/flutter_openim_sdk.dart';
 import '../../routes/app_routes.dart';
@@ -40,6 +42,7 @@ class _ChatPageState extends State<ChatPage> {
   bool _isNewerEnd = false;   // 已加载到最新的消息
   bool _isOnline = false;
   bool _showEmojiPicker = false;
+  bool _showMorePanel = false;
   bool _sendButtonVisible = false;
   bool _showScrollDown = false;
   int _unreadBelow = 0;
@@ -53,6 +56,7 @@ class _ChatPageState extends State<ChatPage> {
   StreamSubscription? _msgRevokedSub;
   final _audioPlayer = AudioPlayerManager();
   final _audioRecorder = AudioRecorder();
+  final _playedVoiceIds = <String>{};
   bool _voiceMode = false;
   bool _isRecording = false;
   String? _recordFilePath;
@@ -82,6 +86,7 @@ class _ChatPageState extends State<ChatPage> {
     Get.find<IMController>().currentChatConversationID.value = conversationID;
     // 与官方 Go SDK 一致：告知 SDK 当前活跃会话，新消息不递增 unreadCount
     OpenIM.iMManager.setActiveConversation(conversationID);
+    _playedVoiceIds.addAll(LocalStore.getPlayedVoiceIds(conversationID));
     _loadMessages();
     _clearUnreadCount();
 
@@ -309,6 +314,24 @@ class _ChatPageState extends State<ChatPage> {
   }
 
  
+  /// 过滤掉信令消息（customType 200-204），它们不应出现在聊天记录中
+  List<Message> _filterSignalingMessages(List<Message> msgs) {
+    return msgs.where((msg) {
+      if (msg.contentType != MessageType.custom) return true;
+      try {
+        final raw = msg.customElem?.data;
+        if (raw == null) return true;
+        final customType = jsonDecode(raw)['customType'] as int?;
+        if (customType == null) return true;
+        // 信令消息 200-204：不显示
+        return customType < CustomMessageType.callingInvite ||
+               customType > CustomMessageType.callingHungup;
+      } catch (_) {
+        return true;
+      }
+    }).toList();
+  }
+
   /// 按照官方逻辑加载历史消息
   Future<void> _loadMessages() async {
     try {
@@ -331,7 +354,7 @@ class _ChatPageState extends State<ChatPage> {
         return;
       }
 
-      final msgs = result.messageList!;
+      final msgs = _filterSignalingMessages(result.messageList!);
 
       if (_isFirstLoad) {
         _isFirstLoad = false;
@@ -379,8 +402,9 @@ class _ChatPageState extends State<ChatPage> {
         final offset = _scrollController.offset;
         final oldHeight = _scrollController.position.maxScrollExtent;
         
+        final older = _filterSignalingMessages(result.messageList!);
         setState(() {
-          _messages.insertAll(0, result.messageList!);
+          _messages.insertAll(0, older);
           _isOlderEnd = result.isEnd == true;
         });
         
@@ -577,6 +601,17 @@ class _ChatPageState extends State<ChatPage> {
     _scrollToBottom();
 
     try {
+      // 尝试上传图片到服务器；失败时降级用本地路径
+      try {
+        final uploadedUrl = await UploadService.uploadFile(file.path, group: 'image');
+        tempMsg.pictureElem?.sourcePicture?.url = uploadedUrl;
+        tempMsg.pictureElem?.bigPicture?.url = uploadedUrl;
+        tempMsg.pictureElem?.snapshotPicture?.url = uploadedUrl;
+        debugPrint('[Chat] image uploaded: $uploadedUrl');
+      } catch (e) {
+        debugPrint('[Chat] image upload failed, sending with local path: $e');
+      }
+
       await OpenIM.iMManager.messageManager.sendMessage(
         message: tempMsg,
         offlinePushInfo: OfflinePushInfo(),
@@ -592,6 +627,7 @@ class _ChatPageState extends State<ChatPage> {
     } catch (e) {
       if (mounted) setState(() => tempMsg.status = MessageStatus.failed);
       EasyLoading.showToast('发送失败');
+      debugPrint('[Chat] image send error: $e');
     }
   }
 
@@ -641,6 +677,7 @@ class _ChatPageState extends State<ChatPage> {
       setState(() {
         _voiceMode = true;
         _showEmojiPicker = false;
+        _showMorePanel = false;
       });
       _focusNode.unfocus();
     } else {
@@ -648,6 +685,7 @@ class _ChatPageState extends State<ChatPage> {
       setState(() {
         _voiceMode = false;
         _showEmojiPicker = false;
+        _showMorePanel = false;
         _pendingScrollAfterKeyboardShows = true;
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -738,13 +776,22 @@ class _ChatPageState extends State<ChatPage> {
       tempMsg.recvID = sessionType == ConversationType.single ? userID : '';
       tempMsg.groupID = sessionType != ConversationType.single ? groupID : '';
       tempMsg.isRead = false;
-      tempMsg.soundElem?.sourceUrl = path;
       tempMsg.soundElem?.soundPath = path;
+      tempMsg.soundElem?.sourceUrl = path;
 
       setState(() => _messages.add(tempMsg));
       _scrollToBottom();
 
       try {
+        // 尝试上传音频文件到服务器，获取永久 URL；失败时降级用本地路径
+        try {
+          final uploadedUrl = await UploadService.uploadFile(path, group: 'voice');
+          tempMsg.soundElem?.sourceUrl = uploadedUrl;
+          debugPrint('[Chat] voice uploaded: $uploadedUrl');
+        } catch (e) {
+          debugPrint('[Chat] voice upload failed, sending with local path: $e');
+        }
+
         await OpenIM.iMManager.messageManager.sendMessage(
           message: tempMsg,
           offlinePushInfo: OfflinePushInfo(),
@@ -760,6 +807,7 @@ class _ChatPageState extends State<ChatPage> {
       } catch (e) {
         if (mounted) setState(() => tempMsg.status = MessageStatus.failed);
         EasyLoading.showToast('语音发送失败');
+        debugPrint('[Chat] voice send error: $e');
       }
     } catch (e) {
       if (mounted) {
@@ -796,7 +844,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     final keyboardInset = MediaQuery.of(context).viewInsets.bottom;
-    final emojiPanelVisible = _showEmojiPicker || _hideEmojiWhenKeyboardShows;
+    final emojiPanelVisible = _showEmojiPicker || _showMorePanel || _hideEmojiWhenKeyboardShows;
     final emojiPanelAnimationDuration = _hideEmojiWhenKeyboardShows
         ? Duration.zero
         : const Duration(milliseconds: 180);
@@ -820,6 +868,7 @@ class _ChatPageState extends State<ChatPage> {
         if (!mounted) return;
         setState(() {
           _showEmojiPicker = false;
+          _showMorePanel = false;
           _hideEmojiWhenKeyboardShows = false;
         });
       });
@@ -854,6 +903,11 @@ class _ChatPageState extends State<ChatPage> {
           ],
         ),
         actions: [
+          if (sessionType == ConversationType.single)
+            IconButton(
+              icon: const Icon(Icons.phone_outlined),
+              onPressed: _startCall,
+            ),
           IconButton(
             icon: const Icon(Icons.more_horiz),
             onPressed: () => Get.toNamed(
@@ -878,8 +932,11 @@ class _ChatPageState extends State<ChatPage> {
                       GestureDetector(
                         onTap: () {
                           FocusScope.of(context).unfocus();
-                          if (_showEmojiPicker) {
-                            setState(() => _showEmojiPicker = false);
+                          if (_showEmojiPicker || _showMorePanel) {
+                            setState(() {
+                              _showEmojiPicker = false;
+                              _showMorePanel = false;
+                            });
                           }
                         },
                         child: ListView.builder(
@@ -930,20 +987,22 @@ class _ChatPageState extends State<ChatPage> {
                           child: ClipRect(
                             child: SizedBox(
                               height: _cachedKeyboardHeight,
-                              child: IgnorePointer(
-                                ignoring: !_showEmojiPicker,
-                                child: EmojiPickerSheet(
-                                  onEmojiSelected: (emoji) {
-                                    _inputController.text += emoji;
-                                  },
-                                  onBackspacePressed: () {
-                                    final text = _inputController.text;
-                                    if (text.isNotEmpty) {
-                                      _inputController.text = text.substring(0, text.length - 1);
-                                    }
-                                  },
-                                ),
-                              ),
+                              child: _showMorePanel
+                                  ? _buildMoreActionsPanel()
+                                  : IgnorePointer(
+                                      ignoring: !_showEmojiPicker,
+                                      child: EmojiPickerSheet(
+                                        onEmojiSelected: (emoji) {
+                                          _inputController.text += emoji;
+                                        },
+                                        onBackspacePressed: () {
+                                          final text = _inputController.text;
+                                          if (text.isNotEmpty) {
+                                            _inputController.text = text.substring(0, text.length - 1);
+                                          }
+                                        },
+                                      ),
+                                    ),
                             ),
                           ),
                         ),
@@ -1189,6 +1248,193 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+  /// 底部更多操作面板（微信风格：相册/拍摄/位置/语音通话/视频通话/红包/转账）
+  Widget _buildMoreActionsPanel() {
+    final isSingle = sessionType == ConversationType.single;
+    final actions = <_MoreAction>[
+      _MoreAction(icon: Icons.photo_library_outlined, label: '相册', onTap: _pickAndSendImage),
+      _MoreAction(icon: Icons.camera_alt_outlined, label: '拍摄', onTap: _takePhotoAndSend),
+      _MoreAction(icon: Icons.location_on_outlined, label: '位置', onTap: () {
+        EasyLoading.showToast('位置功能开发中');
+      }),
+      if (isSingle)
+        _MoreAction(icon: Icons.phone_outlined, label: '语音通话', onTap: () => _directCall(CallType.audio)),
+      if (isSingle)
+        _MoreAction(icon: Icons.videocam_outlined, label: '视频通话', onTap: () => _directCall(CallType.video)),
+      _MoreAction(icon: Icons.redeem_outlined, label: '红包', onTap: () {
+        EasyLoading.showToast('红包功能开发中');
+      }),
+      _MoreAction(icon: Icons.swap_horiz, label: '转账', onTap: () {
+        EasyLoading.showToast('转账功能开发中');
+      }),
+    ];
+
+    return Container(
+      color: const Color(0xFFF0F2F6),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 4,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 16,
+          childAspectRatio: 0.85,
+        ),
+        itemCount: actions.length,
+        itemBuilder: (_, i) {
+          final action = actions[i];
+          return GestureDetector(
+            onTap: () {
+              setState(() => _showMorePanel = false);
+              action.onTap();
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(action.icon, size: 28, color: const Color(0xFF4A5568)),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  action.label,
+                  style: const TextStyle(fontSize: 11, color: Color(0xFF8E9AB0)),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// 拍摄照片并发送
+  Future<void> _takePhotoAndSend() async {
+    final picker = ImagePicker();
+    final photo = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+    if (photo == null) return;
+
+    final tempMsg = await OpenIM.iMManager.messageManager
+        .createImageMessageFromFullPath(imagePath: photo.path);
+    tempMsg.sessionType = sessionType;
+    tempMsg.recvID = sessionType == ConversationType.single ? userID : '';
+    tempMsg.groupID = sessionType != ConversationType.single ? groupID : '';
+    tempMsg.isRead = false;
+
+    setState(() => _messages.add(tempMsg));
+    _scrollToBottom();
+
+    try {
+      // 尝试上传图片到服务器；失败时降级用本地路径
+      try {
+        final uploadedUrl = await UploadService.uploadFile(photo.path, group: 'image');
+        tempMsg.pictureElem?.sourcePicture?.url = uploadedUrl;
+        tempMsg.pictureElem?.bigPicture?.url = uploadedUrl;
+        tempMsg.pictureElem?.snapshotPicture?.url = uploadedUrl;
+        debugPrint('[Chat] camera image uploaded: $uploadedUrl');
+      } catch (e) {
+        debugPrint('[Chat] camera image upload failed, sending with local path: $e');
+      }
+
+      await OpenIM.iMManager.messageManager.sendMessage(
+        message: tempMsg,
+        offlinePushInfo: OfflinePushInfo(),
+        userID: sessionType == ConversationType.single ? userID : null,
+        groupID: sessionType != ConversationType.single ? groupID : null,
+      );
+      if (mounted) {
+        setState(() => tempMsg.status = MessageStatus.succeeded);
+        _scrollToBottom();
+      }
+    } catch (e) {
+      if (mounted) setState(() => tempMsg.status = MessageStatus.failed);
+      EasyLoading.showToast('发送失败');
+      debugPrint('[Chat] camera send error: $e');
+    }
+  }
+
+  /// 直接发起指定类型的通话（从更多面板调用）
+  void _directCall(CallType callType) {
+    debugPrint('[ChatPage] _directCall: callType=$callType, userID=$userID, sessionType=$sessionType');
+    if (sessionType != ConversationType.single || userID.isEmpty) {
+      EasyLoading.showToast('仅支持单聊通话');
+      return;
+    }
+    final imCtrl = Get.find<IMController>();
+    if (imCtrl.isRtcBusy) {
+      EasyLoading.showToast('当前正在通话中');
+      return;
+    }
+    imCtrl.call(callType: callType, inviteeUserIDList: [userID]);
+  }
+
+  /// 发起通话（弹框选择视频/语音，AppBar 调用）
+  void _startCall() {
+    if (sessionType != ConversationType.single || userID.isEmpty) {
+      EasyLoading.showToast('仅支持单聊通话');
+      return;
+    }
+    final imCtrl = Get.find<IMController>();
+    if (imCtrl.isRtcBusy) {
+      EasyLoading.showToast('当前正在通话中');
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.videocam_outlined, color: Colors.blue, size: 22),
+                  SizedBox(width: 8),
+                  Text('视频通话', style: TextStyle(fontSize: 16)),
+                ],
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                imCtrl.call(callType: CallType.video, inviteeUserIDList: [userID]);
+              },
+            ),
+            const Divider(height: 1),
+            ListTile(
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.phone_outlined, color: Colors.blue, size: 22),
+                  SizedBox(width: 8),
+                  Text('语音通话', style: TextStyle(fontSize: 16)),
+                ],
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                imCtrl.call(callType: CallType.audio, inviteeUserIDList: [userID]);
+              },
+            ),
+            const Divider(height: 1),
+            ListTile(
+              title: const Text('取消', textAlign: TextAlign.center, style: TextStyle(fontSize: 16)),
+              onTap: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// 从历史拉取的撤回消息中解析显示文本
   String _parseRevokeDisplayText(Message msg) {
     try {
@@ -1238,6 +1484,53 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ),
       );
+    }
+
+    // 通话结果消息（customType == 210）
+    if (msg.contentType == MessageType.custom) {
+      try {
+        final customData = msg.customElem?.data;
+        if (customData != null) {
+          final map = jsonDecode(customData);
+          if (map['customType'] == CustomMessageType.callResult) {
+            final info = CallResultInfo.fromJson(map['data']);
+            final text = info.getDisplayText(isMe);
+            return GestureDetector(
+              onTap: () => _directCall(info.isVideo ? CallType.video : CallType.audio),
+              onLongPressStart: (details) => _showMessageMenu(msg, isMe, details),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isMe ? const Color(0xFF0089FF) : Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: isMe
+                      ? [
+                          Text(text, style: TextStyle(fontSize: 15, color: isMe ? Colors.white : Colors.black87)),
+                          const SizedBox(width: 6),
+                          Icon(
+                            info.isVideo ? Icons.videocam : Icons.phone,
+                            size: 20,
+                            color: isMe ? Colors.white : const Color(0xFF0089FF),
+                          ),
+                        ]
+                      : [
+                          Icon(
+                            info.isVideo ? Icons.videocam : Icons.phone,
+                            size: 20,
+                            color: const Color(0xFF0089FF),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(text, style: const TextStyle(fontSize: 15, color: Colors.black87)),
+                        ],
+                ),
+              ),
+            );
+          }
+        }
+      } catch (_) {}
     }
 
     // Image message
@@ -1475,51 +1768,88 @@ class _ChatPageState extends State<ChatPage> {
     // Voice/Sound message
     if (msg.contentType == MessageType.voice) {
       final duration = msg.soundElem?.duration ?? 0;
+      final msgId = msg.clientMsgID ?? '';
+      final isPlayed = isMe || _playedVoiceIds.contains(msgId);
+      // 优先用 sourceUrl，若为空或本地路径不存在则回退到 soundPath
+      final sourceUrl = msg.soundElem?.sourceUrl ?? '';
+      final soundPath = msg.soundElem?.soundPath ?? '';
+      final playKey = sourceUrl.isNotEmpty ? sourceUrl : soundPath;
+      final iconColor = isMe ? Colors.white : const Color(0xFF0089FF);
+
       return GestureDetector(
         onTap: () async {
-          final soundUrl = msg.soundElem?.sourceUrl ?? '';
-          if (soundUrl.isNotEmpty) {
-            await _audioPlayer.playOrPause(soundUrl);
+          if (playKey.isNotEmpty) {
+            final ok = await _audioPlayer.playOrPause(playKey);
+            if (ok) {
+              if (!isMe && msgId.isNotEmpty && !_playedVoiceIds.contains(msgId)) {
+                setState(() => _playedVoiceIds.add(msgId));
+                LocalStore.addPlayedVoiceId(conversationID, msgId);
+              }
+            } else {
+              EasyLoading.showToast('语音文件不可用');
+            }
           } else {
             EasyLoading.showToast('语音地址无效');
           }
         },
         onLongPressStart: (details) => _showMessageMenu(msg, isMe, details),
-        child: Container(
-          constraints: BoxConstraints(
-            minWidth: 100,
-            maxWidth: MediaQuery.of(context).size.width * 0.5,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: isMe ? const Color(0xFF0089FF) : Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              constraints: BoxConstraints(
+                minWidth: 100,
+                maxWidth: MediaQuery.of(context).size.width * 0.5,
               ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.mic,
-                size: 20,
-                color: isMe ? Colors.white : const Color(0xFF0089FF),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: isMe ? const Color(0xFF0089FF) : Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Text(
-                '${duration}s',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isMe ? Colors.white : Colors.black87,
+              child: ValueListenableBuilder<String?>(
+                valueListenable: _audioPlayer.playingStateNotifier,
+                builder: (_, playingUrl, __) {
+                  final isPlayingThis = playingUrl == playKey && playKey.isNotEmpty;
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (isPlayingThis)
+                        _VoiceWaveWidget(color: iconColor)
+                      else
+                        Icon(Icons.mic, size: 20, color: iconColor),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${duration}s',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isMe ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+            if (!isPlayed) ...[
+              const SizedBox(width: 6),
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
                 ),
               ),
             ],
-          ),
+          ],
         ),
       );
     }
@@ -1653,7 +1983,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildInputBar() {
-    final attachedToBottomPanel = _showEmojiPicker || _hideEmojiWhenKeyboardShows;
+    final attachedToBottomPanel = _showEmojiPicker || _showMorePanel || _hideEmojiWhenKeyboardShows;
     final safeBottom = MediaQuery.of(context).padding.bottom;
     final bottomPadding = attachedToBottomPanel ? 8.0 : safeBottom + 8;
     return Container(
@@ -1735,7 +2065,7 @@ class _ChatPageState extends State<ChatPage> {
                       textInputAction: TextInputAction.send,
                       onSubmitted: (_) => _sendTextMessage(),
                       onTap: () {
-                        if (_showEmojiPicker) {
+                        if (_showEmojiPicker || _showMorePanel) {
                           setState(() {
                             _voiceMode = false;
                             _hideEmojiWhenKeyboardShows = true;
@@ -1771,6 +2101,7 @@ class _ChatPageState extends State<ChatPage> {
               _focusNode.unfocus();
               setState(() {
                 _voiceMode = false;
+                _showMorePanel = false;
                 _hideEmojiWhenKeyboardShows = false;
                 _showEmojiPicker = true;
               });
@@ -1791,13 +2122,35 @@ class _ChatPageState extends State<ChatPage> {
           ),
           const SizedBox(width: 8),
           GestureDetector(
-            onTap: _sendButtonVisible ? _sendTextMessage : _pickAndSendImage,
+            onTap: _sendButtonVisible
+                ? _sendTextMessage
+                : () {
+                    if (_showMorePanel) {
+                      // 已打开 more 面板，切回键盘
+                      setState(() {
+                        _showMorePanel = false;
+                        _hideEmojiWhenKeyboardShows = true;
+                      });
+                      FocusScope.of(context).requestFocus(_focusNode);
+                      return;
+                    }
+                    _focusNode.unfocus();
+                    setState(() {
+                      _voiceMode = false;
+                      _showEmojiPicker = false;
+                      _hideEmojiWhenKeyboardShows = false;
+                      _showMorePanel = true;
+                    });
+                    _scrollToBottom();
+                  },
             child: Container(
               width: 32,
               height: 32,
               decoration: const BoxDecoration(color: Colors.transparent),
               child: Icon(
-                _sendButtonVisible ? Icons.send : Icons.image_outlined,
+                _sendButtonVisible
+                    ? Icons.send
+                    : Icons.add_circle_outline,
                 color: _sendButtonVisible
                     ? const Color(0xFF0089FF)
                     : const Color(0xFF8E9AB0),
@@ -1827,5 +2180,75 @@ class _ChatPageState extends State<ChatPage> {
     } else {
       return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)}GB';
     }
+  }
+}
+
+class _MoreAction {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  _MoreAction({required this.icon, required this.label, required this.onTap});
+}
+
+/// 语音播放时的声波动画（3根竖条交替波动）
+class _VoiceWaveWidget extends StatefulWidget {
+  final Color color;
+  const _VoiceWaveWidget({required this.color});
+
+  @override
+  State<_VoiceWaveWidget> createState() => _VoiceWaveWidgetState();
+}
+
+class _VoiceWaveWidgetState extends State<_VoiceWaveWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (_, __) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: List.generate(3, (i) {
+            // 每根bar有不同的相位偏移，产生波浪效果
+            final phase = (i * 0.3).clamp(0.0, 1.0);
+            final t = (_ctrl.value + phase) % 1.0;
+            final height = 6.0 + 10.0 * (0.5 + 0.5 * _sin(t));
+            return Container(
+              width: 3,
+              height: height,
+              margin: EdgeInsets.only(left: i == 0 ? 0 : 2),
+              decoration: BoxDecoration(
+                color: widget.color,
+                borderRadius: BorderRadius.circular(1.5),
+              ),
+            );
+          }),
+        );
+      },
+    );
+  }
+
+  double _sin(double t) {
+    // 简单正弦近似：t 在 0~1 之间
+    final x = t * 3.14159 * 2;
+    return (x - x * x * x / 6 + x * x * x * x * x / 120).clamp(-1.0, 1.0);
   }
 }

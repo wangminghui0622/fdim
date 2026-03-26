@@ -9,6 +9,24 @@ import (
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
+func GetTokenForRTCHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req types.GetTokenForRTCReq
+		if err := httpx.Parse(r, &req); err != nil {
+			ParamError(w, err)
+			return
+		}
+
+		l := logic.NewGetTokenForRTCLogic(r.Context(), svcCtx)
+		resp, err := l.GetTokenForRTC(&req)
+		if err != nil {
+			ServerError(w, err)
+		} else {
+			Success(w, resp)
+		}
+	}
+}
+
 func UserRegisterHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req types.UserRegisterReq

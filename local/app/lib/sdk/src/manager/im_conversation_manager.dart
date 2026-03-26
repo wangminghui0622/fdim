@@ -36,7 +36,7 @@ class ConversationManager {
     try {
       final data = await HttpClient.post('/conversation/get_all_conversations', data: {
         'ownerUserID': Config.userID,
-      });
+      }, showErrorToast: false);
       final list = _parseConversationList(data);
       await _syncConversationSeqs(list);
       await LocalStore.putConversations(list);

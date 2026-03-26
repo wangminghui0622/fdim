@@ -890,7 +890,7 @@ func RegisterHandlers(server *rest.Server, ctx *svc.ServiceContext) {
 	server.AddRoute(rest.Route{
 		Method:  "POST",
 		Path:    "/user/rtc/get_token",
-		Handler: handler.GetTokenForVideoMeetingHandler(ctx),
+		Handler: handler.GetTokenForRTCHandler(ctx),
 	})
 
 	server.AddRoute(rest.Route{
@@ -1244,4 +1244,5 @@ func RegisterHandlers(server *rest.Server, ctx *svc.ServiceContext) {
 		Path:    "/application/delete_version",
 		Handler: handler.DeleteApplicationVersionHandler(ctx),
 	})
+
 }

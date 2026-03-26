@@ -1,17 +1,20 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:rxdart/rxdart.dart' as rx;
 
+import '../../models/signaling_info.dart';
 import '../../sdk/flutter_openim_sdk.dart';
 import '../config.dart';
+import '../live_controller.dart';
 import '../local_store.dart';
 import '../ws_client.dart';
 
 /// IMController - mirrors the official OpenIM Flutter demo's im_controller.dart
 /// Uses OpenIM.iMManager (our pure-Dart SDK) for all IM operations.
-class IMController extends GetxController {
+class IMController extends GetxController with LiveController {
   final conversations = <ConversationInfo>[].obs;
   final totalUnreadCount = 0.obs;
   final friendApplyCount = 0.obs;
@@ -58,6 +61,7 @@ class IMController extends GetxController {
     selfInfoUpdatedSubject.close();
     c2cReadReceiptSubject.close();
     msgRevokedSubject.close();
+    onCloseLive();
     OpenIM.iMManager.dispose();
     super.onClose();
   }
@@ -107,6 +111,27 @@ class IMController extends GetxController {
     OpenIM.iMManager.messageManager.setAdvancedMsgListener(
       OnAdvancedMsgListener(
         onRecvNewMessage: (msg) {
+          // 自定义消息：区分信令（200-204）和通话结果（210）
+          if (msg.contentType == MessageType.custom) {
+            int? customType;
+            try {
+              final raw = msg.customElem?.data;
+              if (raw != null) {
+                customType = jsonDecode(raw)['customType'] as int?;
+              }
+            } catch (_) {}
+
+            // 信令消息（200-204）：仅在线推送，不进聊天列表
+            if (customType != null &&
+                customType >= CustomMessageType.callingInvite &&
+                customType <= CustomMessageType.callingHungup) {
+              // 忽略自己发出的信令回显（push 推送给发送方的多设备同步）
+              if (msg.sendID == Config.userID) return;
+              handleSignalingMessage(msg);
+              return;
+            }
+            // 通话结果（210）及其他自定义消息 → 走正常消息流
+          }
           newMessageSubject.add(msg);
           onRecvNewMessage?.call(msg);
         },
@@ -196,6 +221,7 @@ class IMController extends GetxController {
 
     totalUnreadCount.value = LocalStore.getTotalUnreadCount();
     isLoggedIn.value = true;
+    onInitLive();
     return info;
   }
 

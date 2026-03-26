@@ -9,6 +9,7 @@ import (
 	"fdim/pkg/errs"
 	"fdim/protocol/msg"
 	"fdim/protocol/sdkws"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type SendMessageLogic struct {
@@ -76,6 +77,18 @@ func (l *SendMessageLogic) SendMessage(req *types.SendMsgReq) (resp *types.SendM
 			}
 		}
 	}
+
+	// isOnlineOnly: 仅在线推送（信令消息），不落库
+	if req.IsOnlineOnly {
+		if msgData.Options == nil {
+			msgData.Options = make(map[string]bool)
+		}
+		msgData.Options["isOnlineOnly"] = true
+	}
+
+	// DEBUG: 追踪 isOnlineOnly 标志
+	logx.Infof("[SendMessage] isOnlineOnly=%v, options=%v, contentType=%d, clientMsgID=%s",
+		req.IsOnlineOnly, msgData.Options, msgData.ContentType, msgData.ClientMsgID)
 
 	rpcReq := &msg.SendMsgReq{
 		MsgData: msgData,

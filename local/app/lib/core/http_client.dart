@@ -92,7 +92,27 @@ class HttpClient {
         return Future.error(ApiException(resp.errCode, resp.errMsg));
       }
     } on DioException catch (e) {
-      final msg = '网络错误: ${e.message}';
+      String desc;
+      switch (e.type) {
+        case DioExceptionType.connectionTimeout:
+          desc = '连接超时';
+          break;
+        case DioExceptionType.sendTimeout:
+          desc = '发送超时';
+          break;
+        case DioExceptionType.receiveTimeout:
+          desc = '接收超时';
+          break;
+        case DioExceptionType.connectionError:
+          desc = '无法连接服务器';
+          break;
+        case DioExceptionType.cancel:
+          desc = '请求已取消';
+          break;
+        default:
+          desc = e.message ?? '请检查网络连接';
+      }
+      final msg = '网络错误: $desc';
       if (showErrorToast) EasyLoading.showToast(msg);
       return Future.error(msg);
     } catch (e) {

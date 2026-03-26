@@ -86,6 +86,7 @@ class MessageManager {
       final resp = await HttpClient.post('/msg/send_msg', data: {
         'recvID': userID ?? '',
         'sendMsg': sendMsgData,
+        if (isOnlineOnly) 'isOnlineOnly': true,
       });
       debugPrint('[SendMessage] raw resp: $resp');
       message.status = MessageStatus.succeeded;
@@ -103,7 +104,8 @@ class MessageManager {
         }
       }
       debugPrint('[SendMessage] mapped message: clientMsgID=${message.clientMsgID} serverMsgID=${message.serverMsgID} seq=${message.seq} sendTime=${message.sendTime}');
-      // 与官方一致：发送成功后写入本地 DB
+      // 与官方一致：发送成功后写入本地 DB（isOnlineOnly 信令消息不落库）
+      if (isOnlineOnly) return message;
       final convID = _resolveConversationID(message, userID, groupID);
       if (convID.isNotEmpty) {
         await LocalStore.putMessage(convID, message);
@@ -582,6 +584,7 @@ class MessageManager {
         'userID': Config.userID,
         'conversationIDs': [conversationID],
       },
+      showErrorToast: false,
     );
     int maxSeq = 0;
     int hasReadSeq = 0;

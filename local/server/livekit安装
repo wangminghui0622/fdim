@@ -1,0 +1,7 @@
+docker run -d --name livekit \
+  -p 7880:7880 \
+  -p 7881:7881 \
+  -p 50000-50100:50000-50100/udp \
+  livekit/livekit-server \
+  --dev \
+  --keys "APIGPW3gnFTzqHH: 23ztfSqsfQ8hKkHzHTl3Z4bvaxro0snjk5jwbp5p6Q3"

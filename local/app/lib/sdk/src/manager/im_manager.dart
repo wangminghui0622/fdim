@@ -206,6 +206,42 @@ class IMManager {
     }
 
     if (!MessageType.isNotificationType(contentType)) {
+      // 与官方一致：信令消息（customType 200-204）是 isOnlineOnly 的，
+      // 不落库、不更新会话、不递增 unreadCount，仅通知 UI 层处理通话事件
+      if (contentType == MessageType.custom) {
+        try {
+          // content 结构: '{"data":"{\"customType\":200,...}","extension":"","description":""}'
+          // customType 在 CustomElem.data（JSON 字符串）内部
+          dynamic parsedContent = content;
+          if (parsedContent is String && parsedContent.isNotEmpty) {
+            try {
+              parsedContent = jsonDecode(utf8.decode(base64Decode(parsedContent)));
+            } catch (_) {
+              try { parsedContent = jsonDecode(parsedContent); } catch (_) {}
+            }
+          }
+          if (parsedContent is Map) {
+            final innerData = parsedContent['data'];
+            if (innerData is String && innerData.isNotEmpty) {
+              try {
+                final innerMap = jsonDecode(innerData);
+                if (innerMap is Map) {
+                  final ct = innerMap['customType'];
+                  if (ct != null && ct is int && ct >= 200 && ct <= 204) {
+                    debugPrint('[SDK] Signaling message (customType=$ct) — skip local storage, only dispatch to listener');
+                    final msg = Message.fromJson(msgData);
+                    messageManager.msgListener.recvNewMessage(msg);
+                    return;
+                  }
+                }
+              } catch (_) {}
+            }
+          }
+        } catch (e) {
+          debugPrint('[SDK] Error checking signaling customType: $e');
+        }
+      }
+
       // Regular message — 与官方一致：写入本地 DB 后再通知 UI
       final msg = Message.fromJson(msgData);
       final convID = _resolveConversationID(msg);
@@ -601,7 +637,7 @@ class IMManager {
         'userID': Config.userID,
         'conversationID': info.conversationID,
         'seqs': info.seqs,
-      });
+      }, showErrorToast: false);
 
       final msgIDList = <String>[];
       if (data is Map) {

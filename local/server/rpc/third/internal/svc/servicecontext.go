@@ -33,15 +33,17 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		minioConfig := minio.Config{
 			Bucket:          c.ObjectStorage.Bucket,
 			Endpoint:        c.ObjectStorage.Endpoint,
+			SignEndpoint:    c.ObjectStorage.SignEndpoint,
 			AccessKeyID:     c.ObjectStorage.AccessKeyID,
 			SecretAccessKey: c.ObjectStorage.SecretAccessKey,
 			PublicRead:      true,
 		}
-		var err error
-		objectStorage, err = minio.NewMinio(context.Background(), minioCache, minioConfig)
+		m, err := minio.NewMinio(context.Background(), minioCache, minioConfig)
 		if err != nil {
 			logx.Errorf("Failed to initialize MinIO: %v", err)
+			// 不赋值给 objectStorage，保持 nil interface，避免 nil pointer panic
 		} else {
+			objectStorage = m
 			logx.Info("MinIO object storage initialized successfully")
 		}
 	}

@@ -32,8 +32,9 @@ type SearchMsgResp struct {
 
 // SendMsg 相关类型
 type SendMsgReq struct {
-	RecvID  string     `json:"recvID"`
-	SendMsg *MsgData   `json:"sendMsg"` // 使用 MsgData 结构
+	RecvID       string   `json:"recvID"`
+	SendMsg      *MsgData `json:"sendMsg"`      // 使用 MsgData 结构
+	IsOnlineOnly bool     `json:"isOnlineOnly,optional"` // 仅在线推送，不落库（信令消息用）
 }
 
 // MsgData 消息数据结构

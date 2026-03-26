@@ -3,7 +3,9 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 
 import '../../core/apis/group_api.dart';
+import '../../core/controllers/im_controller.dart';
 import '../../core/models/group_info.dart';
+import '../../models/signaling_info.dart';
 import '../../sdk/flutter_openim_sdk.dart' hide GroupInfo;
 import '../../routes/app_routes.dart';
 
@@ -104,6 +106,16 @@ class _ChatSettingsPageState extends State<ChatSettingsPage> {
     }
   }
 
+  void _startCall(CallType callType) {
+    if (_userID.isEmpty) return;
+    final imCtrl = Get.find<IMController>();
+    if (imCtrl.isRtcBusy) {
+      EasyLoading.showToast('当前正在通话中');
+      return;
+    }
+    imCtrl.call(callType: callType, inviteeUserIDList: [_userID]);
+  }
+
   @override
   Widget build(BuildContext context) {
     final isGroup = _groupID.isNotEmpty;
@@ -186,6 +198,30 @@ class _ChatSettingsPageState extends State<ChatSettingsPage> {
               },
             ),
           ),
+          if (!isGroup && _userID.isNotEmpty) ...[          const Divider(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.phone_outlined),
+                      label: const Text('语音通话'),
+                      onPressed: () => _startCall(CallType.audio),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.videocam_outlined),
+                      label: const Text('视频通话'),
+                      onPressed: () => _startCall(CallType.video),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const Divider(),
           ListTile(
             title: const Text('清空聊天记录', style: TextStyle(color: Colors.red)),

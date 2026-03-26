@@ -1145,3 +1145,14 @@ type GetEnableConfigManagerReq struct{}
 type GetEnableConfigManagerResp struct {
 	Enable bool `json:"enable"`
 }
+
+// RTC 音视频通话
+type GetTokenForRTCReq struct {
+	Room     string `json:"room"`
+	Identity string `json:"identity"`
+}
+
+type GetTokenForRTCResp struct {
+	ServerUrl string `json:"serverUrl"`
+	Token     string `json:"token"`
+}

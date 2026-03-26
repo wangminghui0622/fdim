@@ -41,9 +41,6 @@ func (x *CompleteMultipartUploadReq) Check() error {
 }
 
 func (x *CompleteFormDataReq) Check() error {
-	if x.UrlPrefix == "" {
-		return errors.New("UrlPrefix is empty")
-	}
 	return nil
 }
 
