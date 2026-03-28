@@ -99,10 +99,13 @@ class ConversationInfo {
         'msgDestructTime': msgDestructTime,
       };
 
-  bool get isSingleChat => conversationType == ConversationType.single;
+  bool get isSingleChat =>
+      conversationType == ConversationType.single ||
+      (conversationType == null && conversationID.startsWith('si_'));
   bool get isGroupChat =>
       conversationType == ConversationType.group ||
-      conversationType == ConversationType.superGroup;
+      conversationType == ConversationType.superGroup ||
+      (conversationType == null && conversationID.startsWith('sg_'));
   bool get isValid => isSingleChat || (isGroupChat && !(isNotInGroup ?? false));
 
   @override

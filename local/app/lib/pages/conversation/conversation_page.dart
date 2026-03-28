@@ -2,13 +2,16 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:focus_detector_v2/focus_detector_v2.dart';
 import 'package:get/get.dart';
 
+import '../../core/apis/group_api.dart';
 import '../../models/signaling_info.dart';
 import '../../sdk/flutter_openim_sdk.dart';
 import '../../core/config.dart';
 import '../../core/controllers/im_controller.dart';
 import '../../routes/app_routes.dart';
+import '../../widgets/group_avatar_widget.dart';
 
 class ConversationPage extends StatefulWidget {
   const ConversationPage({super.key});
@@ -22,6 +25,9 @@ class _ConversationPageState extends State<ConversationPage> {
   bool _loading = true;
   StreamSubscription? _convChangedSub;
   StreamSubscription? _convAddedSub;
+  // 群成员头像缓存：groupID -> [{url, name}, ...]
+  final Map<String, List<Map<String, String>>> _groupMemberAvatars = {};
+  final Set<String> _loadingGroupAvatars = {};
 
   @override
   void initState() {
@@ -103,6 +109,12 @@ class _ConversationPageState extends State<ConversationPage> {
       }
     }
 
+    // 确保 sessionType 正确：从 conversationType 获取，如果为 null 则从 conversationID 推导
+    int sessionType = conv.conversationType ?? ConversationType.single;
+    if (sessionType == ConversationType.single && groupID.isNotEmpty) {
+      sessionType = ConversationType.superGroup;
+    }
+
     Get.toNamed(
       AppRoutes.chat,
       arguments: {
@@ -111,7 +123,7 @@ class _ConversationPageState extends State<ConversationPage> {
         'groupID': groupID,
         'showName': conv.showName,
         'faceURL': conv.faceURL,
-        'sessionType': conv.conversationType,
+        'sessionType': sessionType,
       },
     );
   }
@@ -152,30 +164,33 @@ class _ConversationPageState extends State<ConversationPage> {
           ),
         ],
       ),
-      body: _loading && _conversations.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: () => _loadConversations(),
-              child: _conversations.isEmpty
-                  ? ListView(
-                      children: const [
-                        SizedBox(height: 200),
-                        Center(
-                          child: Text(
-                            '暂无消息',
-                            style: TextStyle(color: Colors.grey),
+      body: FocusDetector(
+        onFocusGained: () => _loadConversations(silent: true),
+        child: _loading && _conversations.isEmpty
+            ? const Center(child: CircularProgressIndicator())
+            : RefreshIndicator(
+                onRefresh: () => _loadConversations(),
+                child: _conversations.isEmpty
+                    ? ListView(
+                        children: const [
+                          SizedBox(height: 200),
+                          Center(
+                            child: Text(
+                              '暂无消息',
+                              style: TextStyle(color: Colors.grey),
+                            ),
                           ),
-                        ),
-                      ],
-                    )
-                  : ListView.separated(
-                      itemCount: _conversations.length,
-                      separatorBuilder: (context, index) =>
-                          const Divider(height: 1, indent: 76, endIndent: 16),
-                      itemBuilder: (context, i) =>
-                          _buildConversationItem(_conversations[i]),
-                    ),
-            ),
+                        ],
+                      )
+                    : ListView.separated(
+                        itemCount: _conversations.length,
+                        separatorBuilder: (context, index) =>
+                            const Divider(height: 1, indent: 76, endIndent: 16),
+                        itemBuilder: (context, i) =>
+                            _buildConversationItem(_conversations[i]),
+                      ),
+              ),
+      ),
     );
   }
 
@@ -228,25 +243,7 @@ class _ConversationPageState extends State<ConversationPage> {
             child: Row(
               children: [
                 // 左侧：头像
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: const Color(0xFFE0E0E0),
-                  backgroundImage: (conv.faceURL ?? '').isNotEmpty
-                      ? NetworkImage(conv.faceURL!)
-                      : null,
-                  child: (conv.faceURL ?? '').isEmpty
-                      ? Text(
-                          (conv.showName ?? '').isNotEmpty
-                              ? conv.showName![0].toUpperCase()
-                              : '?',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        )
-                      : null,
-                ),
+                _buildConversationAvatar(conv),
                 const SizedBox(width: 12),
                 // 中间：用户名和最后一条消息
                 Expanded(
@@ -289,7 +286,7 @@ class _ConversationPageState extends State<ConversationPage> {
                             child: Text(
                               (conv.draftText ?? '').isNotEmpty
                                   ? '[草稿] ${conv.draftText}'
-                                  : _parseLatestMsg(conv.latestMsg),
+                                  : _parseLatestMsg(conv.latestMsg, conv: conv),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -352,7 +349,79 @@ class _ConversationPageState extends State<ConversationPage> {
     );
   }
 
-  String _parseLatestMsg(Message? latestMsg) {
+  Widget _buildConversationAvatar(ConversationInfo conv) {
+    final groupID = conv.groupID ?? '';
+    final isGroup = conv.isGroupChat || conv.conversationID.startsWith('sg_');
+
+    if (isGroup && groupID.isNotEmpty) {
+      // 懒加载群成员头像
+      _ensureGroupAvatarsLoaded(groupID);
+      final members = _groupMemberAvatars[groupID];
+      if (members != null && members.isNotEmpty) {
+        return GroupAvatarWidget(
+          size: 48,
+          faceURLs: members.map((m) => m['url'] ?? '').toList(),
+          names: members.map((m) => m['name'] ?? '').toList(),
+        );
+      }
+      // 未加载完成时显示默认群图标
+      return Container(
+        width: 48, height: 48,
+        decoration: const BoxDecoration(
+          color: Color(0xFF4CAF50),
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.group, color: Colors.white, size: 22),
+      );
+    }
+
+    // 单聊头像
+    return CircleAvatar(
+      radius: 24,
+      backgroundColor: const Color(0xFFE0E0E0),
+      backgroundImage: (conv.faceURL ?? '').isNotEmpty
+          ? NetworkImage(conv.faceURL!)
+          : null,
+      child: (conv.faceURL ?? '').isEmpty
+          ? Text(
+              (conv.showName ?? '').isNotEmpty
+                  ? conv.showName![0].toUpperCase()
+                  : '?',
+              style: const TextStyle(
+                fontSize: 14, color: Colors.white, fontWeight: FontWeight.w500,
+              ),
+            )
+          : null,
+    );
+  }
+
+  void _ensureGroupAvatarsLoaded(String groupID) {
+    if (_groupMemberAvatars.containsKey(groupID)) return;
+    if (_loadingGroupAvatars.contains(groupID)) return;
+    _loadingGroupAvatars.add(groupID);
+    GroupApi.getGroupMemberList(groupID, showNumber: 20).then((members) {
+      if (!mounted) return;
+      // 群主排第一，其余按加入顺序
+      members.sort((a, b) {
+        if (a.roleLevel == 100) return -1;
+        if (b.roleLevel == 100) return 1;
+        return 0;
+      });
+      // 取群主 + 最多3个其他成员
+      final display = <Map<String, String>>[];
+      for (final m in members) {
+        display.add({'url': m.faceURL, 'name': m.nickname});
+        if (display.length >= 4) break;
+      }
+      _groupMemberAvatars[groupID] = display;
+      _loadingGroupAvatars.remove(groupID);
+      if (mounted) setState(() {});
+    }).catchError((_) {
+      _loadingGroupAvatars.remove(groupID);
+    });
+  }
+
+  String _parseLatestMsg(Message? latestMsg, {ConversationInfo? conv}) {
     if (latestMsg == null) return '';
     // 撤回消息：优先使用 textElem，否则从 notificationElem.detail 解析
     if (latestMsg.contentType == MessageType.revokeMessageNotification) {
@@ -371,22 +440,67 @@ class _ConversationPageState extends State<ConversationPage> {
       } catch (_) {}
       return latestMsg.sendID == Config.userID ? '你撤回了一条消息' : '对方撤回了一条消息';
     }
-    // 通话结果自定义消息：显示友好文本
+    // 通话结果自定义消息：显示友好文本（多种解析方式兜底）
     if (latestMsg.contentType == MessageType.custom) {
-      try {
-        final raw = latestMsg.customElem?.data;
-        if (raw != null) {
-          final map = jsonDecode(raw);
-          if (map['customType'] == CustomMessageType.callResult) {
-            final info = CallResultInfo.fromJson(map['data']);
-            final isMe = latestMsg.sendID == Config.userID;
-            final icon = info.isVideo ? '📹' : '📞';
-            return '[通话] ${info.getDisplayText(isMe)} $icon';
+      final info = _tryParseCallResult(latestMsg);
+      if (info != null) {
+        final isMe = latestMsg.sendID == Config.userID;
+        final icon = info.isVideo ? '📹' : '📞';
+        return '[通话] ${info.getDisplayText(isMe)} $icon';
+      }
+    }
+    // 群聊消息：显示发送者昵称前缀（与官方微信/OpenIM一致）
+    String text = latestMsg.textContent;
+    final isGroup = conv?.isGroupChat == true ||
+        (conv?.conversationID.startsWith('sg_') ?? false);
+    if (isGroup && latestMsg.sendID != Config.userID) {
+      final senderName = latestMsg.senderNickname ?? '';
+      if (senderName.isNotEmpty) {
+        text = '$senderName: $text';
+      }
+    }
+    return text;
+  }
+
+  CallResultInfo? _tryParseCallResult(Message msg) {
+    // 方式1：直接从 customElem.data 解析
+    try {
+      final customData = msg.customElem?.data;
+      if (customData != null && customData.isNotEmpty) {
+        final map = jsonDecode(customData);
+        if (map is Map && map['customType'] == CustomMessageType.callResult) {
+          return CallResultInfo.fromJson(Map<String, dynamic>.from(map['data']));
+        }
+      }
+    } catch (_) {}
+    // 方式2：从 toJson 的 customElem 重新解析
+    try {
+      final json = msg.toJson();
+      final elemMap = json['customElem'];
+      if (elemMap is Map) {
+        final innerData = elemMap['data'];
+        if (innerData is String && innerData.isNotEmpty) {
+          final map = jsonDecode(innerData);
+          if (map is Map && map['customType'] == CustomMessageType.callResult) {
+            return CallResultInfo.fromJson(Map<String, dynamic>.from(map['data']));
           }
         }
-      } catch (_) {}
-    }
-    return latestMsg.textContent;
+      }
+    } catch (_) {}
+    // 方式3：嵌套解一层
+    try {
+      final customData = msg.customElem?.data;
+      if (customData != null && customData.isNotEmpty) {
+        final outer = jsonDecode(customData);
+        if (outer is Map && outer['data'] is String) {
+          final inner = jsonDecode(outer['data']);
+          if (inner is Map && inner['customType'] == CustomMessageType.callResult) {
+            return CallResultInfo.fromJson(Map<String, dynamic>.from(inner['data']));
+          }
+        }
+      }
+    } catch (_) {}
+    return null;
   }
 
   dynamic _tryJsonDecode(String s) {

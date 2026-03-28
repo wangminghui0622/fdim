@@ -4,7 +4,11 @@ import 'package:get/get.dart';
 
 import '../../core/apis/group_api.dart';
 import '../../core/apis/friend_api.dart';
+import '../../core/config.dart';
+import '../../core/local_store.dart';
 import '../../core/models/user_info.dart';
+import '../../routes/app_routes.dart';
+import '../../sdk/flutter_openim_sdk.dart' hide FriendInfo;
 
 class CreateGroupPage extends StatefulWidget {
   const CreateGroupPage({super.key});
@@ -52,85 +56,144 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
     }
     EasyLoading.show();
     try {
-      await GroupApi.createGroup(
+      final groupInfo = await GroupApi.createGroup(
         groupName: name,
         memberUserIDs: _selected.toList(),
       );
       EasyLoading.showToast('创建成功');
-      Get.back(result: true);
+      if (groupInfo != null && groupInfo.groupID.isNotEmpty) {
+        // 手动插入本地会话，确保会话列表立刻显示新群
+        final convID = 'sg_${groupInfo.groupID}';
+        final conv = ConversationInfo(
+          conversationID: convID,
+          conversationType: ConversationType.superGroup,
+          groupID: groupInfo.groupID,
+          showName: groupInfo.groupName,
+          faceURL: groupInfo.faceURL,
+          latestMsgSendTime: DateTime.now().millisecondsSinceEpoch,
+        );
+        await LocalStore.putConversation(conv);
+        OpenIM.iMManager.conversationManager.listener.conversationChanged([conv]);
+
+        // 创建成功后直接进入群聊（与微信/官方一致）
+        Get.back(result: true);
+        Get.toNamed(AppRoutes.chat, arguments: {
+          'conversationID': 'sg_${groupInfo.groupID}',
+          'userID': '',
+          'groupID': groupInfo.groupID,
+          'showName': groupInfo.groupName,
+          'faceURL': groupInfo.faceURL,
+          'sessionType': 3,
+        });
+      } else {
+        Get.back(result: true);
+      }
     } catch (e) {
-      EasyLoading.showToast('创建失败');
+      debugPrint('[CreateGroup] Error: $e');
+      EasyLoading.dismiss();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final canCreate = _nameCtrl.text.trim().isNotEmpty && _selected.isNotEmpty;
     return Scaffold(
       appBar: AppBar(
         title: const Text('创建群聊'),
-        actions: [
-          TextButton(
-            onPressed: _createGroup,
-            child: const Text('创建', style: TextStyle(color: Colors.white)),
-          ),
-        ],
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: TextField(
               controller: _nameCtrl,
-              decoration: const InputDecoration(
-                labelText: '群名称',
-                border: OutlineInputBorder(),
+              onChanged: (_) => setState(() {}),
+              decoration: InputDecoration(
+                hintText: '请输入群名称',
+                prefixIcon: const Icon(Icons.group, color: Color(0xFF0089FF)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFF0089FF), width: 1.5),
+                ),
               ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text('选择成员 (${_selected.length})',
-                  style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey)),
             ),
           ),
-          const SizedBox(height: 8),
           Expanded(
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    itemCount: _friends.length,
-                    itemBuilder: (_, i) {
-                      final f = _friends[i];
-                      final uid = f.friendUserID;
-                      final checked = _selected.contains(uid);
-                      return CheckboxListTile(
-                        value: checked,
-                        onChanged: (v) {
-                          setState(() {
-                            if (v == true) {
-                              _selected.add(uid);
-                            } else {
-                              _selected.remove(uid);
-                            }
-                          });
+                : _friends.isEmpty
+                    ? const Center(child: Text('暂无好友', style: TextStyle(color: Colors.grey)))
+                    : ListView.builder(
+                        itemCount: _friends.length,
+                        itemBuilder: (_, i) {
+                          final f = _friends[i];
+                          final uid = f.friendUserID;
+                          final checked = _selected.contains(uid);
+                          return CheckboxListTile(
+                            value: checked,
+                            activeColor: const Color(0xFF0089FF),
+                            onChanged: (v) {
+                              setState(() {
+                                if (v == true) {
+                                  _selected.add(uid);
+                                } else {
+                                  _selected.remove(uid);
+                                }
+                              });
+                            },
+                            secondary: CircleAvatar(
+                              backgroundColor: Colors.grey[300],
+                              backgroundImage: f.faceURL.isNotEmpty
+                                  ? NetworkImage(f.faceURL)
+                                  : null,
+                              child: f.faceURL.isEmpty
+                                  ? Text(f.showName.isNotEmpty
+                                      ? f.showName[0].toUpperCase()
+                                      : '?')
+                                  : null,
+                            ),
+                            title: Text(f.showName),
+                          );
                         },
-                        secondary: CircleAvatar(
-                          backgroundColor: Colors.grey[300],
-                          backgroundImage: f.faceURL.isNotEmpty
-                              ? NetworkImage(f.faceURL)
-                              : null,
-                          child: f.faceURL.isEmpty
-                              ? Text(f.showName.isNotEmpty
-                                  ? f.showName[0].toUpperCase()
-                                  : '?')
-                              : null,
-                        ),
-                        title: Text(f.showName),
-                      );
-                    },
+                      ),
+          ),
+          // 底部确认按钮
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: canCreate ? _createGroup : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0089FF),
+                    disabledBackgroundColor: const Color(0xFFB0D4FF),
+                    foregroundColor: Colors.white,
+                    disabledForegroundColor: Colors.white70,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
                   ),
+                  child: Text(
+                    _selected.isEmpty ? '确认创建' : '确认创建 (${_selected.length}人)',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),

@@ -52,10 +52,10 @@ class _GlobalSearchPageState extends State<GlobalSearchPage> {
         title: TextField(
           controller: _ctrl,
           autofocus: true,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Color(0xFF0C1C33)),
           decoration: const InputDecoration(
             hintText: '搜索用户ID / 昵称',
-            hintStyle: TextStyle(color: Colors.white54),
+            hintStyle: TextStyle(color: Color(0xFF8E9AB0)),
             border: InputBorder.none,
           ),
           onSubmitted: _search,

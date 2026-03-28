@@ -8,6 +8,7 @@ import '../../core/models/group_info.dart';
 import '../../models/signaling_info.dart';
 import '../../sdk/flutter_openim_sdk.dart' hide GroupInfo;
 import '../../routes/app_routes.dart';
+import '../../widgets/group_avatar_widget.dart';
 
 class ChatSettingsPage extends StatefulWidget {
   const ChatSettingsPage({super.key});
@@ -125,6 +126,13 @@ class _ChatSettingsPageState extends State<ChatSettingsPage> {
         children: [
           if (isGroup && _groupInfo != null) ...[
             ListTile(
+              leading: _members.isNotEmpty
+                  ? GroupAvatarWidget(
+                      size: 48,
+                      faceURLs: _members.take(4).map((m) => m.faceURL).toList(),
+                      names: _members.take(4).map((m) => m.nickname).toList(),
+                    )
+                  : null,
               title: Text(_groupInfo!.groupName,
                   style: const TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Text('${_groupInfo!.memberCount} 名成员'),

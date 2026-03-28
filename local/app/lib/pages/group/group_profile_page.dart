@@ -6,6 +6,7 @@ import '../../core/config.dart';
 import '../../core/apis/group_api.dart';
 import '../../core/models/group_info.dart';
 import '../../routes/app_routes.dart';
+import '../../widgets/group_avatar_widget.dart';
 
 class GroupProfilePage extends StatefulWidget {
   const GroupProfilePage({super.key});
@@ -144,19 +145,20 @@ class _GroupProfilePageState extends State<GroupProfilePage> {
                   children: [
                     const SizedBox(height: 24),
                     Center(
-                      child: CircleAvatar(
-                        radius: 44,
-                        backgroundColor: Colors.blue[100],
-                        backgroundImage: _group!.faceURL.isNotEmpty
-                            ? NetworkImage(_group!.faceURL)
-                            : null,
-                        child: _group!.faceURL.isEmpty
-                            ? Text(_group!.groupName.isNotEmpty
-                                ? _group!.groupName[0].toUpperCase()
-                                : 'G',
-                                style: const TextStyle(fontSize: 32))
-                            : null,
-                      ),
+                      child: _members.isNotEmpty
+                          ? GroupAvatarWidget(
+                              size: 88,
+                              faceURLs: _members.take(4).map((m) => m.faceURL).toList(),
+                              names: _members.take(4).map((m) => m.nickname).toList(),
+                            )
+                          : CircleAvatar(
+                              radius: 44,
+                              backgroundColor: Colors.blue[100],
+                              child: Text(_group!.groupName.isNotEmpty
+                                  ? _group!.groupName[0].toUpperCase()
+                                  : 'G',
+                                  style: const TextStyle(fontSize: 32)),
+                            ),
                     ),
                     const SizedBox(height: 12),
                     Center(

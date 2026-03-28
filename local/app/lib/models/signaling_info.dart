@@ -110,6 +110,7 @@ enum CallState {
   cancel,
   beCanceled,
   timeout,
+  beBusy,
 }
 
 class CallEvent {
@@ -127,6 +128,7 @@ class CustomMessageType {
   static const int callingCancel = 203;
   static const int callingHungup = 204;
   static const int call = 205;
+  static const int callingBusy = 206;
   /// 通话结果（持久化到聊天记录）
   static const int callResult = 210;
 }
@@ -137,6 +139,8 @@ class CallResultType {
   static const String cancelled = 'cancelled';   // 取消（发送方=取消者）
   static const String timeout = 'timeout';       // 超时未接听
   static const String completed = 'completed';   // 通话完成
+  static const String networkError = 'network_error'; // 网络中断
+  static const String busy = 'busy';                   // 对方正忙
 }
 
 /// 通话结果消息体
@@ -175,6 +179,10 @@ class CallResultInfo {
         final min = (duration ~/ 60).toString().padLeft(2, '0');
         final sec = (duration % 60).toString().padLeft(2, '0');
         return '通话时长 $min:$sec';
+      case CallResultType.networkError:
+        return '网络忙';
+      case CallResultType.busy:
+        return '对方正忙';
       default:
         return '通话结束';
     }

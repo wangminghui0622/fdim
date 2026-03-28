@@ -20,7 +20,7 @@ class GroupApi {
     int showNumber = 100,
   }) async {
     final data = await HttpClient.post('/group/get_joined_group_list', data: {
-      'userID': Config.userID,
+      'fromUserID': Config.userID,
       'pagination': {'pageNumber': pageNumber, 'showNumber': showNumber},
     });
     if (data == null) return [];
@@ -48,12 +48,12 @@ class GroupApi {
     return [];
   }
 
-  static Future<void> createGroup({
+  static Future<GroupInfo?> createGroup({
     required String groupName,
     required List<String> memberUserIDs,
     String faceURL = '',
   }) async {
-    await HttpClient.post('/group/create_group', data: {
+    final data = await HttpClient.post('/group/create_group', data: {
       'ownerUserID': Config.userID,
       'groupInfo': {
         'groupName': groupName,
@@ -62,6 +62,12 @@ class GroupApi {
       },
       'memberUserIDs': memberUserIDs,
     });
+    if (data == null) return null;
+    final groupData = data['groupInfo'] ?? data;
+    if (groupData is Map<String, dynamic>) {
+      return GroupInfo.fromJson(groupData);
+    }
+    return null;
   }
 
   static Future<void> joinGroup(String groupID, {String reqMsg = ''}) async {

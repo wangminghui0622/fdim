@@ -227,7 +227,7 @@ class IMManager {
                 final innerMap = jsonDecode(innerData);
                 if (innerMap is Map) {
                   final ct = innerMap['customType'];
-                  if (ct != null && ct is int && ct >= 200 && ct <= 204) {
+                  if (ct != null && ct is int && ct >= 200 && ct <= 206) {
                     debugPrint('[SDK] Signaling message (customType=$ct) — skip local storage, only dispatch to listener');
                     final msg = Message.fromJson(msgData);
                     messageManager.msgListener.recvNewMessage(msg);
@@ -584,6 +584,16 @@ class IMManager {
     } else {
       cGroupID = msg.groupID;
       showName = msg.groupID ?? '';
+      // 群聊：尝试从服务端查询群组名称和头像
+      if (cGroupID != null && cGroupID.isNotEmpty) {
+        try {
+          final groups = await groupManager.getGroupsInfo(groupIDList: [cGroupID]);
+          if (groups.isNotEmpty) {
+            showName = groups.first.groupName ?? showName;
+            faceURL = groups.first.faceURL;
+          }
+        } catch (_) {}
+      }
     }
     final conv = ConversationInfo(
       conversationID: convID,

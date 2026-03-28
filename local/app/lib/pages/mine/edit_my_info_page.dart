@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../core/config.dart';
 import '../../core/apis/user_api.dart';
+import '../../core/upload_service.dart';
 import '../../sdk/flutter_openim_sdk.dart';
 
 class EditMyInfoPage extends StatefulWidget {
@@ -53,6 +55,51 @@ class _EditMyInfoPageState extends State<EditMyInfoPage> {
     } catch (_) {}
   }
 
+  Future<void> _pickAndUploadAvatar() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('拍照'),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('从相册选择'),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+            ListTile(
+              leading: const Icon(Icons.close),
+              title: const Text('取消'),
+              onTap: () => Navigator.pop(ctx),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null) return;
+
+    final picker = ImagePicker();
+    final xFile = await picker.pickImage(source: source, imageQuality: 80, maxWidth: 512);
+    if (xFile == null) return;
+
+    EasyLoading.show(status: '上传中...');
+    try {
+      final url = await UploadService.uploadFile(xFile.path, group: 'avatar');
+      if (mounted) {
+        setState(() => _faceUrlCtrl.text = url);
+      }
+      EasyLoading.showToast('头像上传成功');
+    } catch (e) {
+      debugPrint('[Avatar] Upload error: $e');
+      EasyLoading.showToast('上传失败');
+    }
+  }
+
   Future<void> _save() async {
     final nickname = _nicknameCtrl.text.trim();
     if (nickname.isEmpty) {
@@ -85,25 +132,63 @@ class _EditMyInfoPageState extends State<EditMyInfoPage> {
         actions: [
           TextButton(
             onPressed: _save,
-            child: const Text('保存', style: TextStyle(color: Colors.white)),
+            child: const Text('保存', style: TextStyle(color: Color(0xFF0089FF), fontWeight: FontWeight.w600)),
           ),
         ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // 头像
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              debugPrint('[EditMyInfo] Avatar tapped');
+              _pickAndUploadAvatar();
+            },
+            child: Center(
+              child: SizedBox(
+                width: 100,
+                height: 100,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    CircleAvatar(
+                      radius: 48,
+                      backgroundColor: const Color(0xFFE0E0E0),
+                      backgroundImage: _faceUrlCtrl.text.isNotEmpty
+                          ? NetworkImage(_faceUrlCtrl.text)
+                          : null,
+                      child: _faceUrlCtrl.text.isEmpty
+                          ? const Icon(Icons.person, size: 48, color: Colors.white)
+                          : null,
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF0089FF),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: Text('点击更换头像', style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+          ),
+          const SizedBox(height: 24),
           TextField(
             controller: _nicknameCtrl,
             decoration: const InputDecoration(
               labelText: '昵称',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _faceUrlCtrl,
-            decoration: const InputDecoration(
-              labelText: '头像URL',
               border: OutlineInputBorder(),
             ),
           ),

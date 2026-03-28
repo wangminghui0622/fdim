@@ -310,16 +310,59 @@ class ConversationManager {
               debugPrint('[SDK] parse latest msg from msgInfo error: $err');
             }
 
-            final showName = (msgMap['senderNickname'] ??
-                    msgMap['senderName'] ??
-                    msgMap['showName'] ??
-                    '')
-                .toString();
-            final faceURL = (msgMap['senderFaceUrl'] ??
-                    msgMap['senderFaceURL'] ??
-                    msgMap['faceURL'] ??
-                    '')
-                .toString();
+            // 从 conversationID 推导 conversationType、userID、groupID
+            final convID = (e['conversationID'] ?? '').toString();
+            int? conversationType;
+            String? userID;
+            String? groupID;
+            String showName = '';
+            String faceURL = '';
+
+            if (convID.startsWith('sg_')) {
+              // 群聊会话：使用 groupName 和 groupFaceURL（与官方一致）
+              conversationType = ConversationType.superGroup;
+              groupID = convID.substring(3);
+              showName = (msgMap['groupName'] ??
+                      msgMap['GroupName'] ??
+                      msgMap['showName'] ??
+                      groupID ??
+                      '')
+                  .toString();
+              faceURL = (msgMap['groupFaceURL'] ??
+                      msgMap['GroupFaceURL'] ??
+                      msgMap['faceURL'] ??
+                      '')
+                  .toString();
+            } else if (convID.startsWith('si_')) {
+              // 单聊会话：使用 senderName 和 senderFaceURL
+              conversationType = ConversationType.single;
+              final parts = convID.split('_');
+              if (parts.length == 3) {
+                userID = (parts[1] == Config.userID) ? parts[2] : parts[1];
+              }
+              showName = (msgMap['senderNickname'] ??
+                      msgMap['senderName'] ??
+                      msgMap['showName'] ??
+                      '')
+                  .toString();
+              faceURL = (msgMap['senderFaceUrl'] ??
+                      msgMap['senderFaceURL'] ??
+                      msgMap['faceURL'] ??
+                      '')
+                  .toString();
+            } else {
+              showName = (msgMap['senderNickname'] ??
+                      msgMap['senderName'] ??
+                      msgMap['showName'] ??
+                      '')
+                  .toString();
+              faceURL = (msgMap['senderFaceUrl'] ??
+                      msgMap['senderFaceURL'] ??
+                      msgMap['faceURL'] ??
+                      '')
+                  .toString();
+            }
+
             final latestMsgSendTime = msgMap['sendTime'] ??
                 msgMap['latestMsgSendTime'] ??
                 msgMap['latestMsgRecvTime'] ??
@@ -327,7 +370,10 @@ class ConversationManager {
                 0;
 
             final conv = ConversationInfo.fromJson({
-              'conversationID': e['conversationID'],
+              'conversationID': convID,
+              'conversationType': conversationType,
+              'userID': userID,
+              'groupID': groupID,
               'recvMsgOpt': e['recvMsgOpt'],
               'unreadCount': e['unreadCount'],
               'isPinned': e['isPinned'],

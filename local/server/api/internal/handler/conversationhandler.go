@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"fdim/api/internal/logic"
@@ -87,7 +88,7 @@ func GetConversationsHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 func SetConversationsHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req types.SetConversationsReq
-		if err := httpx.Parse(r, &req); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			ParamError(w, err)
 			return
 		}

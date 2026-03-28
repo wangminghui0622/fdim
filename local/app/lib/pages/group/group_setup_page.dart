@@ -78,7 +78,7 @@ class _GroupSetupPageState extends State<GroupSetupPage> {
         actions: [
           TextButton(
             onPressed: _save,
-            child: const Text('保存', style: TextStyle(color: Colors.white)),
+            child: const Text('保存', style: TextStyle(color: Color(0xFF0089FF), fontWeight: FontWeight.w600)),
           ),
         ],
       ),

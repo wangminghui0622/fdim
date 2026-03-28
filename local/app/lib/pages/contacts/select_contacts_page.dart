@@ -63,7 +63,7 @@ class _SelectContactsPageState extends State<SelectContactsPage> {
           TextButton(
             onPressed: _selected.isEmpty ? null : _confirm,
             child: Text('确定(${_selected.length})',
-                style: const TextStyle(color: Colors.white)),
+                style: const TextStyle(color: Color(0xFF0089FF), fontWeight: FontWeight.w600)),
           ),
         ],
       ),

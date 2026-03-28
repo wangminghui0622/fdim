@@ -37,7 +37,7 @@ func (l *CreateGroupChatConversationsLogic) CreateGroupChatConversations(req *co
 	for _, userID := range req.UserIDs {
 		conv := &model.Conversation{
 			ConversationID:   conversationID,
-			ConversationType: 2, // ReadGroupChatType
+			ConversationType: 3, // ReadGroupChatType / SuperGroupChatType（与官方一致）
 			GroupID:          req.GroupID,
 			OwnerUserID:      userID,
 			CreateTime:       time.Now(),

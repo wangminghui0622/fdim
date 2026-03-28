@@ -61,6 +61,9 @@ class _ChatPageState extends State<ChatPage> {
   bool _isRecording = false;
   String? _recordFilePath;
   int? _recordStartAt;
+  static const int _maxRecordSeconds = 30;
+  int _recordCountdown = _maxRecordSeconds;
+  Timer? _recordTimer;
   double _cachedKeyboardHeight = 290;
   bool _hideEmojiWhenKeyboardShows = false;
   bool _pendingScrollAfterKeyboardShows = false;
@@ -71,6 +74,7 @@ class _ChatPageState extends State<ChatPage> {
   late String showName;
   late String faceURL;
   late int sessionType;
+  int _groupMemberCount = 0;
 
   @override
   void initState() {
@@ -109,6 +113,11 @@ class _ChatPageState extends State<ChatPage> {
         const Duration(seconds: 15),
         (_) => _checkOnlineStatus(),
       );
+    }
+
+    // 群聊：获取群成员人数
+    if (groupID.isNotEmpty) {
+      _loadGroupMemberCount();
     }
 
     _scrollController.addListener(() {
@@ -166,6 +175,7 @@ class _ChatPageState extends State<ChatPage> {
     _readReceiptSub?.cancel();
     _convChangedSub?.cancel();
     _msgRevokedSub?.cancel();
+    _recordTimer?.cancel();
     _audioPlayer.dispose();
     super.dispose();
   }
@@ -440,6 +450,21 @@ class _ChatPageState extends State<ChatPage> {
   /// 移除不再需要的 seq 边界更新逻辑
   void _updateSeqBounds(List<Message> msgs) {
     // 官方实现中没有这个逻辑，保留空方法以避免编译错误
+  }
+
+  Future<void> _loadGroupMemberCount() async {
+    if (groupID.isEmpty) return;
+    try {
+      final groups = await OpenIM.iMManager.groupManager.getGroupsInfo(
+        groupIDList: [groupID],
+      );
+      if (groups.isNotEmpty && mounted) {
+        final count = groups.first.memberCount ?? 0;
+        if (count != _groupMemberCount) {
+          setState(() => _groupMemberCount = count);
+        }
+      }
+    } catch (_) {}
   }
 
   Future<void> _checkOnlineStatus() async {
@@ -729,6 +754,21 @@ class _ChatPageState extends State<ChatPage> {
         _isRecording = true;
         _recordFilePath = filePath;
         _recordStartAt = DateTime.now().millisecondsSinceEpoch;
+        _recordCountdown = _maxRecordSeconds;
+      });
+
+      // 启动倒计时
+      _recordTimer?.cancel();
+      _recordTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (!mounted || !_isRecording) {
+          timer.cancel();
+          return;
+        }
+        setState(() => _recordCountdown--);
+        if (_recordCountdown <= 0) {
+          timer.cancel();
+          _stopVoiceRecordAndSend();
+        }
       });
     } catch (e) {
       EasyLoading.showToast('开始录音失败');
@@ -738,6 +778,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<void> _stopVoiceRecordAndSend() async {
     if (!_isRecording) return;
+    _recordTimer?.cancel();
     try {
       final path = await _audioRecorder.stop();
       final startAt = _recordStartAt;
@@ -822,6 +863,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _cancelVoiceRecord() async {
+    _recordTimer?.cancel();
     try {
       if (_isRecording) {
         final path = await _audioRecorder.stop();
@@ -891,7 +933,12 @@ class _ChatPageState extends State<ChatPage> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(showName, style: const TextStyle(fontSize: 17)),
+            Text(
+              groupID.isNotEmpty && _groupMemberCount > 0
+                  ? '$showName ($_groupMemberCount)'
+                  : showName,
+              style: const TextStyle(fontSize: 17),
+            ),
             if (sessionType == 1)
               Text(
                 _isOnline ? '在线' : '离线',
@@ -1054,6 +1101,15 @@ class _ChatPageState extends State<ChatPage> {
                     ? CrossAxisAlignment.end
                     : CrossAxisAlignment.start,
                 children: [
+                  // 群聊中显示发送者昵称（与官方一致：仅非自己的消息）
+                  if (!isMe && sessionType != ConversationType.single)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2),
+                      child: Text(
+                        msg.senderNickname ?? '',
+                        style: const TextStyle(fontSize: 12, color: Color(0xFF8E9AB0)),
+                      ),
+                    ),
                   _buildBubble(msg, isMe),
                   // Show read status tag below message bubble (only for sender in single chat)
                   if (isMe &&
@@ -1457,6 +1513,60 @@ class _ChatPageState extends State<ChatPage> {
     return '对方撤回了一条消息';
   }
 
+  /// 尝试从自定义消息中解析通话结果，多种方式兜底
+  CallResultInfo? _tryParseCallResult(Message msg) {
+    // 方式1：直接从 customElem.data 解析
+    try {
+      final customData = msg.customElem?.data;
+      if (customData != null && customData.isNotEmpty) {
+        final map = jsonDecode(customData);
+        if (map is Map && map['customType'] == CustomMessageType.callResult) {
+          return CallResultInfo.fromJson(Map<String, dynamic>.from(map['data']));
+        }
+      }
+    } catch (e) {
+      debugPrint('[Chat] _tryParseCallResult path1 error: $e, customElem.data=${msg.customElem?.data}');
+    }
+
+    // 方式2：从 message toJson 的 customElem 重新解析（覆盖 LocalStore 反序列化异常）
+    try {
+      final json = msg.toJson();
+      final elemMap = json['customElem'];
+      if (elemMap is Map) {
+        final innerData = elemMap['data'];
+        if (innerData is String && innerData.isNotEmpty) {
+          final map = jsonDecode(innerData);
+          if (map is Map && map['customType'] == CustomMessageType.callResult) {
+            return CallResultInfo.fromJson(Map<String, dynamic>.from(map['data']));
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('[Chat] _tryParseCallResult path2 error: $e');
+    }
+
+    // 方式3：直接用 customElem.data 当整个 JSON，再嵌套解一层
+    // 有些服务端会把 content 直接放在 customElem.data，结构为
+    // {"data":"{\"customType\":210,...}","extension":"","description":""}
+    try {
+      final customData = msg.customElem?.data;
+      if (customData != null && customData.isNotEmpty) {
+        final outer = jsonDecode(customData);
+        if (outer is Map && outer['data'] is String) {
+          final inner = jsonDecode(outer['data']);
+          if (inner is Map && inner['customType'] == CustomMessageType.callResult) {
+            return CallResultInfo.fromJson(Map<String, dynamic>.from(inner['data']));
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('[Chat] _tryParseCallResult path3 error: $e');
+    }
+
+    debugPrint('[Chat] _tryParseCallResult failed: contentType=${msg.contentType} customElem.data=${msg.customElem?.data}');
+    return null;
+  }
+
   Widget _buildBubble(Message msg, bool isMe) {
     if ((msg.contentType ?? 0) > 1000) {
       String displayText = msg.textContent;
@@ -1489,48 +1599,46 @@ class _ChatPageState extends State<ChatPage> {
     // 通话结果消息（customType == 210）
     if (msg.contentType == MessageType.custom) {
       try {
-        final customData = msg.customElem?.data;
-        if (customData != null) {
-          final map = jsonDecode(customData);
-          if (map['customType'] == CustomMessageType.callResult) {
-            final info = CallResultInfo.fromJson(map['data']);
-            final text = info.getDisplayText(isMe);
-            return GestureDetector(
-              onTap: () => _directCall(info.isVideo ? CallType.video : CallType.audio),
-              onLongPressStart: (details) => _showMessageMenu(msg, isMe, details),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  color: isMe ? const Color(0xFF0089FF) : Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: isMe
-                      ? [
-                          Text(text, style: TextStyle(fontSize: 15, color: isMe ? Colors.white : Colors.black87)),
-                          const SizedBox(width: 6),
-                          Icon(
-                            info.isVideo ? Icons.videocam : Icons.phone,
-                            size: 20,
-                            color: isMe ? Colors.white : const Color(0xFF0089FF),
-                          ),
-                        ]
-                      : [
-                          Icon(
-                            info.isVideo ? Icons.videocam : Icons.phone,
-                            size: 20,
-                            color: const Color(0xFF0089FF),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(text, style: const TextStyle(fontSize: 15, color: Colors.black87)),
-                        ],
-                ),
+        final info = _tryParseCallResult(msg);
+        if (info != null) {
+          final text = info.getDisplayText(isMe);
+          return GestureDetector(
+            onTap: () => _directCall(info.isVideo ? CallType.video : CallType.audio),
+            onLongPressStart: (details) => _showMessageMenu(msg, isMe, details),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: isMe ? const Color(0xFF0089FF) : Colors.white,
+                borderRadius: BorderRadius.circular(8),
               ),
-            );
-          }
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: isMe
+                    ? [
+                        Text(text, style: TextStyle(fontSize: 15, color: isMe ? Colors.white : Colors.black87)),
+                        const SizedBox(width: 6),
+                        Icon(
+                          info.isVideo ? Icons.videocam : Icons.phone,
+                          size: 20,
+                          color: isMe ? Colors.white : const Color(0xFF0089FF),
+                        ),
+                      ]
+                    : [
+                        Icon(
+                          info.isVideo ? Icons.videocam : Icons.phone,
+                          size: 20,
+                          color: const Color(0xFF0089FF),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(text, style: const TextStyle(fontSize: 15, color: Colors.black87)),
+                      ],
+              ),
+            ),
+          );
         }
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[Chat] call result render error: $e');
+      }
     }
 
     // Image message
@@ -2031,7 +2139,7 @@ class _ChatPageState extends State<ChatPage> {
                         ),
                       ),
                       child: Text(
-                        _isRecording ? '松开 发送语音' : '按住 说话',
+                        _isRecording ? '松开发送 ${_recordCountdown}s' : '按住 说话',
                         style: TextStyle(
                           fontSize: 15,
                           color: _isRecording

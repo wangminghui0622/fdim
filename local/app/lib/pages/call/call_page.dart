@@ -124,6 +124,9 @@ class _CallPageState extends State<CallPage> {
         case CallState.timeout:
           _onEnded('无人接听');
           break;
+        case CallState.beBusy:
+          _onEnded('对方正忙');
+          break;
         default:
           break;
       }
@@ -228,21 +231,23 @@ class _CallPageState extends State<CallPage> {
     }
   }
 
+  bool _ended = false;
+
   void _setupListeners() {
     _listener!
       ..on<RoomDisconnectedEvent>((event) {
-        widget.onRoomDisconnected?.call();
-        widget.onClose?.call();
+        debugPrint('[CallPage] RoomDisconnectedEvent');
+        _handleDisconnect('网络中断');
       })
       ..on<ParticipantConnectedEvent>((_) {
         _remoteParticipant = _room?.remoteParticipants.values.firstOrNull;
         if (mounted) setState(() {});
       })
       ..on<ParticipantDisconnectedEvent>((_) {
+        debugPrint('[CallPage] ParticipantDisconnectedEvent');
         _remoteParticipant = null;
         if (mounted) setState(() {});
-        // 对方离开，结束通话
-        _onEnded('通话结束');
+        _handleDisconnect('通话中断');
       })
       ..on<TrackSubscribedEvent>((_) {
         if (mounted) setState(() {});
@@ -250,6 +255,17 @@ class _CallPageState extends State<CallPage> {
       ..on<TrackUnsubscribedEvent>((_) {
         if (mounted) setState(() {});
       });
+  }
+
+  /// 网络或对方断开时，发送通话结果并关闭页面
+  void _handleDisconnect(String reason) {
+    if (_ended) return;
+    _ended = true;
+    if (_callState == CallState.calling) {
+      // 通话中断开，isPositive=false 表示非用户主动挂断
+      widget.onTapHangup?.call(_callDuration, false);
+    }
+    _onEnded(reason);
   }
 
   void _onRoomUpdate() {
@@ -264,6 +280,7 @@ class _CallPageState extends State<CallPage> {
   }
 
   void _onEnded(String reason) {
+    _ended = true;
     _durationTimer?.cancel();
     if (!mounted) return;
     setState(() => _callState = CallState.hangup);
@@ -273,16 +290,22 @@ class _CallPageState extends State<CallPage> {
   }
 
   void _hangup() async {
+    if (_ended) return;
+    _ended = true;
     await widget.onTapHangup?.call(_callDuration, true);
     _onEnded('通话结束');
   }
 
   void _cancel() async {
+    if (_ended) return;
+    _ended = true;
     await widget.onTapCancel?.call();
     _onEnded('已取消');
   }
 
   void _reject() async {
+    if (_ended) return;
+    _ended = true;
     await widget.onTapReject?.call();
     _onEnded('已拒绝');
   }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"fdim/api/internal/logic"
@@ -14,8 +15,9 @@ import (
 
 func CreateGroupHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// go-zero httpx.Parse 不支持 interface{} 字段，改用标准 json.Decoder
 		var req types.CreateGroupReq
-		if err := httpx.Parse(r, &req); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			ParamError(w, err)
 			return
 		}
@@ -33,7 +35,7 @@ func CreateGroupHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 func SetGroupInfoHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req types.SetGroupInfoReq
-		if err := httpx.Parse(r, &req); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			ParamError(w, err)
 			return
 		}
@@ -411,7 +413,7 @@ func CancelMuteGroupHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 func SetGroupMemberInfoHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req types.SetGroupMemberInfoReq
-		if err := httpx.Parse(r, &req); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			ParamError(w, err)
 			return
 		}

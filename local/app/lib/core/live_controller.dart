@@ -38,6 +38,14 @@ mixin LiveController {
     signalingSubject.stream.listen((event) async {
       if (event.state == CallState.beCalled) {
         debugPrint('[RTC] beCalled event received from ${event.data.invitation?.inviterUserID}');
+
+        // 正在通话中 → 自动回复"忙线"
+        if (LiveClient.instance.isBusy) {
+          debugPrint('[RTC] already busy, auto-reply busy to ${event.data.invitation?.inviterUserID}');
+          _autoReplyBusy(event.data);
+          return;
+        }
+
         final ctx = Get.overlayContext ?? Get.context;
         if (ctx == null) {
           debugPrint('[RTC] beCalled aborted: no overlay/context');
@@ -80,6 +88,14 @@ mixin LiveController {
           onError: _onError,
           onRoomDisconnected: () {},
         );
+      } else if (event.state == CallState.beBusy) {
+        _callTimeoutTimer?.cancel();
+        _stopSound();
+        // 发持久化"对方正忙"消息到聊天记录
+        _sendCallResult(
+          signaling: event.data,
+          result: CallResultType.busy,
+        );
       } else if (event.state == CallState.beRejected ||
           event.state == CallState.beCanceled ||
           event.state == CallState.beAccepted ||
@@ -89,6 +105,28 @@ mixin LiveController {
         _stopSound();
       }
     });
+  }
+
+  /// 正在通话中时自动回复忙线
+  Future<void> _autoReplyBusy(SignalingInfo signaling) async {
+    try {
+      final data = {
+        'customType': CustomMessageType.callingBusy,
+        'data': signaling.invitation!.toJson(),
+      };
+      final message = await OpenIM.iMManager.messageManager
+          .createCustomMessage(
+              data: jsonEncode(data), extension: '', description: '');
+      await OpenIM.iMManager.messageManager.sendMessage(
+        message: message,
+        offlinePushInfo: OfflinePushInfo(),
+        userID: signaling.invitation!.inviterUserID,
+        isOnlineOnly: true,
+      );
+      debugPrint('[RTC] busy reply sent to ${signaling.invitation!.inviterUserID}');
+    } catch (e) {
+      debugPrint('[RTC] _autoReplyBusy error: $e');
+    }
   }
 
   /// 发起通话
@@ -296,6 +334,8 @@ mixin LiveController {
   }
 
   /// 挂断
+  /// isPositive=true: 用户主动挂断，发信令+completed结果
+  /// isPositive=false: 网络中断，不发信令，发networkError结果
   Future<void> _onTapHangup(
     SignalingInfo signaling,
     int duration,
@@ -321,9 +361,12 @@ mixin LiveController {
       );
     }
     // 挂断 → 发持久化通话结果消息
+    final resultType = isPositive
+        ? CallResultType.completed
+        : CallResultType.networkError;
     _sendCallResult(
       signaling: signaling,
-      result: CallResultType.completed,
+      result: resultType,
       duration: duration,
     );
     _stopSound();
@@ -444,6 +487,9 @@ mixin LiveController {
           break;
         case CustomMessageType.callingHungup:
           signalingSubject.add(CallEvent(CallState.beHangup, signalingInfo));
+          break;
+        case CustomMessageType.callingBusy:
+          signalingSubject.add(CallEvent(CallState.beBusy, signalingInfo));
           break;
       }
     } catch (e) {

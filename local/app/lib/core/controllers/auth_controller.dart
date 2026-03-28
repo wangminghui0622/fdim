@@ -235,5 +235,15 @@ class AuthController extends GetxController {
       nickname: nickname,
       faceURL: faceURL,
     );
+
+    // 更新本地响应式状态，触发 Obx UI 刷新
+    final current = userInfo.value;
+    if (current != null) {
+      if (nickname != null) current.nickname = nickname;
+      if (faceURL != null) current.faceURL = faceURL;
+      if (gender != null) current.gender = gender;
+      if (email != null) current.email = email;
+      userInfo.refresh();
+    }
   }
 }

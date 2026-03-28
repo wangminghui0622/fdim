@@ -53,6 +53,19 @@ func (l *CreateGroupLogic) CreateGroup(req *types.CreateGroupReq) (resp *types.C
 			if ex, ok := gi["ex"].(string); ok {
 				groupInfo.Ex = ex
 			}
+			// JSON 数字反序列化到 interface{} 时是 float64
+			if groupType, ok := gi["groupType"].(float64); ok {
+				groupInfo.GroupType = int32(groupType)
+			}
+			if needVerification, ok := gi["needVerification"].(float64); ok {
+				groupInfo.NeedVerification = int32(needVerification)
+			}
+			if lookMemberInfo, ok := gi["lookMemberInfo"].(float64); ok {
+				groupInfo.LookMemberInfo = int32(lookMemberInfo)
+			}
+			if applyMemberFriend, ok := gi["applyMemberFriend"].(float64); ok {
+				groupInfo.ApplyMemberFriend = int32(applyMemberFriend)
+			}
 			rpcReq.GroupInfo = groupInfo
 		}
 	}

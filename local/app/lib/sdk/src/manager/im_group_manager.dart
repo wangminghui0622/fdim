@@ -50,7 +50,7 @@ class GroupManager {
       'groupIDs': groupIDList,
     });
     if (data == null) return [];
-    final list = data['groups'] ?? data;
+    final list = data['groupInfos'] ?? data['groups'] ?? data;
     if (list is List) {
       return list.map((e) => GroupInfo.fromJson(e)).toList();
     }

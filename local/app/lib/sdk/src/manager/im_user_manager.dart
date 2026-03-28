@@ -73,7 +73,9 @@ class UserManager {
     if (birth != null) info['birth'] = birth;
     if (ex != null) info['ex'] = ex;
 
-    await HttpClient.post('/user/update_user_info', data: info);
+    await HttpClient.post('/user/update_user_info', data: {
+      'userInfo': info,
+    });
 
     // Update local config
     if (nickname != null) Config.nickname = nickname;

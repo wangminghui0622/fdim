@@ -180,10 +180,9 @@ func (h *OnlineMsgHandler) createConversationIfNeeded(ctx context.Context, conve
 				conversationID, msgData.SendID, msgData.RecvID)
 		}
 	case constant.WriteGroupChatType, constant.ReadGroupChatType:
-		// 群聊类型：创建群聊会话（需要调用 CreateGroupChatConversations）
-		// 注意：群聊会话创建需要群成员列表，这里暂时跳过
-		// 官方实现中会调用 GroupClient.GetGroupMemberUserIDs 获取成员列表
-		logx.Infof("Group chat conversation creation skipped (not implemented yet): conversationID=%s, groupID=%s",
+		// 与官方一致：群聊会话由 Group RPC 管理（CreateGroup/JoinGroup/InviteUserToGroup/GroupApplicationResponse）
+		// msgtransfer 不负责创建群聊会话，群成员在加入群时已通过 CreateGroupChatConversations 创建
+		logx.Debugf("Group chat conversation managed by group RPC: conversationID=%s, groupID=%s",
 			conversationID, msgData.GroupID)
 	default:
 		logx.Errorf("Unknown session type, skip conversation creation: conversationID=%s, sessionType=%d",
