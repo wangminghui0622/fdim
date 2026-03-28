@@ -4,11 +4,10 @@ import 'package:get/get.dart';
 
 import '../../core/apis/group_api.dart';
 import '../../core/apis/friend_api.dart';
-import '../../core/config.dart';
 import '../../core/local_store.dart';
 import '../../core/models/user_info.dart';
 import '../../routes/app_routes.dart';
-import '../../sdk/flutter_openim_sdk.dart' hide FriendInfo;
+import '../../sdk/fdim_sdk.dart' hide FriendInfo;
 
 class CreateGroupPage extends StatefulWidget {
   const CreateGroupPage({super.key});

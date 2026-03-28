@@ -1,4 +1,4 @@
-library flutter_openim_sdk;
+library fdim_sdk;
 
 // Enums
 export 'src/enum/allow_type.dart';

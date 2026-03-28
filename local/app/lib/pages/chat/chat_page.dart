@@ -16,7 +16,7 @@ import '../../core/controllers/im_controller.dart';
 import '../../core/upload_service.dart';
 import '../../models/signaling_info.dart';
 import '../../core/local_store.dart';
-import '../../sdk/flutter_openim_sdk.dart';
+import '../../sdk/fdim_sdk.dart';
 import '../../routes/app_routes.dart';
 import '../../widgets/media_preview_page.dart';
 import '../../widgets/emoji_picker_widget.dart';

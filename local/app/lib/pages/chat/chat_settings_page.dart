@@ -6,7 +6,7 @@ import '../../core/apis/group_api.dart';
 import '../../core/controllers/im_controller.dart';
 import '../../core/models/group_info.dart';
 import '../../models/signaling_info.dart';
-import '../../sdk/flutter_openim_sdk.dart' hide GroupInfo;
+import '../../sdk/fdim_sdk.dart' hide GroupInfo;
 import '../../routes/app_routes.dart';
 import '../../widgets/group_avatar_widget.dart';
 

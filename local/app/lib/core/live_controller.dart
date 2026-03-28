@@ -11,7 +11,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/signaling_info.dart';
-import '../sdk/flutter_openim_sdk.dart';
+import '../sdk/fdim_sdk.dart';
 import 'config.dart';
 import 'live_client.dart';
 import 'rtc_api.dart';

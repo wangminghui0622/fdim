@@ -169,7 +169,7 @@ class _MyInfoPageState extends State<MyInfoPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(user?.nickname ?? '',
-                              style: const TextStyle(color: Colors.grey)),
+                              style: const TextStyle(color: Colors.grey, fontSize: 16)),
                           const SizedBox(width: 4),
                           const Icon(Icons.chevron_right, color: Colors.grey),
                         ],
@@ -186,7 +186,7 @@ class _MyInfoPageState extends State<MyInfoPage> {
               child: ListTile(
                 title: const Text('ID'),
                 trailing: Text(user?.userID ?? '',
-                    style: const TextStyle(color: Colors.grey)),
+                    style: const TextStyle(color: Colors.grey, fontSize: 16)),
               ),
             ),
             const Divider(height: 1, indent: 16),
@@ -201,7 +201,7 @@ class _MyInfoPageState extends State<MyInfoPage> {
                       : user?.gender == 2
                           ? '女'
                           : '未设置',
-                  style: const TextStyle(color: Colors.grey),
+                  style: const TextStyle(color: Colors.grey, fontSize: 16),
                 ),
               ),
             ),
@@ -212,7 +212,7 @@ class _MyInfoPageState extends State<MyInfoPage> {
               child: ListTile(
                 title: const Text('手机号'),
                 trailing: Text(user?.phoneNumber ?? '',
-                    style: const TextStyle(color: Colors.grey)),
+                    style: const TextStyle(color: Colors.grey, fontSize: 16)),
               ),
             ),
           ],

@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 
 import '../../core/apis/group_api.dart';
 import '../../models/signaling_info.dart';
-import '../../sdk/flutter_openim_sdk.dart';
+import '../../sdk/fdim_sdk.dart';
 import '../../core/config.dart';
 import '../../core/controllers/im_controller.dart';
 import '../../routes/app_routes.dart';
@@ -131,39 +131,7 @@ class _ConversationPageState extends State<ConversationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        title: const Text(
-          '消息',
-          style: TextStyle(
-            color: Color(0xFF0C1C33),
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Color(0xFF0C1C33)),
-            onPressed: () => Get.toNamed(AppRoutes.globalSearch),
-          ),
-          PopupMenuButton<String>(
-            icon: const Icon(
-              Icons.add_circle_outline,
-              color: Color(0xFF0C1C33),
-            ),
-            onSelected: (v) {
-              if (v == 'group') Get.toNamed(AppRoutes.createGroup);
-              if (v == 'friend') Get.toNamed(AppRoutes.addFriend);
-            },
-            itemBuilder: (_) => [
-              const PopupMenuItem(value: 'friend', child: Text('添加好友')),
-              const PopupMenuItem(value: 'group', child: Text('创建群聊')),
-            ],
-          ),
-        ],
-      ),
+      backgroundColor: const Color(0xFFEDEDED),
       body: FocusDetector(
         onFocusGained: () => _loadConversations(silent: true),
         child: _loading && _conversations.isEmpty

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
-import '../sdk/flutter_openim_sdk.dart';
+import '../sdk/fdim_sdk.dart';
 import 'config.dart';
 
 /// LocalStore - 模拟官方 openim-sdk-core 中的 SQLite 本地数据库。

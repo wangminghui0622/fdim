@@ -3,7 +3,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import '../../core/config.dart';
 import '../../core/apis/user_api.dart';
-import '../../sdk/flutter_openim_sdk.dart';
+import '../../sdk/fdim_sdk.dart';
 
 class AddFriendPage extends StatefulWidget {
   const AddFriendPage({super.key});

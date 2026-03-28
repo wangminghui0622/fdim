@@ -45,6 +45,8 @@ dependencies:
   record: ^6.1.1
   livekit_client: ^2.3.3
   wakelock_plus: ^1.2.8
+  flutter_native_splash: ^2.4.0
+  qr_flutter: ^4.1.0
 
 dependency_overrides:
   image_picker_android: '>=0.8.12'
@@ -55,6 +57,23 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   hive_generator: ^2.0.1
   build_runner: ^2.4.13
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/app_icon.jpeg"
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/
+
+flutter_native_splash:
+  color: "#000000"
+  image: assets/splash_logo.jpg
+  android: true
+  ios: true
+  android_12:
+    color: "#000000"
+    image: assets/splash_logo.jpg

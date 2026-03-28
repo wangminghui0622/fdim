@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/config.dart';
 import '../../core/apis/user_api.dart';
 import '../../core/upload_service.dart';
-import '../../sdk/flutter_openim_sdk.dart';
+import '../../sdk/fdim_sdk.dart';
 
 class EditMyInfoPage extends StatefulWidget {
   const EditMyInfoPage({super.key});

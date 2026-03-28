@@ -27,6 +27,7 @@ import '../pages/mine/change_password_page.dart';
 import '../pages/mine/blacklist_page.dart';
 import '../pages/mine/about_us_page.dart';
 import '../pages/mine/language_setup_page.dart';
+import '../pages/mine/my_qrcode_page.dart';
 
 class AppPages {
   static final routes = [
@@ -56,5 +57,6 @@ class AppPages {
     GetPage(name: AppRoutes.blacklist, page: () => const BlacklistPage()),
     GetPage(name: AppRoutes.aboutUs, page: () => const AboutUsPage()),
     GetPage(name: AppRoutes.languageSetup, page: () => const LanguageSetupPage()),
+    GetPage(name: AppRoutes.myQrcode, page: () => const MyQrcodePage()),
   ];
 }

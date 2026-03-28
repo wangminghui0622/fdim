@@ -1,86 +1,126 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:persistent_bottom_nav_bar_v2/persistent_bottom_nav_bar_v2.dart';
 
 import '../../core/controllers/im_controller.dart';
+import '../../routes/app_routes.dart';
 import '../contacts/contacts_page.dart';
 import '../conversation/conversation_page.dart';
+import '../discover/discover_page.dart';
 import '../mine/mine_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
-  List<PersistentTabConfig> _tabs(IMController imCtrl) => [
-    PersistentTabConfig(
-      screen: const ConversationPage(),
-      item: ItemConfig(
-        icon: _buildBadge(
-          const Icon(Icons.chat_bubble, size: 24),
-          imCtrl.totalUnreadCount.value,
-        ),
-        inactiveIcon: _buildBadge(
-          const Icon(Icons.chat_bubble_outline, size: 24),
-          imCtrl.totalUnreadCount.value,
-        ),
-        title: '消息',
-        activeForegroundColor: const Color(0xFF0089FF),
-        inactiveForegroundColor: const Color(0xFF8E9AB0),
-      ),
-    ),
-    PersistentTabConfig(
-      screen: const ContactsPage(),
-      item: ItemConfig(
-        icon: _buildBadge(
-          const Icon(Icons.people, size: 24),
-          imCtrl.friendApplyCount.value,
-        ),
-        inactiveIcon: _buildBadge(
-          const Icon(Icons.people_outline, size: 24),
-          imCtrl.friendApplyCount.value,
-        ),
-        title: '联系人',
-        activeForegroundColor: const Color(0xFF0089FF),
-        inactiveForegroundColor: const Color(0xFF8E9AB0),
-      ),
-    ),
-    PersistentTabConfig(
-      screen: const MinePage(),
-      item: ItemConfig(
-        icon: const Icon(Icons.person, size: 24),
-        inactiveIcon: const Icon(Icons.person_outline, size: 24),
-        title: '我的',
-        activeForegroundColor: const Color(0xFF0089FF),
-        inactiveForegroundColor: const Color(0xFF8E9AB0),
-      ),
-    ),
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _currentIndex = 0;
+  static const double _iconSize = 25.0;
+  static const Color _activeColor = Color(0xFF1B72EC);
+  static const Color _inactiveColor = Colors.grey;
+
+  final List<Widget> _pages = const [
+    ConversationPage(),
+    ContactsPage(),
+    DiscoverPage(),
+    MinePage(),
   ];
+
+  final List<String> _titles = const ['消息', '联系人', '发现', '我'];
 
   @override
   Widget build(BuildContext context) {
     final imCtrl = Get.find<IMController>();
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Obx(
-        () => PersistentTabView(
-          tabs: _tabs(imCtrl),
-          navBarBuilder: (navBarConfig) => Style1BottomNavBar(
-            navBarConfig: navBarConfig,
-            navBarDecoration: const NavBarDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 0.5,
-                  spreadRadius: 0.5,
-                ),
-              ],
-            ),
-          ),
-          navBarOverlap: const NavBarOverlap.none(),
-          screenTransitionAnimation: const ScreenTransitionAnimation.none(),
+    return Obx(() {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: const Color(0xFFF2F2F2),
+          elevation: 0,
+          centerTitle: true,
+          title: Text(_titles[_currentIndex]),
+          actions: _currentIndex == 3
+              ? null
+              : [
+                  IconButton(
+                    icon: const Icon(Icons.search, color: Color(0xFF191919)),
+                    onPressed: () => Get.toNamed(AppRoutes.globalSearch),
+                  ),
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.add_circle_outline, color: Color(0xFF191919)),
+                    onSelected: (v) {
+                      if (v == 'group') Get.toNamed(AppRoutes.createGroup);
+                      if (v == 'friend') Get.toNamed(AppRoutes.addFriend);
+                    },
+                    itemBuilder: (_) => [
+                      const PopupMenuItem(value: 'friend', child: Text('添加好友')),
+                      const PopupMenuItem(value: 'group', child: Text('发起群聊')),
+                    ],
+                  ),
+                ],
         ),
-      ),
-    );
+        body: IndexedStack(
+          index: _currentIndex,
+          children: _pages,
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: _activeColor,
+          unselectedItemColor: _inactiveColor,
+          selectedFontSize: 11,
+          unselectedFontSize: 11,
+          onTap: (i) => setState(() => _currentIndex = i),
+          items: [
+            BottomNavigationBarItem(
+              icon: _buildBadge(
+                Image.asset('assets/tabbar_mainframe@3x.png', width: _iconSize, height: _iconSize),
+                imCtrl.totalUnreadCount.value,
+              ),
+              activeIcon: _buildBadge(
+                ColorFiltered(
+                  colorFilter: const ColorFilter.mode(_activeColor, BlendMode.srcIn),
+                  child: Image.asset('assets/tabbar_mainframe@3x.png', width: _iconSize, height: _iconSize),
+                ),
+                imCtrl.totalUnreadCount.value,
+              ),
+              label: '消息',
+            ),
+            BottomNavigationBarItem(
+              icon: _buildBadge(
+                Image.asset('assets/tabbar_contacts@3x.png', width: _iconSize, height: _iconSize),
+                imCtrl.friendApplyCount.value,
+              ),
+              activeIcon: _buildBadge(
+                ColorFiltered(
+                  colorFilter: const ColorFilter.mode(_activeColor, BlendMode.srcIn),
+                  child: Image.asset('assets/tabbar_contacts@3x.png', width: _iconSize, height: _iconSize),
+                ),
+                imCtrl.friendApplyCount.value,
+              ),
+              label: '联系人',
+            ),
+            BottomNavigationBarItem(
+              icon: Image.asset('assets/tabbar_discover@3x.png', width: _iconSize, height: _iconSize),
+              activeIcon: ColorFiltered(
+                colorFilter: const ColorFilter.mode(_activeColor, BlendMode.srcIn),
+                child: Image.asset('assets/tabbar_discover@3x.png', width: _iconSize, height: _iconSize),
+              ),
+              label: '发现',
+            ),
+            BottomNavigationBarItem(
+              icon: Image.asset('assets/tabbar_me@3x.png', width: _iconSize, height: _iconSize),
+              activeIcon: ColorFiltered(
+                colorFilter: const ColorFilter.mode(_activeColor, BlendMode.srcIn),
+                child: Image.asset('assets/tabbar_me@3x.png', width: _iconSize, height: _iconSize),
+              ),
+              label: '我',
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildBadge(Widget icon, int count) {
@@ -91,7 +131,7 @@ class HomePage extends StatelessWidget {
         if (count > 0)
           Positioned(
             right: -8,
-            top: -6,
+            top: -4,
             child: Container(
               constraints: const BoxConstraints(minWidth: 16),
               height: 16,

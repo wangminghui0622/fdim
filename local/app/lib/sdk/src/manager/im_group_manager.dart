@@ -1,4 +1,4 @@
-import '../../flutter_openim_sdk.dart';
+import '../../fdim_sdk.dart';
 import '../../../core/http_client.dart';
 import '../../../core/config.dart';
 

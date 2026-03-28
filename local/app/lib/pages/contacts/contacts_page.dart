@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 
 import '../../core/config.dart';
 import '../../core/controllers/im_controller.dart';
-import '../../sdk/flutter_openim_sdk.dart';
+import '../../sdk/fdim_sdk.dart';
 import '../../routes/app_routes.dart';
 
 class ContactsPage extends StatefulWidget {
@@ -151,28 +151,7 @@ class _ContactsPageState extends State<ContactsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        title: const Text(
-          '联系人',
-          style: TextStyle(
-            color: Color(0xFF0C1C33),
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.person_add_outlined,
-              color: Color(0xFF0C1C33),
-            ),
-            onPressed: () => Get.toNamed(AppRoutes.addFriend),
-          ),
-        ],
-      ),
+      backgroundColor: const Color(0xFFEDEDED),
       body: RefreshIndicator(
         onRefresh: () async {
           await _loadFriends();
@@ -211,11 +190,7 @@ class _ContactsPageState extends State<ContactsPage> {
             const SizedBox(height: 10),
             // 好友列表
             Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              margin: const EdgeInsets.symmetric(horizontal: 16),
+              color: Colors.white,
               child: _loading
                   ? const Padding(
                       padding: EdgeInsets.all(32),

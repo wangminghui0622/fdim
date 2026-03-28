@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
-import '../../flutter_openim_sdk.dart';
+import '../../fdim_sdk.dart';
 import '../../../core/http_client.dart';
 import '../../../core/config.dart';
 import '../../../core/ws_client.dart';

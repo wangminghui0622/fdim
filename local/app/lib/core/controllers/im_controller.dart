@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import 'package:rxdart/rxdart.dart' as rx;
 
 import '../../models/signaling_info.dart';
-import '../../sdk/flutter_openim_sdk.dart';
+import '../../sdk/fdim_sdk.dart';
 import '../config.dart';
 import '../live_controller.dart';
 import '../local_store.dart';

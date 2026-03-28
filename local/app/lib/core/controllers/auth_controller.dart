@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 
 import '../config.dart';
 import '../http_client.dart';
-import '../../sdk/flutter_openim_sdk.dart';
+import '../../sdk/fdim_sdk.dart';
 import '../../routes/app_routes.dart';
 import 'im_controller.dart';
 
@@ -37,6 +37,20 @@ class AuthController extends GetxController {
       final imCtrl = Get.find<IMController>();
       await imCtrl.initOpenIM();
       final info = await imCtrl.loginSDK();
+      
+      // 从 Chat 层获取完整用户信息（包含手机号等）
+      try {
+        final fullInfo = await _fetchFullUserInfo();
+        if (fullInfo != null) {
+          info.phoneNumber = fullInfo['phoneNumber'];
+          info.email = fullInfo['email'];
+          info.gender = fullInfo['gender'];
+          info.birth = fullInfo['birth'];
+        }
+      } catch (e) {
+        debugPrint('[Auth] Fetch full user info error: $e');
+      }
+      
       userInfo.value = info;
       Config.nickname = info.nickname ?? '';
       Config.faceURL = info.faceURL ?? '';
@@ -45,6 +59,18 @@ class AuthController extends GetxController {
     } catch (e) {
       debugPrint('[Auth] SDK init/login error: $e');
     }
+  }
+  
+  /// 从 Chat 层获取完整用户信息
+  Future<Map<String, dynamic>?> _fetchFullUserInfo() async {
+    final data = await HttpClient.post('/user/find/full', data: {
+      'userIDs': [Config.userID],
+    });
+    final users = data['users'] as List?;
+    if (users != null && users.isNotEmpty) {
+      return users[0] as Map<String, dynamic>;
+    }
+    return null;
   }
 
   /// 登录（对齐官方 /account/login）

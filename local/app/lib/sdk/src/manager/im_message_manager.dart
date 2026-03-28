@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
-import '../../flutter_openim_sdk.dart';
+import '../../fdim_sdk.dart';
 import '../../../core/http_client.dart';
 import '../../../core/config.dart';
 import '../../../core/local_store.dart';
@@ -83,11 +83,24 @@ class MessageManager {
     }
 
     try {
-      final resp = await HttpClient.post('/msg/send_msg', data: {
-        'recvID': userID ?? '',
-        'sendMsg': sendMsgData,
-        if (isOnlineOnly) 'isOnlineOnly': true,
-      });
+      // 重试机制：最多3次，每次间隔100ms
+      const maxRetries = 3;
+      const retryDelay = Duration(milliseconds: 100);
+      dynamic resp;
+      for (int attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          resp = await HttpClient.post('/msg/send_msg', data: {
+            'recvID': userID ?? '',
+            'sendMsg': sendMsgData,
+            if (isOnlineOnly) 'isOnlineOnly': true,
+          }, showErrorToast: attempt == maxRetries);
+          break; // 成功则跳出重试循环
+        } catch (e) {
+          debugPrint('[SendMessage] attempt $attempt/$maxRetries failed: $e');
+          if (attempt == maxRetries) rethrow;
+          await Future.delayed(retryDelay);
+        }
+      }
       debugPrint('[SendMessage] raw resp: $resp');
       message.status = MessageStatus.succeeded;
       if (resp is Map) {
