@@ -29,10 +29,12 @@ func NewCreateGroupChatConversationsLogic(ctx context.Context, svcCtx *svc.Servi
 func (l *CreateGroupChatConversationsLogic) CreateGroupChatConversations(req *conversation.CreateGroupChatConversationsReq) (*conversation.CreateGroupChatConversationsResp, error) {
 	resp := &conversation.CreateGroupChatConversationsResp{}
 
+	l.Infof("CreateGroupChatConversations called: groupID=%s, userIDs=%v", req.GroupID, req.UserIDs)
+
 	// 构建 conversationID（与 conversationutil.GenGroupConversationID 一致）
 	conversationID := "sg_" + req.GroupID
 
-	// 为每个用户创建群聊会?
+	// 为每个用户创建群聊会话
 	conversations := make([]*model.Conversation, 0, len(req.UserIDs))
 	for _, userID := range req.UserIDs {
 		conv := &model.Conversation{
@@ -43,12 +45,15 @@ func (l *CreateGroupChatConversationsLogic) CreateGroupChatConversations(req *co
 			CreateTime:       time.Now(),
 		}
 		conversations = append(conversations, conv)
+		l.Infof("Creating conversation for user %s: conversationID=%s", userID, conversationID)
 	}
 
 	err := l.svcCtx.ConversationDB.Create(l.ctx, conversations)
 	if err != nil {
+		l.Errorf("Failed to create conversations: %v", err)
 		return nil, fmt.Errorf("failed to create group chat conversations: %w", err)
 	}
+	l.Infof("Successfully created %d conversations for group %s", len(conversations), req.GroupID)
 
 	// 初始化各用户该会话的 maxSeq（通常?0），通知 Msg 模块
 	if l.svcCtx.MsgClient != nil && len(req.UserIDs) > 0 {

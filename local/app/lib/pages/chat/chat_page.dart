@@ -22,6 +22,7 @@ import '../../widgets/media_preview_page.dart';
 import '../../widgets/emoji_picker_widget.dart';
 import '../../utils/audio_player_manager.dart';
 import '../../utils/file_utils.dart';
+import '../../core/apis/msg_api.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -75,6 +76,8 @@ class _ChatPageState extends State<ChatPage> {
   late String faceURL;
   late int sessionType;
   int _groupMemberCount = 0;
+  // 缓存每条消息的已读人数 {seq: readCount}
+  final Map<int, int> _msgReadCountCache = {};
 
   @override
   void initState() {
@@ -1122,11 +1125,22 @@ class _ChatPageState extends State<ChatPage> {
                         style: const TextStyle(fontSize: 12, color: Color(0xFF8E9AB0)),
                       ),
                     ),
-                  _buildBubble(msg, isMe),
-                  // Show read status tag below message bubble (only for sender in single chat)
-                  if (isMe &&
-                      msg.status == MessageStatus.succeeded &&
-                      sessionType == ConversationType.single)
+                  // 气泡 + 圆环放在同一行，圆环垂直居中
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      _buildBubble(msg, isMe),
+                      // 群聊已读圆环（在消息气泡右边，垂直居中）
+                      if (msg.status == MessageStatus.succeeded && sessionType != ConversationType.single)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 6),
+                          child: _buildGroupReadCircle(msg),
+                        ),
+                    ],
+                  ),
+                  // 单聊已读状态在下方
+                  if (isMe && msg.status == MessageStatus.succeeded && sessionType == ConversationType.single)
                     _buildReadTag(msg),
                 ],
               ),
@@ -1200,6 +1214,191 @@ class _ChatPageState extends State<ChatPage> {
         isRead ? '已读' : '未读',
         style: const TextStyle(fontSize: 11, color: Color(0xFF999999)),
       ),
+    );
+  }
+
+  /// 群聊消息已读状态圆环（显示在消息右侧，点击可查看详情）
+  Widget _buildGroupReadCircle(Message msg) {
+    final seq = msg.seq ?? 0;
+    final readCount = _msgReadCountCache[seq] ?? 0;
+    final totalCount = _groupMemberCount > 1 ? _groupMemberCount - 1 : 1; // 排除发送者自己
+    final progress = totalCount > 0 ? (readCount / totalCount).clamp(0.0, 1.0) : 0.0;
+    
+    // 异步加载已读人数（如果未缓存）
+    if (seq > 0 && !_msgReadCountCache.containsKey(seq)) {
+      _loadMsgReadCount(msg);
+    }
+    
+    return GestureDetector(
+      onTap: () => _showGroupReadStatus(msg),
+      child: SizedBox(
+        width: 24,
+        height: 24,
+        child: CustomPaint(
+          painter: _ReadProgressPainter(
+            progress: progress,
+            backgroundColor: Colors.grey[400]!,
+            progressColor: Colors.blue,
+            strokeWidth: 2.5,
+          ),
+        ),
+      ),
+    );
+  }
+  
+  /// 异步加载消息已读人数
+  Future<void> _loadMsgReadCount(Message msg) async {
+    final seq = msg.seq;
+    if (seq == null || seq == 0) return;
+    if (_msgReadCountCache.containsKey(seq)) return;
+    
+    try {
+      final result = await MsgApi.getGroupMsgReadUsers(
+        groupID: groupID,
+        conversationID: conversationID,
+        seq: seq,
+      );
+      final readUsers = result['readUsers'] as List? ?? [];
+      if (mounted) {
+        setState(() {
+          _msgReadCountCache[seq] = readUsers.length;
+        });
+      }
+    } catch (e) {
+      debugPrint('[Chat] _loadMsgReadCount error: $e');
+    }
+  }
+
+  /// 显示群消息已读/未读成员列表
+  Future<void> _showGroupReadStatus(Message msg) async {
+    if (msg.seq == null || msg.seq == 0) return;
+    
+    EasyLoading.show(status: '加载中...');
+    try {
+      final result = await MsgApi.getGroupMsgReadUsers(
+        groupID: groupID,
+        conversationID: conversationID,
+        seq: msg.seq!,
+      );
+      EasyLoading.dismiss();
+      
+      final readUsers = result['readUsers'] ?? [];
+      final unreadUsers = result['unreadUsers'] ?? [];
+      
+      if (!mounted) return;
+      
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        builder: (context) => _buildReadStatusSheet(readUsers, unreadUsers),
+      );
+    } catch (e) {
+      EasyLoading.dismiss();
+      EasyLoading.showError('加载失败');
+    }
+  }
+
+  /// 构建已读/未读成员列表底部弹窗（左右两列竖形列表）
+  Widget _buildReadStatusSheet(List<GroupMsgReadUser> readUsers, List<GroupMsgReadUser> unreadUsers) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.6,
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(
+        children: [
+          // 顶部拖动条
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // 左右两列
+          Expanded(
+            child: Row(
+              children: [
+                // 左边：已读列表
+                Expanded(
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          '已读 (${readUsers.length})',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      Expanded(child: _buildUserList(readUsers)),
+                    ],
+                  ),
+                ),
+                // 中间分隔线
+                Container(
+                  width: 1,
+                  color: Colors.grey[300],
+                ),
+                // 右边：未读列表
+                Expanded(
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          '未读 (${unreadUsers.length})',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      Expanded(child: _buildUserList(unreadUsers)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建用户列表
+  Widget _buildUserList(List<GroupMsgReadUser> users) {
+    if (users.isEmpty) {
+      return const Center(child: Text('暂无', style: TextStyle(color: Colors.grey)));
+    }
+    return ListView.builder(
+      itemCount: users.length,
+      itemBuilder: (context, index) {
+        final user = users[index];
+        return ListTile(
+          leading: CircleAvatar(
+            radius: 20,
+            backgroundColor: Colors.grey[300],
+            backgroundImage: user.faceURL.isNotEmpty ? NetworkImage(user.faceURL) : null,
+            child: user.faceURL.isEmpty
+                ? Text(
+                    user.nickname.isNotEmpty ? user.nickname[0].toUpperCase() : '?',
+                    style: const TextStyle(color: Colors.white),
+                  )
+                : null,
+          ),
+          title: Text(user.nickname.isNotEmpty ? user.nickname : user.userID),
+        );
+      },
     );
   }
 
@@ -2371,5 +2570,59 @@ class _VoiceWaveWidgetState extends State<_VoiceWaveWidget>
     // 简单正弦近似：t 在 0~1 之间
     final x = t * 3.14159 * 2;
     return (x - x * x * x / 6 + x * x * x * x * x / 120).clamp(-1.0, 1.0);
+  }
+}
+
+/// 圆环进度绘制器
+class _ReadProgressPainter extends CustomPainter {
+  final double progress; // 0.0 ~ 1.0
+  final Color backgroundColor;
+  final Color progressColor;
+  final double strokeWidth;
+
+  _ReadProgressPainter({
+    required this.progress,
+    required this.backgroundColor,
+    required this.progressColor,
+    required this.strokeWidth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width - strokeWidth) / 2;
+
+    // 绘制背景圆环（灰色空心圆）
+    final bgPaint = Paint()
+      ..color = backgroundColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+    canvas.drawCircle(center, radius, bgPaint);
+
+    // 绘制进度圆弧（蓝色填充部分）
+    if (progress > 0) {
+      final progressPaint = Paint()
+        ..color = progressColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round;
+
+      final sweepAngle = 2 * 3.14159 * progress;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        -3.14159 / 2, // 从顶部开始
+        sweepAngle,
+        false,
+        progressPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ReadProgressPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.backgroundColor != backgroundColor ||
+        oldDelegate.progressColor != progressColor ||
+        oldDelegate.strokeWidth != strokeWidth;
   }
 }

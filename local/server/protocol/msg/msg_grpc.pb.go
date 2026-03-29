@@ -53,6 +53,7 @@ const (
 	Msg_SetUserConversationMinSeq_FullMethodName        = "/fdim.msg.msg/SetUserConversationMinSeq"
 	Msg_GetLastMessageSeqByTime_FullMethodName          = "/fdim.msg.msg/GetLastMessageSeqByTime"
 	Msg_GetLastMessage_FullMethodName                   = "/fdim.msg.msg/GetLastMessage"
+	Msg_GetGroupMsgReadUsers_FullMethodName             = "/fdim.msg.msg/GetGroupMsgReadUsers"
 )
 
 // MsgClient is the client API for Msg service.
@@ -107,6 +108,8 @@ type MsgClient interface {
 	SetUserConversationMinSeq(ctx context.Context, in *SetUserConversationMinSeqReq, opts ...grpc.CallOption) (*SetUserConversationMinSeqResp, error)
 	GetLastMessageSeqByTime(ctx context.Context, in *GetLastMessageSeqByTimeReq, opts ...grpc.CallOption) (*GetLastMessageSeqByTimeResp, error)
 	GetLastMessage(ctx context.Context, in *GetLastMessageReq, opts ...grpc.CallOption) (*GetLastMessageResp, error)
+	// 获取群消息已读/未读成员列表
+	GetGroupMsgReadUsers(ctx context.Context, in *GetGroupMsgReadUsersReq, opts ...grpc.CallOption) (*GetGroupMsgReadUsersResp, error)
 }
 
 type msgClient struct {
@@ -447,6 +450,16 @@ func (c *msgClient) GetLastMessage(ctx context.Context, in *GetLastMessageReq, o
 	return out, nil
 }
 
+func (c *msgClient) GetGroupMsgReadUsers(ctx context.Context, in *GetGroupMsgReadUsersReq, opts ...grpc.CallOption) (*GetGroupMsgReadUsersResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetGroupMsgReadUsersResp)
+	err := c.cc.Invoke(ctx, Msg_GetGroupMsgReadUsers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility.
@@ -499,6 +512,8 @@ type MsgServer interface {
 	SetUserConversationMinSeq(context.Context, *SetUserConversationMinSeqReq) (*SetUserConversationMinSeqResp, error)
 	GetLastMessageSeqByTime(context.Context, *GetLastMessageSeqByTimeReq) (*GetLastMessageSeqByTimeResp, error)
 	GetLastMessage(context.Context, *GetLastMessageReq) (*GetLastMessageResp, error)
+	// 获取群消息已读/未读成员列表
+	GetGroupMsgReadUsers(context.Context, *GetGroupMsgReadUsersReq) (*GetGroupMsgReadUsersResp, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -607,6 +622,9 @@ func (UnimplementedMsgServer) GetLastMessageSeqByTime(context.Context, *GetLastM
 }
 func (UnimplementedMsgServer) GetLastMessage(context.Context, *GetLastMessageReq) (*GetLastMessageResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetLastMessage not implemented")
+}
+func (UnimplementedMsgServer) GetGroupMsgReadUsers(context.Context, *GetGroupMsgReadUsersReq) (*GetGroupMsgReadUsersResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetGroupMsgReadUsers not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 func (UnimplementedMsgServer) testEmbeddedByValue()             {}
@@ -1223,6 +1241,24 @@ func _Msg_GetLastMessage_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_GetGroupMsgReadUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGroupMsgReadUsersReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).GetGroupMsgReadUsers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_GetGroupMsgReadUsers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).GetGroupMsgReadUsers(ctx, req.(*GetGroupMsgReadUsersReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1361,6 +1397,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetLastMessage",
 			Handler:    _Msg_GetLastMessage_Handler,
+		},
+		{
+			MethodName: "GetGroupMsgReadUsers",
+			Handler:    _Msg_GetGroupMsgReadUsers_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

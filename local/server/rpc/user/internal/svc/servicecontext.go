@@ -29,6 +29,7 @@ type ServiceContext struct {
 	UserNotification   *notification.UserNotificationSender
 	WebhookClient      *webhook.Client
 	ConversationClient conversation.ConversationClient
+	MsgClient          msg.MsgClient
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -49,14 +50,15 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	friendCache := cache.NewFriendCache(redisClient)
 	groupCache := cache.NewGroupCache(redisClient)
 
-	// 初始化通知发送器
+	// 初始化通知发送器和 MsgClient
 	var notificationOpts []notification.NotificationSenderOptions
+	var msgClient msg.MsgClient
 	if c.MsgRpc.Etcd.Key != "" {
 		msgRpcClient, err := zrpc.NewClient(c.MsgRpc)
 		if err != nil {
 			logx.Errorf("failed to connect msg.rpc: %v, notifications will be disabled", err)
 		} else {
-			msgClient := msg.NewMsgClient(msgRpcClient.Conn())
+			msgClient = msg.NewMsgClient(msgRpcClient.Conn())
 			notificationOpts = append(notificationOpts, notification.WithRpcClient(
 				func(ctx context.Context, req *msg.SendMsgReq) (*msg.SendMsgResp, error) {
 					return msgClient.SendMsg(ctx, req)
@@ -77,9 +79,10 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	// 初始?Webhook 客户?
 	webhookClient := webhook.NewWebhookClient(c.Webhook.URL)
 
-	// 初始?Conversation RPC 客户?
+	// 初始化 Conversation RPC 客户端
 	var convClient conversation.ConversationClient
-	if c.ConversationRpc.Target != "" || len(c.ConversationRpc.Endpoints) > 0 {
+	// 检查是否配置了 Etcd 服务发现或直接连接
+	if c.ConversationRpc.Etcd.Key != "" || c.ConversationRpc.Target != "" || len(c.ConversationRpc.Endpoints) > 0 {
 		conn, err := zrpc.NewClient(c.ConversationRpc)
 		if err != nil {
 			logx.Errorf("Failed to create Conversation RPC client: %v", err)
@@ -87,6 +90,8 @@ func NewServiceContext(c config.Config) *ServiceContext {
 			convClient = conversation.NewConversationClient(conn.Conn())
 			logx.Info("Conversation RPC client initialized in user service")
 		}
+	} else {
+		logx.Info("ConversationRpc not configured, ConversationClient will be nil")
 	}
 
 	return &ServiceContext{
@@ -103,5 +108,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		UserNotification:   userNotification,
 		WebhookClient:      webhookClient,
 		ConversationClient: convClient,
+		MsgClient:          msgClient,
 	}
 }

@@ -217,3 +217,9 @@ func (s *MsgServer) GetLastMessage(ctx context.Context, req *msg.GetLastMessageR
 	l := logic.NewGetLastMessageLogic(ctx, s.svcCtx)
 	return l.GetLastMessage(req)
 }
+
+// GetGroupMsgReadUsers 获取群消息已读/未读成员列表
+func (s *MsgServer) GetGroupMsgReadUsers(ctx context.Context, req *msg.GetGroupMsgReadUsersReq) (*msg.GetGroupMsgReadUsersResp, error) {
+	l := logic.NewGetGroupMsgReadUsersLogic(ctx, s.svcCtx)
+	return l.GetGroupMsgReadUsers(req)
+}

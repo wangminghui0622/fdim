@@ -28,10 +28,12 @@ type MsgCache interface {
 	GetMinSeq(ctx context.Context, conversationID string) (int64, error)
 	// SetMinSeq 设置最小保留序列号（用于清理历史消息）
 	SetMinSeq(ctx context.Context, conversationID string, seq int64) error
-	// SetHasReadSeqs 设置已读序列?
+	// SetHasReadSeqs 设置已读序列号
 	SetHasReadSeqs(ctx context.Context, conversationID string, userSeqMap map[string]int64) error
 	// GetHasReadSeq 获取单个用户在会话中的已读序列号
 	GetHasReadSeq(ctx context.Context, conversationID, userID string) (int64, error)
+	// GetGroupMsgReadUsers 获取群消息的已读/未读成员列表
+	GetGroupMsgReadUsers(ctx context.Context, conversationID string, msgSeq int64, memberUserIDs []string) (readUserIDs []string, unreadUserIDs []string, err error)
 	// DeleteMessageBySeq 删除指定消息的缓存（撤回时使用）
 	DeleteMessageBySeq(ctx context.Context, conversationID string, seq int64) error
 }
@@ -310,7 +312,45 @@ func (c *RedisMsgCache) GetHasReadSeq(ctx context.Context, conversationID, userI
 	return seq, err
 }
 
-// DeleteMessageBySeq 删除指定消息的缓?
+// GetGroupMsgReadUsers 获取群消息的已读/未读成员列表
+func (c *RedisMsgCache) GetGroupMsgReadUsers(ctx context.Context, conversationID string, msgSeq int64, memberUserIDs []string) (readUserIDs []string, unreadUserIDs []string, err error) {
+	if len(memberUserIDs) == 0 {
+		return nil, nil, nil
+	}
+
+	pipe := c.client.Pipeline()
+	cmds := make([]*redis.StringCmd, len(memberUserIDs))
+
+	for i, userID := range memberUserIDs {
+		key := fmt.Sprintf("conversation:has_read:%s:%s", conversationID, userID)
+		cmds[i] = pipe.Get(ctx, key)
+	}
+
+	_, err = pipe.Exec(ctx)
+	if err != nil && err != redis.Nil {
+		return nil, nil, err
+	}
+
+	for i, cmd := range cmds {
+		userID := memberUserIDs[i]
+		hasReadSeq, err := cmd.Int64()
+		if err == redis.Nil {
+			hasReadSeq = 0
+		} else if err != nil {
+			hasReadSeq = 0
+		}
+
+		if hasReadSeq >= msgSeq {
+			readUserIDs = append(readUserIDs, userID)
+		} else {
+			unreadUserIDs = append(unreadUserIDs, userID)
+		}
+	}
+
+	return readUserIDs, unreadUserIDs, nil
+}
+
+// DeleteMessageBySeq 删除指定消息的缓存
 func (c *RedisMsgCache) DeleteMessageBySeq(ctx context.Context, conversationID string, seq int64) error {
 	key := c.getMessageKey(conversationID, seq)
 	return c.client.Del(ctx, key).Err()

@@ -2140,7 +2140,7 @@ type Seqs struct {
 	MaxSeq        int64                  `protobuf:"varint,1,opt,name=maxSeq,proto3" json:"maxSeq"`
 	HasReadSeq    int64                  `protobuf:"varint,2,opt,name=hasReadSeq,proto3" json:"hasReadSeq"`
 	MaxSeqTime    int64                  `protobuf:"varint,3,opt,name=maxSeqTime,proto3" json:"maxSeqTime"`
-	PeerReadSeq   int64                  `protobuf:"varint,4,opt,name=peerReadSeq,proto3" json:"peerReadSeq"`
+	PeerReadSeq   int64                  `protobuf:"varint,4,opt,name=peerReadSeq,proto3" json:"peerReadSeq"` // 对方已读到的最大 seq（单聊时使用）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -4243,6 +4243,119 @@ func (x *GetLastMessageResp) GetMsgs() map[string]*sdkws.MsgData {
 	return nil
 }
 
+// 获取群消息已读/未读成员列表
+type GetGroupMsgReadUsersReq struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ConversationID string                 `protobuf:"bytes,1,opt,name=conversationID,proto3" json:"conversationID"`
+	Seq            int64                  `protobuf:"varint,2,opt,name=seq,proto3" json:"seq"`
+	MemberUserIDs  []string               `protobuf:"bytes,3,rep,name=memberUserIDs,proto3" json:"memberUserIDs"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *GetGroupMsgReadUsersReq) Reset() {
+	*x = GetGroupMsgReadUsersReq{}
+	mi := &file_msg_msg_proto_msgTypes[81]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetGroupMsgReadUsersReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetGroupMsgReadUsersReq) ProtoMessage() {}
+
+func (x *GetGroupMsgReadUsersReq) ProtoReflect() protoreflect.Message {
+	mi := &file_msg_msg_proto_msgTypes[81]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetGroupMsgReadUsersReq.ProtoReflect.Descriptor instead.
+func (*GetGroupMsgReadUsersReq) Descriptor() ([]byte, []int) {
+	return file_msg_msg_proto_rawDescGZIP(), []int{81}
+}
+
+func (x *GetGroupMsgReadUsersReq) GetConversationID() string {
+	if x != nil {
+		return x.ConversationID
+	}
+	return ""
+}
+
+func (x *GetGroupMsgReadUsersReq) GetSeq() int64 {
+	if x != nil {
+		return x.Seq
+	}
+	return 0
+}
+
+func (x *GetGroupMsgReadUsersReq) GetMemberUserIDs() []string {
+	if x != nil {
+		return x.MemberUserIDs
+	}
+	return nil
+}
+
+type GetGroupMsgReadUsersResp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ReadUserIDs   []string               `protobuf:"bytes,1,rep,name=readUserIDs,proto3" json:"readUserIDs"`
+	UnreadUserIDs []string               `protobuf:"bytes,2,rep,name=unreadUserIDs,proto3" json:"unreadUserIDs"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetGroupMsgReadUsersResp) Reset() {
+	*x = GetGroupMsgReadUsersResp{}
+	mi := &file_msg_msg_proto_msgTypes[82]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetGroupMsgReadUsersResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetGroupMsgReadUsersResp) ProtoMessage() {}
+
+func (x *GetGroupMsgReadUsersResp) ProtoReflect() protoreflect.Message {
+	mi := &file_msg_msg_proto_msgTypes[82]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetGroupMsgReadUsersResp.ProtoReflect.Descriptor instead.
+func (*GetGroupMsgReadUsersResp) Descriptor() ([]byte, []int) {
+	return file_msg_msg_proto_rawDescGZIP(), []int{82}
+}
+
+func (x *GetGroupMsgReadUsersResp) GetReadUserIDs() []string {
+	if x != nil {
+		return x.ReadUserIDs
+	}
+	return nil
+}
+
+func (x *GetGroupMsgReadUsersResp) GetUnreadUserIDs() []string {
+	if x != nil {
+		return x.UnreadUserIDs
+	}
+	return nil
+}
+
 var File_msg_msg_proto protoreflect.FileDescriptor
 
 const file_msg_msg_proto_rawDesc = "" +
@@ -4374,7 +4487,7 @@ const file_msg_msg_proto_rawDesc = "" +
 	"#GetConversationsHasReadAndMaxSeqReq\x12\x16\n" +
 	"\x06userID\x18\x01 \x01(\tR\x06userID\x12(\n" +
 	"\x0fconversationIDs\x18\x02 \x03(\tR\x0fconversationIDs\x12\"\n" +
-	"\freturnPinned\x18\x03 \x01(\bR\freturnPinned\"^\n" +
+	"\freturnPinned\x18\x03 \x01(\bR\freturnPinned\"\x80\x01\n" +
 	"\x04Seqs\x12\x16\n" +
 	"\x06maxSeq\x18\x01 \x01(\x03R\x06maxSeq\x12\x1e\n" +
 	"\n" +
@@ -4382,7 +4495,8 @@ const file_msg_msg_proto_rawDesc = "" +
 	"hasReadSeq\x12\x1e\n" +
 	"\n" +
 	"maxSeqTime\x18\x03 \x01(\x03R\n" +
-	"maxSeqTime\"\xf3\x01\n" +
+	"maxSeqTime\x12 \n" +
+	"\vpeerReadSeq\x18\x04 \x01(\x03R\vpeerReadSeq\"\xf3\x01\n" +
 	"$GetConversationsHasReadAndMaxSeqResp\x12L\n" +
 	"\x04seqs\x18\x01 \x03(\v28.fdim.msg.GetConversationsHasReadAndMaxSeqResp.SeqsEntryR\x04seqs\x124\n" +
 	"\x15pinnedConversationIDs\x18\x02 \x03(\tR\x15pinnedConversationIDs\x1aG\n" +
@@ -4547,7 +4661,14 @@ const file_msg_msg_proto_rawDesc = "" +
 	"\x04msgs\x18\x01 \x03(\v2&.fdim.msg.GetLastMessageResp.MsgsEntryR\x04msgs\x1aL\n" +
 	"\tMsgsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12)\n" +
-	"\x05value\x18\x02 \x01(\v2\x13.fdim.sdkws.MsgDataR\x05value:\x028\x012\x84\x16\n" +
+	"\x05value\x18\x02 \x01(\v2\x13.fdim.sdkws.MsgDataR\x05value:\x028\x01\"y\n" +
+	"\x17GetGroupMsgReadUsersReq\x12&\n" +
+	"\x0econversationID\x18\x01 \x01(\tR\x0econversationID\x12\x10\n" +
+	"\x03seq\x18\x02 \x01(\x03R\x03seq\x12$\n" +
+	"\rmemberUserIDs\x18\x03 \x03(\tR\rmemberUserIDs\"b\n" +
+	"\x18GetGroupMsgReadUsersResp\x12 \n" +
+	"\vreadUserIDs\x18\x01 \x03(\tR\vreadUserIDs\x12$\n" +
+	"\runreadUserIDs\x18\x02 \x03(\tR\runreadUserIDs2\xe3\x16\n" +
 	"\x03msg\x12@\n" +
 	"\tGetMaxSeq\x12\x18.fdim.sdkws.GetMaxSeqReq\x1a\x19.fdim.sdkws.GetMaxSeqResp\x12=\n" +
 	"\n" +
@@ -4583,7 +4704,8 @@ const file_msg_msg_proto_rawDesc = "" +
 	"\x19SetUserConversationMaxSeq\x12&.fdim.msg.SetUserConversationMaxSeqReq\x1a'.fdim.msg.SetUserConversationMaxSeqResp\x12l\n" +
 	"\x19SetUserConversationMinSeq\x12&.fdim.msg.SetUserConversationMinSeqReq\x1a'.fdim.msg.SetUserConversationMinSeqResp\x12f\n" +
 	"\x17GetLastMessageSeqByTime\x12$.fdim.msg.GetLastMessageSeqByTimeReq\x1a%.fdim.msg.GetLastMessageSeqByTimeResp\x12K\n" +
-	"\x0eGetLastMessage\x12\x1b.fdim.msg.GetLastMessageReq\x1a\x1c.fdim.msg.GetLastMessageRespB\x13Z\x11fdim/protocol/msgb\x06proto3"
+	"\x0eGetLastMessage\x12\x1b.fdim.msg.GetLastMessageReq\x1a\x1c.fdim.msg.GetLastMessageResp\x12]\n" +
+	"\x14GetGroupMsgReadUsers\x12!.fdim.msg.GetGroupMsgReadUsersReq\x1a\".fdim.msg.GetGroupMsgReadUsersRespB\x13Z\x11fdim/protocol/msgb\x06proto3"
 
 var (
 	file_msg_msg_proto_rawDescOnce sync.Once
@@ -4597,7 +4719,7 @@ func file_msg_msg_proto_rawDescGZIP() []byte {
 	return file_msg_msg_proto_rawDescData
 }
 
-var file_msg_msg_proto_msgTypes = make([]protoimpl.MessageInfo, 90)
+var file_msg_msg_proto_msgTypes = make([]protoimpl.MessageInfo, 92)
 var file_msg_msg_proto_goTypes = []any{
 	(*MsgDataToMQ)(nil),                          // 0: fdim.msg.MsgDataToMQ
 	(*MsgDataToDB)(nil),                          // 1: fdim.msg.MsgDataToDB
@@ -4680,75 +4802,77 @@ var file_msg_msg_proto_goTypes = []any{
 	(*GetLastMessageSeqByTimeResp)(nil),          // 78: fdim.msg.GetLastMessageSeqByTimeResp
 	(*GetLastMessageReq)(nil),                    // 79: fdim.msg.GetLastMessageReq
 	(*GetLastMessageResp)(nil),                   // 80: fdim.msg.GetLastMessageResp
-	nil,                                          // 81: fdim.msg.SeqsInfoResp.MaxSeqsEntry
-	nil,                                          // 82: fdim.msg.GetMsgByConversationIDsReq.MaxSeqsEntry
-	nil,                                          // 83: fdim.msg.GetMsgByConversationIDsResp.MsgDatasEntry
-	nil,                                          // 84: fdim.msg.GetConversationsHasReadAndMaxSeqResp.SeqsEntry
-	nil,                                          // 85: fdim.msg.GetActiveUserResp.DateCountEntry
-	nil,                                          // 86: fdim.msg.GetActiveGroupResp.DateCountEntry
-	nil,                                          // 87: fdim.msg.GetSeqMessageResp.MsgsEntry
-	nil,                                          // 88: fdim.msg.GetSeqMessageResp.NotificationMsgsEntry
-	nil,                                          // 89: fdim.msg.GetLastMessageResp.MsgsEntry
-	(*sdkws.MsgData)(nil),                        // 90: fdim.sdkws.MsgData
-	(*sdkws.RequestPagination)(nil),              // 91: fdim.sdkws.RequestPagination
-	(*sdkws.UserInfo)(nil),                       // 92: fdim.sdkws.UserInfo
-	(*sdkws.GroupInfo)(nil),                      // 93: fdim.sdkws.GroupInfo
-	(*conversation.Conversation)(nil),            // 94: fdim.conversation.Conversation
-	(sdkws.PullOrder)(0),                         // 95: fdim.sdkws.PullOrder
-	(*sdkws.PullMsgs)(nil),                       // 96: fdim.sdkws.PullMsgs
-	(*sdkws.GetMaxSeqReq)(nil),                   // 97: fdim.sdkws.GetMaxSeqReq
-	(*sdkws.PullMessageBySeqsReq)(nil),           // 98: fdim.sdkws.PullMessageBySeqsReq
-	(*sdkws.GetMaxSeqResp)(nil),                  // 99: fdim.sdkws.GetMaxSeqResp
-	(*sdkws.PullMessageBySeqsResp)(nil),          // 100: fdim.sdkws.PullMessageBySeqsResp
+	(*GetGroupMsgReadUsersReq)(nil),              // 81: fdim.msg.GetGroupMsgReadUsersReq
+	(*GetGroupMsgReadUsersResp)(nil),             // 82: fdim.msg.GetGroupMsgReadUsersResp
+	nil,                                          // 83: fdim.msg.SeqsInfoResp.MaxSeqsEntry
+	nil,                                          // 84: fdim.msg.GetMsgByConversationIDsReq.MaxSeqsEntry
+	nil,                                          // 85: fdim.msg.GetMsgByConversationIDsResp.MsgDatasEntry
+	nil,                                          // 86: fdim.msg.GetConversationsHasReadAndMaxSeqResp.SeqsEntry
+	nil,                                          // 87: fdim.msg.GetActiveUserResp.DateCountEntry
+	nil,                                          // 88: fdim.msg.GetActiveGroupResp.DateCountEntry
+	nil,                                          // 89: fdim.msg.GetSeqMessageResp.MsgsEntry
+	nil,                                          // 90: fdim.msg.GetSeqMessageResp.NotificationMsgsEntry
+	nil,                                          // 91: fdim.msg.GetLastMessageResp.MsgsEntry
+	(*sdkws.MsgData)(nil),                        // 92: fdim.sdkws.MsgData
+	(*sdkws.RequestPagination)(nil),              // 93: fdim.sdkws.RequestPagination
+	(*sdkws.UserInfo)(nil),                       // 94: fdim.sdkws.UserInfo
+	(*sdkws.GroupInfo)(nil),                      // 95: fdim.sdkws.GroupInfo
+	(*conversation.Conversation)(nil),            // 96: fdim.conversation.Conversation
+	(sdkws.PullOrder)(0),                         // 97: fdim.sdkws.PullOrder
+	(*sdkws.PullMsgs)(nil),                       // 98: fdim.sdkws.PullMsgs
+	(*sdkws.GetMaxSeqReq)(nil),                   // 99: fdim.sdkws.GetMaxSeqReq
+	(*sdkws.PullMessageBySeqsReq)(nil),           // 100: fdim.sdkws.PullMessageBySeqsReq
+	(*sdkws.GetMaxSeqResp)(nil),                  // 101: fdim.sdkws.GetMaxSeqResp
+	(*sdkws.PullMessageBySeqsResp)(nil),          // 102: fdim.sdkws.PullMessageBySeqsResp
 }
 var file_msg_msg_proto_depIdxs = []int32{
-	90,  // 0: fdim.msg.MsgDataToMQ.msgData:type_name -> fdim.sdkws.MsgData
-	90,  // 1: fdim.msg.MsgDataToDB.msgData:type_name -> fdim.sdkws.MsgData
-	90,  // 2: fdim.msg.PushMsgDataToMQ.msgData:type_name -> fdim.sdkws.MsgData
-	90,  // 3: fdim.msg.MsgDataToMongoByMQ.msgData:type_name -> fdim.sdkws.MsgData
-	90,  // 4: fdim.msg.SendMsgReq.msgData:type_name -> fdim.sdkws.MsgData
-	90,  // 5: fdim.msg.SendMsgResp.modify:type_name -> fdim.sdkws.MsgData
-	90,  // 6: fdim.msg.SendSimpleMsgReq.msgData:type_name -> fdim.sdkws.MsgData
-	90,  // 7: fdim.msg.SendSimpleMsgResp.modify:type_name -> fdim.sdkws.MsgData
-	90,  // 8: fdim.msg.MsgDataToModifyByMQ.messages:type_name -> fdim.sdkws.MsgData
+	92,  // 0: fdim.msg.MsgDataToMQ.msgData:type_name -> fdim.sdkws.MsgData
+	92,  // 1: fdim.msg.MsgDataToDB.msgData:type_name -> fdim.sdkws.MsgData
+	92,  // 2: fdim.msg.PushMsgDataToMQ.msgData:type_name -> fdim.sdkws.MsgData
+	92,  // 3: fdim.msg.MsgDataToMongoByMQ.msgData:type_name -> fdim.sdkws.MsgData
+	92,  // 4: fdim.msg.SendMsgReq.msgData:type_name -> fdim.sdkws.MsgData
+	92,  // 5: fdim.msg.SendMsgResp.modify:type_name -> fdim.sdkws.MsgData
+	92,  // 6: fdim.msg.SendSimpleMsgReq.msgData:type_name -> fdim.sdkws.MsgData
+	92,  // 7: fdim.msg.SendSimpleMsgResp.modify:type_name -> fdim.sdkws.MsgData
+	92,  // 8: fdim.msg.MsgDataToModifyByMQ.messages:type_name -> fdim.sdkws.MsgData
 	25,  // 9: fdim.msg.ClearConversationsMsgReq.deleteSyncOpt:type_name -> fdim.msg.DeleteSyncOpt
 	25,  // 10: fdim.msg.UserClearAllMsgReq.deleteSyncOpt:type_name -> fdim.msg.DeleteSyncOpt
 	25,  // 11: fdim.msg.DeleteMsgsReq.deleteSyncOpt:type_name -> fdim.msg.DeleteSyncOpt
-	81,  // 12: fdim.msg.SeqsInfoResp.maxSeqs:type_name -> fdim.msg.SeqsInfoResp.MaxSeqsEntry
-	82,  // 13: fdim.msg.GetMsgByConversationIDsReq.maxSeqs:type_name -> fdim.msg.GetMsgByConversationIDsReq.MaxSeqsEntry
-	83,  // 14: fdim.msg.GetMsgByConversationIDsResp.msgDatas:type_name -> fdim.msg.GetMsgByConversationIDsResp.MsgDatasEntry
-	84,  // 15: fdim.msg.GetConversationsHasReadAndMaxSeqResp.seqs:type_name -> fdim.msg.GetConversationsHasReadAndMaxSeqResp.SeqsEntry
-	91,  // 16: fdim.msg.GetActiveUserReq.pagination:type_name -> fdim.sdkws.RequestPagination
-	92,  // 17: fdim.msg.ActiveUser.user:type_name -> fdim.sdkws.UserInfo
-	85,  // 18: fdim.msg.GetActiveUserResp.dateCount:type_name -> fdim.msg.GetActiveUserResp.DateCountEntry
+	83,  // 12: fdim.msg.SeqsInfoResp.maxSeqs:type_name -> fdim.msg.SeqsInfoResp.MaxSeqsEntry
+	84,  // 13: fdim.msg.GetMsgByConversationIDsReq.maxSeqs:type_name -> fdim.msg.GetMsgByConversationIDsReq.MaxSeqsEntry
+	85,  // 14: fdim.msg.GetMsgByConversationIDsResp.msgDatas:type_name -> fdim.msg.GetMsgByConversationIDsResp.MsgDatasEntry
+	86,  // 15: fdim.msg.GetConversationsHasReadAndMaxSeqResp.seqs:type_name -> fdim.msg.GetConversationsHasReadAndMaxSeqResp.SeqsEntry
+	93,  // 16: fdim.msg.GetActiveUserReq.pagination:type_name -> fdim.sdkws.RequestPagination
+	94,  // 17: fdim.msg.ActiveUser.user:type_name -> fdim.sdkws.UserInfo
+	87,  // 18: fdim.msg.GetActiveUserResp.dateCount:type_name -> fdim.msg.GetActiveUserResp.DateCountEntry
 	47,  // 19: fdim.msg.GetActiveUserResp.users:type_name -> fdim.msg.ActiveUser
-	91,  // 20: fdim.msg.GetActiveGroupReq.pagination:type_name -> fdim.sdkws.RequestPagination
-	93,  // 21: fdim.msg.ActiveGroup.group:type_name -> fdim.sdkws.GroupInfo
-	86,  // 22: fdim.msg.GetActiveGroupResp.dateCount:type_name -> fdim.msg.GetActiveGroupResp.DateCountEntry
+	93,  // 20: fdim.msg.GetActiveGroupReq.pagination:type_name -> fdim.sdkws.RequestPagination
+	95,  // 21: fdim.msg.ActiveGroup.group:type_name -> fdim.sdkws.GroupInfo
+	88,  // 22: fdim.msg.GetActiveGroupResp.dateCount:type_name -> fdim.msg.GetActiveGroupResp.DateCountEntry
 	50,  // 23: fdim.msg.GetActiveGroupResp.groups:type_name -> fdim.msg.ActiveGroup
-	91,  // 24: fdim.msg.SearchMessageReq.pagination:type_name -> fdim.sdkws.RequestPagination
+	93,  // 24: fdim.msg.SearchMessageReq.pagination:type_name -> fdim.sdkws.RequestPagination
 	56,  // 25: fdim.msg.SearchChatLog.chatLog:type_name -> fdim.msg.ChatLog
-	90,  // 26: fdim.msg.SearchedMsgData.msgData:type_name -> fdim.sdkws.MsgData
+	92,  // 26: fdim.msg.SearchedMsgData.msgData:type_name -> fdim.sdkws.MsgData
 	53,  // 27: fdim.msg.SearchMessageResp.chatLogs:type_name -> fdim.msg.SearchChatLog
-	90,  // 28: fdim.msg.batchSendMessageReq.msgData:type_name -> fdim.sdkws.MsgData
-	94,  // 29: fdim.msg.ClearMsgReq.conversations:type_name -> fdim.conversation.Conversation
+	92,  // 28: fdim.msg.batchSendMessageReq.msgData:type_name -> fdim.sdkws.MsgData
+	96,  // 29: fdim.msg.ClearMsgReq.conversations:type_name -> fdim.conversation.Conversation
 	67,  // 30: fdim.msg.GetSeqMessageReq.conversations:type_name -> fdim.msg.ConversationSeqs
-	95,  // 31: fdim.msg.GetSeqMessageReq.order:type_name -> fdim.sdkws.PullOrder
-	87,  // 32: fdim.msg.GetSeqMessageResp.msgs:type_name -> fdim.msg.GetSeqMessageResp.MsgsEntry
-	88,  // 33: fdim.msg.GetSeqMessageResp.notificationMsgs:type_name -> fdim.msg.GetSeqMessageResp.NotificationMsgsEntry
+	97,  // 31: fdim.msg.GetSeqMessageReq.order:type_name -> fdim.sdkws.PullOrder
+	89,  // 32: fdim.msg.GetSeqMessageResp.msgs:type_name -> fdim.msg.GetSeqMessageResp.MsgsEntry
+	90,  // 33: fdim.msg.GetSeqMessageResp.notificationMsgs:type_name -> fdim.msg.GetSeqMessageResp.NotificationMsgsEntry
 	71,  // 34: fdim.msg.GetActiveConversationResp.conversations:type_name -> fdim.msg.ActiveConversation
-	89,  // 35: fdim.msg.GetLastMessageResp.msgs:type_name -> fdim.msg.GetLastMessageResp.MsgsEntry
-	90,  // 36: fdim.msg.GetMsgByConversationIDsResp.MsgDatasEntry.value:type_name -> fdim.sdkws.MsgData
+	91,  // 35: fdim.msg.GetLastMessageResp.msgs:type_name -> fdim.msg.GetLastMessageResp.MsgsEntry
+	92,  // 36: fdim.msg.GetMsgByConversationIDsResp.MsgDatasEntry.value:type_name -> fdim.sdkws.MsgData
 	44,  // 37: fdim.msg.GetConversationsHasReadAndMaxSeqResp.SeqsEntry.value:type_name -> fdim.msg.Seqs
-	96,  // 38: fdim.msg.GetSeqMessageResp.MsgsEntry.value:type_name -> fdim.sdkws.PullMsgs
-	96,  // 39: fdim.msg.GetSeqMessageResp.NotificationMsgsEntry.value:type_name -> fdim.sdkws.PullMsgs
-	90,  // 40: fdim.msg.GetLastMessageResp.MsgsEntry.value:type_name -> fdim.sdkws.MsgData
-	97,  // 41: fdim.msg.msg.GetMaxSeq:input_type -> fdim.sdkws.GetMaxSeqReq
+	98,  // 38: fdim.msg.GetSeqMessageResp.MsgsEntry.value:type_name -> fdim.sdkws.PullMsgs
+	98,  // 39: fdim.msg.GetSeqMessageResp.NotificationMsgsEntry.value:type_name -> fdim.sdkws.PullMsgs
+	92,  // 40: fdim.msg.GetLastMessageResp.MsgsEntry.value:type_name -> fdim.sdkws.MsgData
+	99,  // 41: fdim.msg.msg.GetMaxSeq:input_type -> fdim.sdkws.GetMaxSeqReq
 	36,  // 42: fdim.msg.msg.GetMaxSeqs:input_type -> fdim.msg.GetMaxSeqsReq
 	37,  // 43: fdim.msg.msg.GetHasReadSeqs:input_type -> fdim.msg.GetHasReadSeqsReq
 	39,  // 44: fdim.msg.msg.GetMsgByConversationIDs:input_type -> fdim.msg.GetMsgByConversationIDsReq
 	41,  // 45: fdim.msg.msg.GetConversationMaxSeq:input_type -> fdim.msg.GetConversationMaxSeqReq
-	98,  // 46: fdim.msg.msg.PullMessageBySeqs:input_type -> fdim.sdkws.PullMessageBySeqsReq
+	100, // 46: fdim.msg.msg.PullMessageBySeqs:input_type -> fdim.sdkws.PullMessageBySeqsReq
 	68,  // 47: fdim.msg.msg.GetSeqMessage:input_type -> fdim.msg.GetSeqMessageReq
 	52,  // 48: fdim.msg.msg.SearchMessage:input_type -> fdim.msg.SearchMessageReq
 	6,   // 49: fdim.msg.msg.SendMsg:input_type -> fdim.msg.SendMsgReq
@@ -4776,41 +4900,43 @@ var file_msg_msg_proto_depIdxs = []int32{
 	75,  // 71: fdim.msg.msg.SetUserConversationMinSeq:input_type -> fdim.msg.SetUserConversationMinSeqReq
 	77,  // 72: fdim.msg.msg.GetLastMessageSeqByTime:input_type -> fdim.msg.GetLastMessageSeqByTimeReq
 	79,  // 73: fdim.msg.msg.GetLastMessage:input_type -> fdim.msg.GetLastMessageReq
-	99,  // 74: fdim.msg.msg.GetMaxSeq:output_type -> fdim.sdkws.GetMaxSeqResp
-	38,  // 75: fdim.msg.msg.GetMaxSeqs:output_type -> fdim.msg.SeqsInfoResp
-	38,  // 76: fdim.msg.msg.GetHasReadSeqs:output_type -> fdim.msg.SeqsInfoResp
-	40,  // 77: fdim.msg.msg.GetMsgByConversationIDs:output_type -> fdim.msg.GetMsgByConversationIDsResp
-	42,  // 78: fdim.msg.msg.GetConversationMaxSeq:output_type -> fdim.msg.GetConversationMaxSeqResp
-	100, // 79: fdim.msg.msg.PullMessageBySeqs:output_type -> fdim.sdkws.PullMessageBySeqsResp
-	69,  // 80: fdim.msg.msg.GetSeqMessage:output_type -> fdim.msg.GetSeqMessageResp
-	55,  // 81: fdim.msg.msg.SearchMessage:output_type -> fdim.msg.SearchMessageResp
-	7,   // 82: fdim.msg.msg.SendMsg:output_type -> fdim.msg.SendMsgResp
-	9,   // 83: fdim.msg.msg.SendSimpleMsg:output_type -> fdim.msg.SendSimpleMsgResp
-	66,  // 84: fdim.msg.msg.SetUserConversationsMinSeq:output_type -> fdim.msg.SetUserConversationsMinSeqResp
-	27,  // 85: fdim.msg.msg.ClearConversationsMsg:output_type -> fdim.msg.ClearConversationsMsgResp
-	29,  // 86: fdim.msg.msg.UserClearAllMsg:output_type -> fdim.msg.UserClearAllMsgResp
-	31,  // 87: fdim.msg.msg.DeleteMsgs:output_type -> fdim.msg.DeleteMsgsResp
-	35,  // 88: fdim.msg.msg.DeleteMsgPhysicalBySeq:output_type -> fdim.msg.DeleteMsgPhysicalBySeqResp
-	33,  // 89: fdim.msg.msg.DeleteMsgPhysical:output_type -> fdim.msg.DeleteMsgPhysicalResp
-	11,  // 90: fdim.msg.msg.SetSendMsgStatus:output_type -> fdim.msg.SetSendMsgStatusResp
-	13,  // 91: fdim.msg.msg.GetSendMsgStatus:output_type -> fdim.msg.GetSendMsgStatusResp
-	18,  // 92: fdim.msg.msg.RevokeMsg:output_type -> fdim.msg.RevokeMsgResp
-	20,  // 93: fdim.msg.msg.MarkMsgsAsRead:output_type -> fdim.msg.MarkMsgsAsReadResp
-	22,  // 94: fdim.msg.msg.MarkConversationAsRead:output_type -> fdim.msg.MarkConversationAsReadResp
-	24,  // 95: fdim.msg.msg.SetConversationHasReadSeq:output_type -> fdim.msg.SetConversationHasReadSeqResp
-	45,  // 96: fdim.msg.msg.GetConversationsHasReadAndMaxSeq:output_type -> fdim.msg.GetConversationsHasReadAndMaxSeqResp
-	48,  // 97: fdim.msg.msg.GetActiveUser:output_type -> fdim.msg.GetActiveUserResp
-	51,  // 98: fdim.msg.msg.GetActiveGroup:output_type -> fdim.msg.GetActiveGroupResp
-	60,  // 99: fdim.msg.msg.GetServerTime:output_type -> fdim.msg.GetServerTimeResp
-	62,  // 100: fdim.msg.msg.ClearMsg:output_type -> fdim.msg.ClearMsgResp
-	64,  // 101: fdim.msg.msg.DestructMsgs:output_type -> fdim.msg.DestructMsgsResp
-	72,  // 102: fdim.msg.msg.GetActiveConversation:output_type -> fdim.msg.GetActiveConversationResp
-	74,  // 103: fdim.msg.msg.SetUserConversationMaxSeq:output_type -> fdim.msg.SetUserConversationMaxSeqResp
-	76,  // 104: fdim.msg.msg.SetUserConversationMinSeq:output_type -> fdim.msg.SetUserConversationMinSeqResp
-	78,  // 105: fdim.msg.msg.GetLastMessageSeqByTime:output_type -> fdim.msg.GetLastMessageSeqByTimeResp
-	80,  // 106: fdim.msg.msg.GetLastMessage:output_type -> fdim.msg.GetLastMessageResp
-	74,  // [74:107] is the sub-list for method output_type
-	41,  // [41:74] is the sub-list for method input_type
+	81,  // 74: fdim.msg.msg.GetGroupMsgReadUsers:input_type -> fdim.msg.GetGroupMsgReadUsersReq
+	101, // 75: fdim.msg.msg.GetMaxSeq:output_type -> fdim.sdkws.GetMaxSeqResp
+	38,  // 76: fdim.msg.msg.GetMaxSeqs:output_type -> fdim.msg.SeqsInfoResp
+	38,  // 77: fdim.msg.msg.GetHasReadSeqs:output_type -> fdim.msg.SeqsInfoResp
+	40,  // 78: fdim.msg.msg.GetMsgByConversationIDs:output_type -> fdim.msg.GetMsgByConversationIDsResp
+	42,  // 79: fdim.msg.msg.GetConversationMaxSeq:output_type -> fdim.msg.GetConversationMaxSeqResp
+	102, // 80: fdim.msg.msg.PullMessageBySeqs:output_type -> fdim.sdkws.PullMessageBySeqsResp
+	69,  // 81: fdim.msg.msg.GetSeqMessage:output_type -> fdim.msg.GetSeqMessageResp
+	55,  // 82: fdim.msg.msg.SearchMessage:output_type -> fdim.msg.SearchMessageResp
+	7,   // 83: fdim.msg.msg.SendMsg:output_type -> fdim.msg.SendMsgResp
+	9,   // 84: fdim.msg.msg.SendSimpleMsg:output_type -> fdim.msg.SendSimpleMsgResp
+	66,  // 85: fdim.msg.msg.SetUserConversationsMinSeq:output_type -> fdim.msg.SetUserConversationsMinSeqResp
+	27,  // 86: fdim.msg.msg.ClearConversationsMsg:output_type -> fdim.msg.ClearConversationsMsgResp
+	29,  // 87: fdim.msg.msg.UserClearAllMsg:output_type -> fdim.msg.UserClearAllMsgResp
+	31,  // 88: fdim.msg.msg.DeleteMsgs:output_type -> fdim.msg.DeleteMsgsResp
+	35,  // 89: fdim.msg.msg.DeleteMsgPhysicalBySeq:output_type -> fdim.msg.DeleteMsgPhysicalBySeqResp
+	33,  // 90: fdim.msg.msg.DeleteMsgPhysical:output_type -> fdim.msg.DeleteMsgPhysicalResp
+	11,  // 91: fdim.msg.msg.SetSendMsgStatus:output_type -> fdim.msg.SetSendMsgStatusResp
+	13,  // 92: fdim.msg.msg.GetSendMsgStatus:output_type -> fdim.msg.GetSendMsgStatusResp
+	18,  // 93: fdim.msg.msg.RevokeMsg:output_type -> fdim.msg.RevokeMsgResp
+	20,  // 94: fdim.msg.msg.MarkMsgsAsRead:output_type -> fdim.msg.MarkMsgsAsReadResp
+	22,  // 95: fdim.msg.msg.MarkConversationAsRead:output_type -> fdim.msg.MarkConversationAsReadResp
+	24,  // 96: fdim.msg.msg.SetConversationHasReadSeq:output_type -> fdim.msg.SetConversationHasReadSeqResp
+	45,  // 97: fdim.msg.msg.GetConversationsHasReadAndMaxSeq:output_type -> fdim.msg.GetConversationsHasReadAndMaxSeqResp
+	48,  // 98: fdim.msg.msg.GetActiveUser:output_type -> fdim.msg.GetActiveUserResp
+	51,  // 99: fdim.msg.msg.GetActiveGroup:output_type -> fdim.msg.GetActiveGroupResp
+	60,  // 100: fdim.msg.msg.GetServerTime:output_type -> fdim.msg.GetServerTimeResp
+	62,  // 101: fdim.msg.msg.ClearMsg:output_type -> fdim.msg.ClearMsgResp
+	64,  // 102: fdim.msg.msg.DestructMsgs:output_type -> fdim.msg.DestructMsgsResp
+	72,  // 103: fdim.msg.msg.GetActiveConversation:output_type -> fdim.msg.GetActiveConversationResp
+	74,  // 104: fdim.msg.msg.SetUserConversationMaxSeq:output_type -> fdim.msg.SetUserConversationMaxSeqResp
+	76,  // 105: fdim.msg.msg.SetUserConversationMinSeq:output_type -> fdim.msg.SetUserConversationMinSeqResp
+	78,  // 106: fdim.msg.msg.GetLastMessageSeqByTime:output_type -> fdim.msg.GetLastMessageSeqByTimeResp
+	80,  // 107: fdim.msg.msg.GetLastMessage:output_type -> fdim.msg.GetLastMessageResp
+	82,  // 108: fdim.msg.msg.GetGroupMsgReadUsers:output_type -> fdim.msg.GetGroupMsgReadUsersResp
+	75,  // [75:109] is the sub-list for method output_type
+	41,  // [41:75] is the sub-list for method input_type
 	41,  // [41:41] is the sub-list for extension type_name
 	41,  // [41:41] is the sub-list for extension extendee
 	0,   // [0:41] is the sub-list for field type_name
@@ -4827,7 +4953,7 @@ func file_msg_msg_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_msg_msg_proto_rawDesc), len(file_msg_msg_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   90,
+			NumMessages:   92,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

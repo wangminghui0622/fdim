@@ -352,3 +352,21 @@ func GetServerTimeHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		}
 	}
 }
+
+func GetGroupMsgReadUsersHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req types.GetGroupMsgReadUsersReq
+		if err := httpx.Parse(r, &req); err != nil {
+			ParamError(w, err)
+			return
+		}
+
+		l := logic.NewGetGroupMsgReadUsersLogic(r.Context(), svcCtx)
+		resp, err := l.GetGroupMsgReadUsers(&req)
+		if err != nil {
+			ServerError(w, err)
+		} else {
+			Success(w, resp)
+		}
+	}
+}

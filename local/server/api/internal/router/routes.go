@@ -706,6 +706,12 @@ func RegisterHandlers(server *rest.Server, ctx *svc.ServiceContext) {
 		Handler: handler.GetServerTimeHandler(ctx),
 	})
 
+	server.AddRoute(rest.Route{
+		Method:  "POST",
+		Path:    "/msg/get_group_msg_read_users",
+		Handler: handler.GetGroupMsgReadUsersHandler(ctx),
+	})
+
 	// Third 相关路由
 	server.AddRoute(rest.Route{
 		Method:  "GET",

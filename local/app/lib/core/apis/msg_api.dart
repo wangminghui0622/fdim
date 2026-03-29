@@ -94,4 +94,48 @@ class MsgApi {
       'conversationIDs': [conversationID],
     });
   }
+
+  /// 获取群消息已读/未读成员列表
+  static Future<Map<String, List<GroupMsgReadUser>>> getGroupMsgReadUsers({
+    required String groupID,
+    required String conversationID,
+    required int seq,
+  }) async {
+    final data = await HttpClient.post('/msg/get_group_msg_read_users', data: {
+      'groupID': groupID,
+      'conversationID': conversationID,
+      'seq': seq,
+    });
+    if (data == null) {
+      return {'readUsers': [], 'unreadUsers': []};
+    }
+    final readUsers = (data['readUsers'] as List? ?? [])
+        .map((e) => GroupMsgReadUser.fromJson(e as Map<String, dynamic>))
+        .toList();
+    final unreadUsers = (data['unreadUsers'] as List? ?? [])
+        .map((e) => GroupMsgReadUser.fromJson(e as Map<String, dynamic>))
+        .toList();
+    return {'readUsers': readUsers, 'unreadUsers': unreadUsers};
+  }
+}
+
+/// 群消息已读用户信息
+class GroupMsgReadUser {
+  final String userID;
+  final String nickname;
+  final String faceURL;
+
+  GroupMsgReadUser({
+    required this.userID,
+    required this.nickname,
+    required this.faceURL,
+  });
+
+  factory GroupMsgReadUser.fromJson(Map<String, dynamic> json) {
+    return GroupMsgReadUser(
+      userID: json['userID'] ?? '',
+      nickname: json['nickname'] ?? '',
+      faceURL: json['faceURL'] ?? '',
+    );
+  }
 }

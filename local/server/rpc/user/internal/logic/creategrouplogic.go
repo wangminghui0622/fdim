@@ -2,7 +2,9 @@ package logic
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"fdim/pkg/authverify"
@@ -11,8 +13,12 @@ import (
 	"fdim/pkg/mcontext"
 	"fdim/pkg/model"
 	"fdim/pkg/util"
+	"fdim/pkg/util/idutil"
 	"fdim/pkg/webhook"
 	"fdim/protocol/conversation"
+	protoconstant "fdim/protocol/constant"
+	"fdim/protocol/msg"
+	"fdim/protocol/sdkws"
 	"fdim/protocol/user"
 	"fdim/rpc/user/internal/svc"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -216,28 +222,44 @@ func (l *CreateGroupLogic) CreateGroup(req *user.CreateGroupReq) (*user.CreateGr
 		resp.GroupInfo.MemberCount = memberCount
 	}
 
-	// ΪгԱȺĻỰٷһ£
-	if l.svcCtx.ConversationClient != nil {
-		go func() {
-			ctx2, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
+	// 为所有成员创建群聊会话，然后发送欢迎消息
+	// 使用单个 goroutine 确保顺序：先创建会话，再发送欢迎消息
+	// 注意：通过参数传递变量避免闭包问题
+	go func(gID string, uIDs []string, ownerID string, memberIDs []string) {
+		ctx2, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		logx.Infof("Starting async group setup: groupID=%s, userIDs=%v", gID, uIDs)
+
+		// 1. 先创建群聊会话
+		if l.svcCtx.ConversationClient != nil {
 			_, err := l.svcCtx.ConversationClient.CreateGroupChatConversations(ctx2,
 				&conversation.CreateGroupChatConversationsReq{
-					GroupID: groupID,
-					UserIDs: userIDs,
+					GroupID: gID,
+					UserIDs: uIDs,
 				})
 			if err != nil {
-				logx.Errorf("CreateGroupChatConversations failed: groupID=%s, error=%v", groupID, err)
+				logx.Errorf("CreateGroupChatConversations failed: groupID=%s, error=%v", gID, err)
+				return
 			}
-		}()
-	}
+			logx.Infof("CreateGroupChatConversations success: groupID=%s, userIDs=%v", gID, uIDs)
+		} else {
+			logx.Errorf("ConversationClient is nil, cannot create group conversations")
+			return
+		}
 
-	// ??????????
-	if l.svcCtx.GroupNotification != nil {
-		l.svcCtx.GroupNotification.GroupCreatedNotification(l.ctx, groupID, req.OwnerUserID, userIDs)
-	}
+		// 2. 发送群创建通知
+		if l.svcCtx.GroupNotification != nil {
+			l.svcCtx.GroupNotification.GroupCreatedNotification(ctx2, gID, ownerID, uIDs)
+		}
 
-	// Webhook AfterCreateGroup ???
+		// 3. 发送欢迎消息：欢迎 B, C, D 加入群聊
+		if l.svcCtx.MsgClient != nil && len(memberIDs) > 0 {
+			l.sendWelcomeMessage(ctx2, gID, ownerID, memberIDs)
+		}
+	}(groupID, userIDs, req.OwnerUserID, req.MemberUserIDs)
+
+	// Webhook AfterCreateGroup 回调
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackAfterCreateGroupReq{
 			CallbackCommand: webhook.CallbackAfterCreateGroupCommand,
@@ -254,4 +276,56 @@ func (l *CreateGroupLogic) CreateGroup(req *user.CreateGroupReq) (*user.CreateGr
 	}
 
 	return resp, nil
+}
+
+// sendWelcomeMessage 发送欢迎消息：欢迎 B, C, D 加入群聊
+func (l *CreateGroupLogic) sendWelcomeMessage(ctx context.Context, groupID string, ownerUserID string, memberUserIDs []string) {
+	// 获取成员昵称
+	nicknames := make([]string, 0, len(memberUserIDs))
+	users, err := l.svcCtx.UserDB.Find(ctx, memberUserIDs)
+	if err != nil {
+		logx.Errorf("sendWelcomeMessage: failed to get user info: %v", err)
+		// 如果获取失败，使用 userID 作为昵称
+		nicknames = memberUserIDs
+	} else {
+		userMap := make(map[string]string)
+		for _, u := range users {
+			userMap[u.UserID] = u.Nickname
+		}
+		for _, uid := range memberUserIDs {
+			if nick, ok := userMap[uid]; ok && nick != "" {
+				nicknames = append(nicknames, nick)
+			} else {
+				nicknames = append(nicknames, uid)
+			}
+		}
+	}
+
+	// 构建欢迎消息内容
+	welcomeText := fmt.Sprintf("欢迎 %s 加入群聊", strings.Join(nicknames, ", "))
+	contentBytes, _ := json.Marshal(map[string]string{"content": welcomeText})
+
+	// 发送群消息
+	now := time.Now().UnixMilli()
+	clientMsgID := idutil.GetMsgIDByMD5(ownerUserID + groupID + fmt.Sprintf("%d", now))
+	
+	sendReq := &msg.SendMsgReq{
+		MsgData: &sdkws.MsgData{
+			SendID:      ownerUserID,
+			GroupID:     groupID,
+			ClientMsgID: clientMsgID,
+			SessionType: protoconstant.ReadGroupChatType,
+			ContentType: protoconstant.Text,
+			Content:     contentBytes,
+			CreateTime:  now,
+			SenderNickname: "系统消息",
+		},
+	}
+
+	_, err = l.svcCtx.MsgClient.SendMsg(ctx, sendReq)
+	if err != nil {
+		logx.Errorf("sendWelcomeMessage: failed to send welcome message: %v", err)
+	} else {
+		logx.Infof("sendWelcomeMessage: sent welcome message to group %s: %s", groupID, welcomeText)
+	}
 }

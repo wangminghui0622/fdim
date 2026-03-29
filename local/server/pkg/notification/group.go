@@ -22,7 +22,7 @@ func NewGroupNotificationSender(conf *config.Notification, opts ...NotificationS
 	}
 }
 
-// GroupCreatedNotification Ⱥ鴴֪ͨ
+// GroupCreatedNotification 群创建通知
 func (g *GroupNotificationSender) GroupCreatedNotification(ctx context.Context, groupID string, ownerUserID string, memberUserIDs []string) {
 	opUserID := mcontext.GetOpUserID(ctx)
 	if opUserID == "" {
@@ -37,10 +37,8 @@ func (g *GroupNotificationSender) GroupCreatedNotification(ctx context.Context, 
 			UserID: opUserID,
 		},
 	}
-	// ͸ȺԱ
-	for _, memberID := range memberUserIDs {
-		g.Notification(ctx, opUserID, memberID, protoconstant.GroupCreatedNotification, tips)
-	}
+	// 发送给群（所有成员都会收到）
+	g.NotificationWithSessionType(ctx, opUserID, groupID, protoconstant.GroupCreatedNotification, constant.SuperGroupChatType, tips)
 }
 
 // GroupInfoSetNotification ȺϢ֪ͨ

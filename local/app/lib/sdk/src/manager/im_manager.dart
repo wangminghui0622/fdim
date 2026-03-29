@@ -361,6 +361,8 @@ class IMManager {
         if (detail != null) {
           final info = GroupInfo.fromJson(detail['group'] ?? detail);
           groupManager.listener.joinedGroupAdded(info);
+          // 刷新会话列表，确保所有成员都能看到新群会话
+          _syncConversationsFromServer();
         }
         break;
       case MessageType.groupInfoSetNotification:

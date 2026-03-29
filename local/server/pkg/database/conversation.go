@@ -43,16 +43,31 @@ func NewConversationDatabase(db *MongoDB) *ConversationDatabase {
 	}
 }
 
-// Create Ự
+// Create 创建会话（使用 upsert 避免重复插入错误）
 func (d *ConversationDatabase) Create(ctx context.Context, conversations []*model.Conversation) error {
 	if len(conversations) == 0 {
 		return nil
 	}
-	docs := make([]interface{}, len(conversations))
+	// 使用 BulkWrite 和 upsert 来避免唯一索引冲突
+	models := make([]mongo.WriteModel, len(conversations))
 	for i, conv := range conversations {
-		docs[i] = conv
+		filter := bson.M{
+			"owner_user_id":   conv.OwnerUserID,
+			"conversation_id": conv.ConversationID,
+		}
+		update := bson.M{
+			"$setOnInsert": bson.M{
+				"owner_user_id":     conv.OwnerUserID,
+				"conversation_id":   conv.ConversationID,
+				"conversation_type": conv.ConversationType,
+				"group_id":          conv.GroupID,
+				"user_id":           conv.UserID,
+				"create_time":       conv.CreateTime,
+			},
+		}
+		models[i] = mongo.NewUpdateOneModel().SetFilter(filter).SetUpdate(update).SetUpsert(true)
 	}
-	_, err := d.collection.InsertMany(ctx, docs)
+	_, err := d.collection.BulkWrite(ctx, models)
 	return err
 }
 

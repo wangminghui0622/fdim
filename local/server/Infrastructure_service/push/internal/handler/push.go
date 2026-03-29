@@ -136,14 +136,17 @@ func (h *PushHandler) handlePush(ctx context.Context) {
 							logx.Errorf("Failed to get group member user IDs: %v", err)
 						} else if len(memberResp.UserIDs) > 0 {
 							pushToUserIDs := memberResp.UserIDs
+							logx.Infof("Group push: groupID=%s, members=%v, sendID=%s", groupID, pushToUserIDs, pushMsg.MsgData.SendID)
 
-							// 
+							// 在线推送
 							batchResp, err := h.svcCtx.MessageGatewayClient.OnlineBatchPushOneMsg(ctx, &msggateway.OnlineBatchPushOneMsgReq{
 								MsgData:       pushMsg.MsgData,
 								PushToUserIDs: pushToUserIDs,
 							})
 							if err != nil {
 								logx.Errorf("Failed to push group message online: %v", err)
+							} else {
+								logx.Infof("Group online push completed: %d results", len(batchResp.SinglePushResult))
 							}
 
 							// ͻˣҳδɹ͵ûųߣ

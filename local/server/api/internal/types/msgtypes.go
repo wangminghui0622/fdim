@@ -253,3 +253,22 @@ type GetServerTimeResp struct {
 	BaseResp
 	ServerTime int64 `json:"serverTime"`
 }
+
+// GetGroupMsgReadUsers 获取群消息已读/未读成员列表
+type GetGroupMsgReadUsersReq struct {
+	GroupID        string `json:"groupID"`
+	ConversationID string `json:"conversationID"`
+	Seq            int64  `json:"seq"`
+}
+
+type GroupMsgReadUser struct {
+	UserID   string `json:"userID"`
+	Nickname string `json:"nickname"`
+	FaceURL  string `json:"faceURL"`
+}
+
+type GetGroupMsgReadUsersResp struct {
+	BaseResp
+	ReadUsers   []GroupMsgReadUser `json:"readUsers"`
+	UnreadUsers []GroupMsgReadUser `json:"unreadUsers"`
+}
