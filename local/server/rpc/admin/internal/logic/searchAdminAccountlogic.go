@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -25,7 +25,7 @@ func NewSearchAdminAccountLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 }
 
 func (l *SearchAdminAccountLogic) SearchAdminAccount(req *admin.SearchAdminAccountReq) (*admin.SearchAdminAccountResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if req.Pagination == nil {
 		return nil, errs.ErrArgs.WrapMsg("pagination is empty")
 	}
@@ -36,14 +36,14 @@ func (l *SearchAdminAccountLogic) SearchAdminAccount(req *admin.SearchAdminAccou
 		return nil, errs.ErrArgs.WrapMsg("pageNumber is empty")
 	}
 
-	// 2. 搜索管理员账户
+	// 2. Ա˻
 	total, adminAccounts, err := l.svcCtx.AdminDB.SearchAdminAccount(l.ctx, req.Pagination)
 	if err != nil {
 		l.Errorf("SearchAdminAccount failed: %v", err)
 		return nil, fmt.Errorf("failed to search admin account: %w", err)
 	}
 
-	// 3. 转换为响应格式
+	// 3. תΪӦʽ
 	accounts := make([]*admin.GetAdminInfoResp, 0, len(adminAccounts))
 	for _, adminAccount := range adminAccounts {
 		accounts = append(accounts, &admin.GetAdminInfoResp{

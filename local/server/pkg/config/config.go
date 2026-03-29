@@ -1,17 +1,3 @@
-﻿// Copyright © 2023 OpenIM. All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package config
 
 import (
@@ -908,29 +894,29 @@ func (a *AllConfig) GetConfigNames() []string {
 }
 
 const (
-	FileName                         = "config.yaml"
-	DiscoveryConfigFilename          = "discovery.yml"
-	NatsConfigFileName               = "nats.yml"
-	LocalCacheConfigFileName         = "local-cache.yml"
-	LogConfigFileName                = "log.yml"
-	MinioConfigFileName              = "minio.yml"
-	MongodbConfigFileName            = "mongodb.yml"
-	NotificationFileName             = "notification.yml"
-	OpenIMAPICfgFileName             = "openim-api.yml"
-	OpenIMCronTaskCfgFileName        = "openim-crontask.yml"
-	OpenIMMsgGatewayCfgFileName      = "openim-msggateway.yml"
-	OpenIMMsgTransferCfgFileName     = "openim-msgtransfer.yml"
-	OpenIMPushCfgFileName            = "openim-push.yml"
-	OpenIMRPCAuthCfgFileName         = "openim-rpc-auth.yml"
-	OpenIMRPCConversationCfgFileName = "openim-rpc-conversation.yml"
-	OpenIMRPCFriendCfgFileName       = "openim-rpc-friend.yml"
-	OpenIMRPCGroupCfgFileName        = "openim-rpc-user.yml"
-	OpenIMRPCMsgCfgFileName          = "openim-rpc-msg.yml"
-	OpenIMRPCThirdCfgFileName        = "openim-rpc-third.yml"
-	OpenIMRPCUserCfgFileName         = "openim-rpc-user.yml"
-	RedisConfigFileName              = "redis.yml"
-	ShareFileName                    = "share.yml"
-	WebhooksConfigFileName           = "webhooks.yml"
+	FileName                       = "config.yaml"
+	DiscoveryConfigFilename        = "discovery.yml"
+	NatsConfigFileName             = "nats.yml"
+	LocalCacheConfigFileName       = "local-cache.yml"
+	LogConfigFileName              = "log.yml"
+	MinioConfigFileName            = "minio.yml"
+	MongodbConfigFileName          = "mongodb.yml"
+	NotificationFileName           = "notification.yml"
+	FDIMAPICfgFileName             = "FDIM-api.yml"
+	FDIMCronTaskCfgFileName        = "FDIM-crontask.yml"
+	FDIMMsgGatewayCfgFileName      = "FDIM-msggateway.yml"
+	FDIMMsgTransferCfgFileName     = "FDIM-msgtransfer.yml"
+	FDIMPushCfgFileName            = "FDIM-push.yml"
+	FDIMRPCAuthCfgFileName         = "FDIM-rpc-auth.yml"
+	FDIMRPCConversationCfgFileName = "FDIM-rpc-conversation.yml"
+	FDIMRPCFriendCfgFileName       = "FDIM-rpc-friend.yml"
+	FDIMRPCGroupCfgFileName        = "FDIM-rpc-user.yml"
+	FDIMRPCMsgCfgFileName          = "FDIM-rpc-msg.yml"
+	FDIMRPCThirdCfgFileName        = "FDIM-rpc-third.yml"
+	FDIMRPCUserCfgFileName         = "FDIM-rpc-user.yml"
+	RedisConfigFileName            = "redis.yml"
+	ShareFileName                  = "share.yml"
+	WebhooksConfigFileName         = "webhooks.yml"
 )
 
 func (d *Discovery) GetConfigFileName() string {
@@ -962,51 +948,51 @@ func (n *Notification) GetConfigFileName() string {
 }
 
 func (a *API) GetConfigFileName() string {
-	return OpenIMAPICfgFileName
+	return FDIMAPICfgFileName
 }
 
 func (ct *CronTask) GetConfigFileName() string {
-	return OpenIMCronTaskCfgFileName
+	return FDIMCronTaskCfgFileName
 }
 
 func (mg *MsgGateway) GetConfigFileName() string {
-	return OpenIMMsgGatewayCfgFileName
+	return FDIMMsgGatewayCfgFileName
 }
 
 func (mt *MsgTransfer) GetConfigFileName() string {
-	return OpenIMMsgTransferCfgFileName
+	return FDIMMsgTransferCfgFileName
 }
 
 func (p *Push) GetConfigFileName() string {
-	return OpenIMPushCfgFileName
+	return FDIMPushCfgFileName
 }
 
 func (a *Auth) GetConfigFileName() string {
-	return OpenIMRPCAuthCfgFileName
+	return FDIMRPCAuthCfgFileName
 }
 
 func (c *Conversation) GetConfigFileName() string {
-	return OpenIMRPCConversationCfgFileName
+	return FDIMRPCConversationCfgFileName
 }
 
 func (f *Friend) GetConfigFileName() string {
-	return OpenIMRPCFriendCfgFileName
+	return FDIMRPCFriendCfgFileName
 }
 
 func (g *Group) GetConfigFileName() string {
-	return OpenIMRPCGroupCfgFileName
+	return FDIMRPCGroupCfgFileName
 }
 
 func (m *Msg) GetConfigFileName() string {
-	return OpenIMRPCMsgCfgFileName
+	return FDIMRPCMsgCfgFileName
 }
 
 func (t *Third) GetConfigFileName() string {
-	return OpenIMRPCThirdCfgFileName
+	return FDIMRPCThirdCfgFileName
 }
 
 func (u *User) GetConfigFileName() string {
-	return OpenIMRPCUserCfgFileName
+	return FDIMRPCUserCfgFileName
 }
 
 func (r *Redis) GetConfigFileName() string {

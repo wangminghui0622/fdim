@@ -30,6 +30,6 @@ func (l *ProcessUserCommandGetLogic) ProcessUserCommandGet(req *user.ProcessUser
 		return nil, err
 	}
 
-	// TODO: 实现 GetUserCommands 数据库方法
+	// TODO: 实现 GetUserCommands 数据库方?
 	return nil, fmt.Errorf("ProcessUserCommandGet not fully implemented yet: GetUserCommands database method needed")
 }

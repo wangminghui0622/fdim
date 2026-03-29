@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -26,7 +26,7 @@ func NewSearchUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Se
 }
 
 func (l *SearchUserInfoLogic) SearchUserInfo(req *chat.SearchUserInfoReq) (*chat.SearchUserInfoResp, error) {
-	// 1. 如果指定了userIDs，直接查找这些用户
+	// 1. ָuserIDsֱӲЩû
 	if len(req.UserIDs) > 0 {
 		userInfos, err := l.svcCtx.ChatDB.FindUserFullInfo(l.ctx, req.UserIDs)
 		if err != nil {
@@ -34,7 +34,7 @@ func (l *SearchUserInfoLogic) SearchUserInfo(req *chat.SearchUserInfoReq) (*chat
 			return nil, errs.WrapMsg(err, "failed to find user info")
 		}
 
-		// 过滤性别
+		// Ա
 		var filteredInfos []*database.UserFullInfo
 		if len(req.Genders) > 0 {
 			genderMap := make(map[int32]bool)
@@ -49,7 +49,7 @@ func (l *SearchUserInfoLogic) SearchUserInfo(req *chat.SearchUserInfoReq) (*chat
 			userInfos = filteredInfos
 		}
 
-		// 转换为protobuf格式
+		// תΪprotobufʽ
 		users := make([]*sdkws.ChatUserFullInfo, 0, len(userInfos))
 		for _, info := range userInfos {
 			users = append(users, &sdkws.ChatUserFullInfo{
@@ -77,14 +77,14 @@ func (l *SearchUserInfoLogic) SearchUserInfo(req *chat.SearchUserInfoReq) (*chat
 		}, nil
 	}
 
-	// 2. 使用关键词搜索
+	// 2. ʹùؼ
 	total, userInfos, err := l.svcCtx.ChatDB.SearchUserFullInfo(l.ctx, req.Keyword, req.Pagination)
 	if err != nil {
 		l.Errorf("SearchUserFullInfo failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to search user info")
 	}
 
-	// 3. 过滤性别
+	// 3. Ա
 	var filteredInfos []*database.UserFullInfo
 	if len(req.Genders) > 0 {
 		genderMap := make(map[int32]bool)
@@ -99,7 +99,7 @@ func (l *SearchUserInfoLogic) SearchUserInfo(req *chat.SearchUserInfoReq) (*chat
 		userInfos = filteredInfos
 	}
 
-	// 4. 转换为protobuf格式
+	// 4. תΪprotobufʽ
 	users := make([]*sdkws.ChatUserFullInfo, 0, len(userInfos))
 	for _, info := range userInfos {
 		users = append(users, &sdkws.ChatUserFullInfo{

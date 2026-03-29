@@ -30,7 +30,7 @@ func (l *UpdateNotificationAccountInfoLogic) UpdateNotificationAccountInfo(req *
 		return nil, err
 	}
 
-	// 检查用户是否存在
+	// 检查用户是否存?
 	if _, err := l.svcCtx.UserDB.FindWithError(l.ctx, []string{req.UserID}); err != nil {
 		return nil, fmt.Errorf("user not found")
 	}

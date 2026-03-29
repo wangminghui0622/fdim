@@ -1,4 +1,4 @@
-﻿package database
+package database
 
 import (
 	"context"
@@ -9,16 +9,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// BotDatabase Bot数据库接口
+// BotDatabase Botݿӿ
 type BotDatabase interface {
-	// Agent管理
+	// Agent
 	CreateAgent(ctx context.Context, agent *Agent) error
 	UpdateAgent(ctx context.Context, userID string, update map[string]interface{}) error
 	PageFindAgent(ctx context.Context, userIDs []string, pagination *sdkws.RequestPagination) (int64, []*Agent, error)
 	DeleteAgent(ctx context.Context, userIDs []string) error
 }
 
-// Agent Bot代理模型
+// Agent Botģ
 type Agent struct {
 	UserID     string `bson:"user_id"`
 	Nickname   string `bson:"nickname"`
@@ -31,7 +31,7 @@ type Agent struct {
 	CreateTime int64  `bson:"create_time"`
 }
 
-// NewBotDatabase 创建Bot数据库实例
+// NewBotDatabase Botݿʵ
 func NewBotDatabase(mongoDB *MongoDB) BotDatabase {
 	return &botDatabase{
 		collection: mongoDB.GetCollection("bot_agent"),
@@ -53,13 +53,13 @@ func (d *botDatabase) UpdateAgent(ctx context.Context, userID string, update map
 }
 
 func (d *botDatabase) PageFindAgent(ctx context.Context, userIDs []string, pagination *sdkws.RequestPagination) (int64, []*Agent, error) {
-	// 构建查询条件
+	// ѯ
 	filter := bson.M{}
 	if len(userIDs) > 0 {
 		filter["user_id"] = bson.M{"$in": userIDs}
 	}
 
-	// 计算分页
+	// ҳ
 	offset := int64(0)
 	limit := int64(10)
 	if pagination != nil {
@@ -71,13 +71,13 @@ func (d *botDatabase) PageFindAgent(ctx context.Context, userIDs []string, pagin
 		}
 	}
 
-	// 获取总数
+	// ȡ
 	total, err := d.collection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().
 		SetSkip(offset).
 		SetLimit(limit).

@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,12 +24,12 @@ func NewDelDefaultFriendLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *DelDefaultFriendLogic) DelDefaultFriend(req *admin.DelDefaultFriendReq) (*admin.DelDefaultFriendResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.UserIDs) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("userIDs cannot be empty")
 	}
 
-	// 2. 检查是否存在
+	// 2. Ƿ
 	exists, err := l.svcCtx.AdminDB.FindDefaultFriend(l.ctx, req.UserIDs)
 	if err != nil {
 		l.Errorf("FindDefaultFriend failed: %v", err)
@@ -39,7 +39,7 @@ func (l *DelDefaultFriendLogic) DelDefaultFriend(req *admin.DelDefaultFriendReq)
 		return nil, errs.ErrRecordNotFound.WrapMsg("no default friends found for the given userIDs")
 	}
 
-	// 3. 删除默认好友
+	// 3. ɾĬϺ
 	if err := l.svcCtx.AdminDB.DelDefaultFriend(l.ctx, req.UserIDs); err != nil {
 		l.Errorf("DelDefaultFriend failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to delete default friends")

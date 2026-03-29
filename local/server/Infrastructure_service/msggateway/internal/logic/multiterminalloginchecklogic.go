@@ -32,17 +32,17 @@ func (l *MultiTerminalLoginCheckLogic) MultiTerminalLoginCheck(req *msggateway.M
 
 	l.Infof("[Multi-Terminal Check] Checking login - userID=%s, platformID=%d", userID, platformID)
 
-	// 获取用户的所有会话
+	// 获取用户的所有会?
 	sessions := l.svcCtx.WsServer.GetUserSessions(userID)
 
 	// 如果用户已经在其他平台登录，需要踢掉旧连接
 	if len(sessions) > 0 {
-		// 修复：正确转换 platformID 为字符串
+		// 修复：正确转?platformID 为字符串
 		platformIDStr := strconv.Itoa(int(platformID))
 		kickedCount := 0
 		for existingPlatformIDStr := range sessions {
 			if existingPlatformIDStr != platformIDStr {
-				// 踢掉旧连接
+				// 踢掉旧连?
 				l.Infof("[Multi-Terminal Check] Kicking old session - userID=%s, oldPlatform=%s, newPlatform=%s",
 					userID, existingPlatformIDStr, platformIDStr)
 				if err := l.svcCtx.WsServer.KickUserOffline(userID, existingPlatformIDStr); err != nil {

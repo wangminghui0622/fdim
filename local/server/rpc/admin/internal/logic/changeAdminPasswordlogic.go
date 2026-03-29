@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -25,7 +25,7 @@ func NewChangeAdminPasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext
 }
 
 func (l *ChangeAdminPasswordLogic) ChangeAdminPassword(req *admin.ChangeAdminPasswordReq) (*admin.ChangeAdminPasswordResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if req.UserID == "" {
 		return nil, errs.ErrArgs.WrapMsg("userID is empty")
 	}
@@ -39,19 +39,19 @@ func (l *ChangeAdminPasswordLogic) ChangeAdminPassword(req *admin.ChangeAdminPas
 		return nil, errs.ErrArgs.WrapMsg("currentPassword is equal to newPassword")
 	}
 
-	// 2. 获取管理员信息
+	// 2. ȡԱϢ
 	adminInfo, err := l.svcCtx.AdminDB.GetAdminUserID(l.ctx, req.UserID)
 	if err != nil {
 		l.Errorf("GetAdminUserID failed: %v", err)
 		return nil, errs.ErrArgs.WrapMsg("admin not found")
 	}
 
-	// 3. 验证当前密码
+	// 3. ֤ǰ
 	if adminInfo.Password != req.CurrentPassword {
 		return nil, errs.ErrArgs.WrapMsg("password error")
 	}
 
-	// 4. 更新密码
+	// 4. 
 	if err := l.svcCtx.AdminDB.ChangePassword(l.ctx, req.UserID, req.NewPassword); err != nil {
 		l.Errorf("ChangePassword failed: %v", err)
 		return nil, fmt.Errorf("failed to change password: %w", err)

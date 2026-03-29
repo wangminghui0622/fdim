@@ -1,4 +1,4 @@
-﻿package convert
+package convert
 
 import (
 	"time"
@@ -7,8 +7,8 @@ import (
 	"fdim/protocol/sdkws"
 )
 
-// GroupRequestDB2Pb 将数据库群组申请模型转换为 Protocol Buffer 格式
-// 注意：sdkws.GroupRequest 需要 UserInfo 和 GroupInfo 对象，而不是直接字段
+// GroupRequestDB2Pb ݿȺģתΪ Protocol Buffer ʽ
+// ע⣺sdkws.GroupRequest Ҫ UserInfo  GroupInfo 󣬶ֱֶ
 func GroupRequestDB2Pb(req *model.GroupRequest, userInfo *sdkws.PublicUserInfo, groupInfo *sdkws.GroupInfo) *sdkws.GroupRequest {
 	return &sdkws.GroupRequest{
 		UserInfo:      userInfo,
@@ -25,7 +25,7 @@ func GroupRequestDB2Pb(req *model.GroupRequest, userInfo *sdkws.PublicUserInfo, 
 	}
 }
 
-// GroupRequestsDB2Pb 将数据库群组申请模型列表转换为 Protocol Buffer 格式列表
+// GroupRequestsDB2Pb ݿȺģбתΪ Protocol Buffer ʽб
 func GroupRequestsDB2Pb(requests []*model.GroupRequest, getUserInfo func(string) *sdkws.PublicUserInfo, getGroupInfo func(string) *sdkws.GroupInfo) []*sdkws.GroupRequest {
 	result := make([]*sdkws.GroupRequest, 0, len(requests))
 	for _, r := range requests {
@@ -42,7 +42,7 @@ func GroupRequestsDB2Pb(requests []*model.GroupRequest, getUserInfo func(string)
 	return result
 }
 
-// GroupRequestPb2DB 将 Protocol Buffer 群组申请转换为数据库模型
+// GroupRequestPb2DB  Protocol Buffer ȺתΪݿģ
 func GroupRequestPb2DB(req *sdkws.GroupRequest) *model.GroupRequest {
 	var userID string
 	var groupID string

@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -29,7 +29,7 @@ func NewGetJoinedGroupListLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 func (l *GetJoinedGroupListLogic) GetJoinedGroupList(req *user.GetJoinedGroupListReq) (*user.GetJoinedGroupListResp, error) {
 	resp := &user.GetJoinedGroupListResp{}
 
-	// Ȩ����֤
+	// ??????
 	opUserID := mcontext.GetOpUserID(l.ctx)
 	userID := req.FromUserID
 	if userID == "" {
@@ -40,7 +40,7 @@ func (l *GetJoinedGroupListLogic) GetJoinedGroupList(req *user.GetJoinedGroupLis
 		}
 	}
 
-	// ��ѯ�û����������Ⱥ���Ա��¼
+	// ???????????????????????
 	members, err := l.svcCtx.GroupDB.FindGroupMemberByUserID(l.ctx, userID)
 	if err != nil {
 		return nil, err
@@ -52,37 +52,37 @@ func (l *GetJoinedGroupListLogic) GetJoinedGroupList(req *user.GetJoinedGroupLis
 		return resp, nil
 	}
 
-	// ��ȡȺ��ID�б�
+	// ??????ID??
 	groupIDs := make([]string, len(members))
 	for i, m := range members {
 		groupIDs[i] = m.GroupID
 	}
 
-	// ��ѯȺ����Ϣ
+	// ?????????
 	groups, err := l.svcCtx.GroupDB.FindGroup(l.ctx, groupIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	// ��ȡȺ���Ա����
+	// ????????????
 	memberNums, err := l.svcCtx.GroupDB.MapGroupMemberNum(l.ctx, groupIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	// ��ȡȺ����Ϣ
+	// ?????????
 	owners, err := l.svcCtx.GroupDB.FindGroupsOwner(l.ctx, groupIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	// ����Ⱥ��ӳ��
+	// ??????????
 	ownerMap := make(map[string]string)
 	for _, owner := range owners {
 		ownerMap[owner.GroupID] = owner.UserID
 	}
 
-	// 转换为 Protocol Buffer 格式
+	// תΪ Protocol Buffer ʽ
 	resp.Groups = make([]*sdkws.GroupInfo, 0, len(groups))
 	for _, g := range groups {
 		pbGroup := convert.ModelGroupDB2Pb(g)

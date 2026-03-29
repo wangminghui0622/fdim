@@ -19,7 +19,7 @@ func NewAdminServer(svcCtx *svc.ServiceContext) *AdminServer {
 	}
 }
 
-// Login 管理员登录
+// Login 管理员登?
 func (s *AdminServer) Login(ctx context.Context, req *admin.LoginReq) (*admin.LoginResp, error) {
 	l := logic.NewLoginLogic(ctx, s.svcCtx)
 	return l.Login(req)
@@ -31,37 +31,37 @@ func (s *AdminServer) ChangePassword(ctx context.Context, req *admin.ChangePassw
 	return l.ChangePassword(req)
 }
 
-// AdminUpdateInfo 更新管理员信息
+// AdminUpdateInfo 更新管理员信?
 func (s *AdminServer) AdminUpdateInfo(ctx context.Context, req *admin.AdminUpdateInfoReq) (*admin.AdminUpdateInfoResp, error) {
 	l := logic.NewAdminUpdateInfoLogic(ctx, s.svcCtx)
 	return l.AdminUpdateInfo(req)
 }
 
-// GetAdminInfo 获取管理员信息
+// GetAdminInfo 获取管理员信?
 func (s *AdminServer) GetAdminInfo(ctx context.Context, req *admin.GetAdminInfoReq) (*admin.GetAdminInfoResp, error) {
 	l := logic.NewGetAdminInfoLogic(ctx, s.svcCtx)
 	return l.GetAdminInfo(req)
 }
 
-// AddAdminAccount 添加管理员账户
+// AddAdminAccount 添加管理员账?
 func (s *AdminServer) AddAdminAccount(ctx context.Context, req *admin.AddAdminAccountReq) (*admin.AddAdminAccountResp, error) {
 	l := logic.NewAddAdminAccountLogic(ctx, s.svcCtx)
 	return l.AddAdminAccount(req)
 }
 
-// ChangeAdminPassword 修改管理员密码
+// ChangeAdminPassword 修改管理员密?
 func (s *AdminServer) ChangeAdminPassword(ctx context.Context, req *admin.ChangeAdminPasswordReq) (*admin.ChangeAdminPasswordResp, error) {
 	l := logic.NewChangeAdminPasswordLogic(ctx, s.svcCtx)
 	return l.ChangeAdminPassword(req)
 }
 
-// DelAdminAccount 删除管理员账户
+// DelAdminAccount 删除管理员账?
 func (s *AdminServer) DelAdminAccount(ctx context.Context, req *admin.DelAdminAccountReq) (*admin.DelAdminAccountResp, error) {
 	l := logic.NewDelAdminAccountLogic(ctx, s.svcCtx)
 	return l.DelAdminAccount(req)
 }
 
-// SearchAdminAccount 搜索管理员账户
+// SearchAdminAccount 搜索管理员账?
 func (s *AdminServer) SearchAdminAccount(ctx context.Context, req *admin.SearchAdminAccountReq) (*admin.SearchAdminAccountResp, error) {
 	l := logic.NewSearchAdminAccountLogic(ctx, s.svcCtx)
 	return l.SearchAdminAccount(req)
@@ -241,49 +241,49 @@ func (s *AdminServer) ParseToken(ctx context.Context, req *admin.ParseTokenReq) 
 	return l.ParseToken(req)
 }
 
-// AddApplet 添加小程序
+// AddApplet 添加小程?
 func (s *AdminServer) AddApplet(ctx context.Context, req *admin.AddAppletReq) (*admin.AddAppletResp, error) {
 	l := logic.NewAddAppletLogic(ctx, s.svcCtx)
 	return l.AddApplet(req)
 }
 
-// DelApplet 删除小程序
+// DelApplet 删除小程?
 func (s *AdminServer) DelApplet(ctx context.Context, req *admin.DelAppletReq) (*admin.DelAppletResp, error) {
 	l := logic.NewDelAppletLogic(ctx, s.svcCtx)
 	return l.DelApplet(req)
 }
 
-// UpdateApplet 更新小程序
+// UpdateApplet 更新小程?
 func (s *AdminServer) UpdateApplet(ctx context.Context, req *admin.UpdateAppletReq) (*admin.UpdateAppletResp, error) {
 	l := logic.NewUpdateAppletLogic(ctx, s.svcCtx)
 	return l.UpdateApplet(req)
 }
 
-// FindApplet 查找小程序
+// FindApplet 查找小程?
 func (s *AdminServer) FindApplet(ctx context.Context, req *admin.FindAppletReq) (*admin.FindAppletResp, error) {
 	l := logic.NewFindAppletLogic(ctx, s.svcCtx)
 	return l.FindApplet(req)
 }
 
-// SearchApplet 搜索小程序
+// SearchApplet 搜索小程?
 func (s *AdminServer) SearchApplet(ctx context.Context, req *admin.SearchAppletReq) (*admin.SearchAppletResp, error) {
 	l := logic.NewSearchAppletLogic(ctx, s.svcCtx)
 	return l.SearchApplet(req)
 }
 
-// GetClientConfig 获取客户端配置
+// GetClientConfig 获取客户端配?
 func (s *AdminServer) GetClientConfig(ctx context.Context, req *admin.GetClientConfigReq) (*admin.GetClientConfigResp, error) {
 	l := logic.NewGetClientConfigLogic(ctx, s.svcCtx)
 	return l.GetClientConfig(req)
 }
 
-// SetClientConfig 设置客户端配置
+// SetClientConfig 设置客户端配?
 func (s *AdminServer) SetClientConfig(ctx context.Context, req *admin.SetClientConfigReq) (*admin.SetClientConfigResp, error) {
 	l := logic.NewSetClientConfigLogic(ctx, s.svcCtx)
 	return l.SetClientConfig(req)
 }
 
-// DelClientConfig 删除客户端配置
+// DelClientConfig 删除客户端配?
 func (s *AdminServer) DelClientConfig(ctx context.Context, req *admin.DelClientConfigReq) (*admin.DelClientConfigResp, error) {
 	l := logic.NewDelClientConfigLogic(ctx, s.svcCtx)
 	return l.DelClientConfig(req)
@@ -301,7 +301,7 @@ func (s *AdminServer) InvalidateToken(ctx context.Context, req *admin.Invalidate
 	return l.InvalidateToken(req)
 }
 
-// LatestApplicationVersion 获取最新应用版本
+// LatestApplicationVersion 获取最新应用版?
 func (s *AdminServer) LatestApplicationVersion(ctx context.Context, req *admin.LatestApplicationVersionReq) (*admin.LatestApplicationVersionResp, error) {
 	l := logic.NewLatestApplicationVersionLogic(ctx, s.svcCtx)
 	return l.LatestApplicationVersion(req)

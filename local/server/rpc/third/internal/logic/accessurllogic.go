@@ -31,7 +31,7 @@ func (l *AccessURLLogic) AccessURL(req *third.AccessURLReq) (*third.AccessURLRes
 		return nil, fmt.Errorf("name is empty")
 	}
 
-	// 使用真实的 MinIO 接口
+	// 使用真实?MinIO 接口
 	if l.svcCtx.ObjectStorage != nil {
 		accessURL, err := l.svcCtx.ObjectStorage.AccessURL(l.ctx, req.Name, time.Hour, nil)
 		if err != nil {

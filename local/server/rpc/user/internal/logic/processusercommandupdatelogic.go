@@ -30,6 +30,6 @@ func (l *ProcessUserCommandUpdateLogic) ProcessUserCommandUpdate(req *user.Proce
 		return nil, err
 	}
 
-	// TODO: 实现 UpdateUserCommand 数据库方法
+	// TODO: 实现 UpdateUserCommand 数据库方?
 	return nil, fmt.Errorf("ProcessUserCommandUpdate not fully implemented yet: UpdateUserCommand database method needed")
 }

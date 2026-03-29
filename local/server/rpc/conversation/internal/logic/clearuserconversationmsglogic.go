@@ -46,7 +46,7 @@ func (l *ClearUserConversationMsgLogic) ClearUserConversationMsg(req *conversati
 			continue
 		}
 
-		// 从 Msg 模块获取该时间之前的最后一条消息 seq
+		// ?Msg 模块获取该时间之前的最后一条消?seq
 		var minSeq int64
 		if l.svcCtx.MsgClient != nil {
 			seqResp, err := l.svcCtx.MsgClient.GetLastMessageSeqByTime(l.ctx, &msg.GetLastMessageSeqByTimeReq{
@@ -60,7 +60,7 @@ func (l *ClearUserConversationMsgLogic) ClearUserConversationMsg(req *conversati
 			}
 		}
 
-		// 更新 latest_msg_destruct_time 和 min_seq
+		// 更新 latest_msg_destruct_time ?min_seq
 		args := map[string]interface{}{
 			"latest_msg_destruct_time": latestMsgDestructTime,
 			"min_seq":                  minSeq,

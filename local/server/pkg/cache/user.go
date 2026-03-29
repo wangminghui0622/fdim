@@ -1,4 +1,4 @@
-﻿package cache
+package cache
 
 import (
 	"context"
@@ -16,19 +16,19 @@ func NewUserCache(client *redis.Client) *UserCache {
 	return &UserCache{client: client}
 }
 
-// SetUserOnline 设置用户在线状态（单个平台）
+// SetUserOnline û״̬ƽ̨
 func (c *UserCache) SetUserOnline(ctx context.Context, userID string, platformIDs []int32) error {
 	_ = "user:online:" + userID
-	// 实现逻辑：将 platformIDs 存储到 Redis Set
-	// 这里简化实现，实际应该使用 Redis Set 存储多个平台ID
+	// ʵ߼ platformIDs 洢 Redis Set
+	// ʵ֣ʵӦʹ Redis Set 洢ƽ̨ID
 	return nil
 }
 
-// SetUserOnlineStatus 设置用户在线状态（支持在线和离线平台列表）
+// SetUserOnlineStatus û״̬֧ߺƽ̨б
 func (c *UserCache) SetUserOnlineStatus(ctx context.Context, userID string, online []int32, offline []int32) error {
 	key := "user:online:" + userID
 	
-	// 添加在线平台
+	// ƽ̨
 	for _, platformID := range online {
 		member := strconv.FormatInt(int64(platformID), 10)
 		if err := c.client.SAdd(ctx, key, member).Err(); err != nil {
@@ -36,7 +36,7 @@ func (c *UserCache) SetUserOnlineStatus(ctx context.Context, userID string, onli
 		}
 	}
 	
-	// 移除离线平台
+	// Ƴƽ̨
 	for _, platformID := range offline {
 		member := strconv.FormatInt(int64(platformID), 10)
 		if err := c.client.SRem(ctx, key, member).Err(); err != nil {
@@ -44,7 +44,7 @@ func (c *UserCache) SetUserOnlineStatus(ctx context.Context, userID string, onli
 		}
 	}
 	
-	// 设置过期时间（4小时）
+	// ùʱ䣨4Сʱ
 	if err := c.client.Expire(ctx, key, 24*time.Hour).Err(); err != nil {
 		return err
 	}
@@ -52,11 +52,11 @@ func (c *UserCache) SetUserOnlineStatus(ctx context.Context, userID string, onli
 	return nil
 }
 
-// GetUserOnline 获取用户在线状态
+// GetUserOnline ȡû״̬
 func (c *UserCache) GetUserOnline(ctx context.Context, userID string) ([]int32, error) {
 	key := "user:online:" + userID
 	
-	// 从 Redis Set 获取所有平台ID
+	//  Redis Set ȡƽ̨ID
 	members, err := c.client.SMembers(ctx, key).Result()
 	if err != nil {
 		if err == redis.Nil {
@@ -77,11 +77,11 @@ func (c *UserCache) GetUserOnline(ctx context.Context, userID string) ([]int32, 
 	return platformIDs, nil
 }
 
-// GetAllOnlineUsers 获取所有在线用户（支持游标分页）
+// GetAllOnlineUsers ȡû֧αҳ
 func (c *UserCache) GetAllOnlineUsers(ctx context.Context, cursor string) (map[string][]int32, string, error) {
 	pattern := "user:online:*"
 	
-	// 解析游标
+	// α
 	var startCursor uint64 = 0
 	if cursor != "" {
 		var err error
@@ -96,7 +96,7 @@ func (c *UserCache) GetAllOnlineUsers(ctx context.Context, cursor string) (map[s
 	var err error
 	const batchSize = 100
 	
-	// 使用 SCAN 命令遍历匹配的 key（支持游标分页）
+	// ʹ SCAN ƥ key֧αҳ
 	var batch []string
 	batch, nextCursor, err = c.client.Scan(ctx, nextCursor, pattern, batchSize).Result()
 	if err != nil {
@@ -104,13 +104,13 @@ func (c *UserCache) GetAllOnlineUsers(ctx context.Context, cursor string) (map[s
 	}
 	keys = append(keys, batch...)
 	
-	// 获取每个用户的平台ID列表
+	// ȡÿûƽ̨IDб
 	result := make(map[string][]int32)
 	for _, key := range keys {
-		// 从 key 中提取 userID
+		//  key ȡ userID
 		userID := key[len("user:online:"):]
 		
-		// 获取该用户的平台ID列表
+		// ȡûƽ̨IDб
 		platformIDs, err := c.GetUserOnline(ctx, userID)
 		if err != nil {
 			continue
@@ -121,7 +121,7 @@ func (c *UserCache) GetAllOnlineUsers(ctx context.Context, cursor string) (map[s
 		}
 	}
 	
-	// 返回下一个游标
+	// һα
 	nextCursorStr := ""
 	if nextCursor > 0 {
 		nextCursorStr = strconv.FormatUint(nextCursor, 10)

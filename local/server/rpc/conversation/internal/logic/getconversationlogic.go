@@ -32,7 +32,7 @@ func (l *GetConversationLogic) GetConversation(req *conversation.GetConversation
 		return nil, fmt.Errorf("failed to get conversation: %w", err)
 	}
 
-	// 转换为 protobuf 格式
+	// 转换?protobuf 格式
 	resp.Conversation = &conversation.Conversation{
 		OwnerUserID:      conv.OwnerUserID,
 		ConversationID:   conv.ConversationID,

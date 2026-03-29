@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,12 +24,12 @@ func NewUpdateAppletLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Upda
 }
 
 func (l *UpdateAppletLogic) UpdateApplet(req *admin.UpdateAppletReq) (*admin.UpdateAppletResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if req.Id == "" {
 		return nil, errs.ErrArgs.WrapMsg("id cannot be empty")
 	}
 
-	// 2. 构建更新字段
+	// 2. ֶ
 	update := make(map[string]interface{})
 	if req.Name != nil {
 		update["name"] = req.Name.Value
@@ -63,7 +63,7 @@ func (l *UpdateAppletLogic) UpdateApplet(req *admin.UpdateAppletReq) (*admin.Upd
 		return nil, errs.ErrArgs.WrapMsg("no update fields provided")
 	}
 
-	// 3. 更新小程序
+	// 3. С
 	if err := l.svcCtx.AdminDB.UpdateApplet(l.ctx, req.Id, update); err != nil {
 		l.Errorf("UpdateApplet failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to update applet")

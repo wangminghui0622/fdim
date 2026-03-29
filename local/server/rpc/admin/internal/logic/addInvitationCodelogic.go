@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -27,12 +27,12 @@ func NewAddInvitationCodeLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 }
 
 func (l *AddInvitationCodeLogic) AddInvitationCode(req *admin.AddInvitationCodeReq) (*admin.AddInvitationCodeResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.Codes) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("codes cannot be empty")
 	}
 
-	// 2. 检查是否已存在
+	// 2. ǷѴ
 	exists, err := l.svcCtx.AdminDB.FindInvitationRegister(l.ctx, req.Codes)
 	if err != nil {
 		l.Errorf("FindInvitationRegister failed: %v", err)
@@ -46,7 +46,7 @@ func (l *AddInvitationCodeLogic) AddInvitationCode(req *admin.AddInvitationCodeR
 		return nil, fmt.Errorf("some codes already exist: %v", existingCodes)
 	}
 
-	// 3. 构建邀请码列表
+	// 3. б
 	invitations := make([]*database.InvitationRegister, len(req.Codes))
 	now := time.Now()
 	for i, code := range req.Codes {
@@ -57,7 +57,7 @@ func (l *AddInvitationCodeLogic) AddInvitationCode(req *admin.AddInvitationCodeR
 		}
 	}
 
-	// 4. 添加邀请码
+	// 4. 
 	if err := l.svcCtx.AdminDB.AddInvitationCode(l.ctx, invitations); err != nil {
 		l.Errorf("AddInvitationCode failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to add invitation codes")

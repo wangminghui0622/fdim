@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -25,14 +25,14 @@ func NewFindAppletLogic(ctx context.Context, svcCtx *svc.ServiceContext) *FindAp
 }
 
 func (l *FindAppletLogic) FindApplet(req *admin.FindAppletReq) (*admin.FindAppletResp, error) {
-	// FindApplet 返回所有已上架的小程序（status=1）
+	// FindApplet ϼܵСstatus=1
 	applets, err := l.svcCtx.AdminDB.FindOnShelfApplet(l.ctx)
 	if err != nil {
 		l.Errorf("FindOnShelfApplet failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to find on shelf applets")
 	}
 
-	// 转换为响应格式
+	// תΪӦʽ
 	results := make([]*sdkws.ChatAppletInfo, 0, len(applets))
 	for _, applet := range applets {
 		results = append(results, &sdkws.ChatAppletInfo{

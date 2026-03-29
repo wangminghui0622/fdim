@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -28,24 +28,24 @@ func NewBlockUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *BlockUs
 }
 
 func (l *BlockUserLogic) BlockUser(req *admin.BlockUserReq) (*admin.BlockUserResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if req.UserID == "" {
 		return nil, errs.ErrArgs.WrapMsg("userID cannot be empty")
 	}
 
-	// 2. 获取操作者ID（从context中获取）
+	// 2. ȡIDcontextлȡ
 	opUserID := l.getUserIDFromContext()
 	if opUserID == "" {
-		opUserID = "system" // 默认系统操作
+		opUserID = "system" // Ĭϵͳ
 	}
 
-	// 3. 检查用户是否已被封禁
+	// 3. ûǷѱ
 	_, err := l.svcCtx.AdminDB.GetBlockInfo(l.ctx, req.UserID)
 	if err == nil {
 		return nil, fmt.Errorf("user already blocked")
 	}
 
-	// 4. 添加封禁记录
+	// 4. ӷ¼
 	block := &database.BlockUser{
 		UserID:         req.UserID,
 		Reason:         req.Reason,

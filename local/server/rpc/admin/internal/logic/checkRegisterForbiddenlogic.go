@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -25,19 +25,19 @@ func NewCheckRegisterForbiddenLogic(ctx context.Context, svcCtx *svc.ServiceCont
 }
 
 func (l *CheckRegisterForbiddenLogic) CheckRegisterForbidden(req *admin.CheckRegisterForbiddenReq) (*admin.CheckRegisterForbiddenResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if req.Ip == "" {
 		return nil, errs.ErrArgs.WrapMsg("ip cannot be empty")
 	}
 
-	// 2. 查找IP禁止记录
+	// 2. IPֹ¼
 	forbiddens, err := l.svcCtx.AdminDB.FindIPForbidden(l.ctx, []string{req.Ip})
 	if err != nil {
 		l.Errorf("FindIPForbidden failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to check IP forbidden")
 	}
 
-	// 3. 检查是否禁止注册
+	// 3. Ƿֹע
 	for _, forbidden := range forbiddens {
 		if forbidden.LimitRegister {
 			return nil, fmt.Errorf("ip %s is forbidden for registration", req.Ip)

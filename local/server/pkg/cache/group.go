@@ -1,4 +1,4 @@
-﻿package cache
+package cache
 
 import (
 	"context"
@@ -14,14 +14,14 @@ func NewGroupCache(client *redis.Client) *GroupCache {
 	return &GroupCache{client: client}
 }
 
-// CacheGroupInfo 缓存群组信息
+// CacheGroupInfo ȺϢ
 func (c *GroupCache) CacheGroupInfo(ctx context.Context, groupID string, groupInfo interface{}) error {
-	// 实现逻辑
+	// ʵ߼
 	return nil
 }
 
-// GetGroupInfo 获取群组信息
+// GetGroupInfo ȡȺϢ
 func (c *GroupCache) GetGroupInfo(ctx context.Context, groupID string) (interface{}, error) {
-	// 实现逻辑
+	// ʵ߼
 	return nil, nil
 }

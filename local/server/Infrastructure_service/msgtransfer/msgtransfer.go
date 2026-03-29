@@ -42,11 +42,11 @@ func main() {
 	fmt.Printf("MongoDB URI: %s, Database: %s\n", c.MongoDB.URI, c.MongoDB.Database)
 	fmt.Printf("NATS Brokers: %v\n", c.Nats.Brokers)
 
-	// 创建上下文
+	// 创建上下?
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// 创建消息传输处理器
+	// 创建消息传输处理?
 	msgTransferHandler, err := handler.NewMsgTransferHandler(ctx, &c)
 	if err != nil {
 		logx.Errorf("Failed to create msg transfer handler: %v", err)

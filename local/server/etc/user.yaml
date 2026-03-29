@@ -8,7 +8,7 @@ Etcd:
 
 Mongo:
   Host: mongodb://127.0.0.1:27017
-  Database: openim_v3
+  Database: fdim
   Username: "root"
   Password: "test625"
 
@@ -33,7 +33,7 @@ ConversationRpc:
   NonBlock: true
   Timeout: 10000
 
-# AdminUserIDs 管理员用户ID列表（可选）
+# AdminUserIDs 管理员ID
 AdminUserIDs:
   - "admin001"
   - "admin002"

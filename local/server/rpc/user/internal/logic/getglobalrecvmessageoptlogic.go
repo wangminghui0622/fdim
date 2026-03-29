@@ -27,17 +27,17 @@ func NewGetGlobalRecvMessageOptLogic(ctx context.Context, svcCtx *svc.ServiceCon
 func (l *GetGlobalRecvMessageOptLogic) GetGlobalRecvMessageOpt(req *user.GetGlobalRecvMessageOptReq) (*user.GetGlobalRecvMessageOptResp, error) {
 	resp := &user.GetGlobalRecvMessageOptResp{}
 
-	// Ȩ����֤
+	// Ȩ֤
 	if err := authverify.CheckAccess(l.ctx, req.UserID); err != nil {
 		return nil, err
 	}
 
-	// ������֤
+	// ֤
 	if req.UserID == "" {
 		return nil, fmt.Errorf("userID is empty")
 	}
 
-	// �����û�
+	// û
 	user, err := l.svcCtx.UserDB.Take(l.ctx, req.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("user not found: %v", err)

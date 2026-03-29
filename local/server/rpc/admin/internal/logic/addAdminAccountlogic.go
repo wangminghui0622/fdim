@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -28,7 +28,7 @@ func NewAddAdminAccountLogic(ctx context.Context, svcCtx *svc.ServiceContext) *A
 }
 
 func (l *AddAdminAccountLogic) AddAdminAccount(req *admin.AddAdminAccountReq) (*admin.AddAdminAccountResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if req.Account == "" {
 		return nil, errs.ErrArgs.WrapMsg("account is empty")
 	}
@@ -36,27 +36,27 @@ func (l *AddAdminAccountLogic) AddAdminAccount(req *admin.AddAdminAccountReq) (*
 		return nil, errs.ErrArgs.WrapMsg("password is empty")
 	}
 
-	// 2. 检查账户是否已存在
+	// 2. ˻ǷѴ
 	_, err := l.svcCtx.AdminDB.GetAdmin(l.ctx, req.Account)
 	if err == nil {
 		return nil, errs.ErrArgs.WrapMsg("account already exists")
 	}
 
-	// 3. 生成 userID（使用 UUID）
+	// 3.  userIDʹ UUID
 	userID := uuid.New().String()
 
-	// 4. 创建管理员对象
+	// 4. Ա
 	adminAccount := &database.Admin{
 		Account:    req.Account,
 		Password:   req.Password,
 		FaceURL:    req.FaceURL,
 		Nickname:   req.Nickname,
 		UserID:     userID,
-		Level:      1, // 默认级别
+		Level:      1, // Ĭϼ
 		CreateTime: time.Now().Unix(),
 	}
 
-	// 5. 添加到数据库
+	// 5. ӵݿ
 	if err := l.svcCtx.AdminDB.AddAdminAccount(l.ctx, []*database.Admin{adminAccount}); err != nil {
 		l.Errorf("AddAdminAccount failed: %v", err)
 		return nil, fmt.Errorf("failed to add admin account: %w", err)

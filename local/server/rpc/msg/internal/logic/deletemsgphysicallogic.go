@@ -23,8 +23,8 @@ func NewDeleteMsgPhysicalLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 	}
 }
 
-// DeleteMsgPhysical 按会话列表 + 时间戳，物理删除历史消息。
-// 这里直接调用 MsgDB.DeleteMessagesByTimeBefore 做一次性清理，未对 Redis 做细粒度同步。
+// DeleteMsgPhysical 按会话列?+ 时间戳，物理删除历史消息?
+// 这里直接调用 MsgDB.DeleteMessagesByTimeBefore 做一次性清理，未对 Redis 做细粒度同步?
 func (l *DeleteMsgPhysicalLogic) DeleteMsgPhysical(req *msg.DeleteMsgPhysicalReq) (*msg.DeleteMsgPhysicalResp, error) {
 	if len(req.ConversationIDs) == 0 || req.Timestamp == 0 {
 		return nil, errs.ErrArgs.WrapMsg("conversationIDs and timestamp are required")
@@ -38,6 +38,6 @@ func (l *DeleteMsgPhysicalLogic) DeleteMsgPhysical(req *msg.DeleteMsgPhysicalReq
 		return nil, errs.WrapMsg(err, "failed to physically delete messages by time")
 	}
 
-	// Redis 中的历史缓存不做精确删除，交给过期时间与后续重建逻辑处理。
+	// Redis 中的历史缓存不做精确删除，交给过期时间与后续重建逻辑处理?
 	return &msg.DeleteMsgPhysicalResp{}, nil
 }

@@ -1,4 +1,4 @@
-﻿package database
+package database
 
 import (
 	"context"
@@ -19,13 +19,13 @@ func NewBlackDatabase(db *MongoDB) *BlackDatabase {
 	}
 }
 
-// AddBlack 添加黑名�?
+// AddBlack Ӻ??
 func (d *BlackDatabase) AddBlack(ctx context.Context, black *model.Black) error {
 	_, err := d.collection.InsertOne(ctx, black)
 	return err
 }
 
-// RemoveBlack 移除黑名�?
+// RemoveBlack Ƴ??
 func (d *BlackDatabase) RemoveBlack(ctx context.Context, ownerUserID, blockUserID string) error {
 	filter := bson.M{
 		"owner_user_id": ownerUserID,
@@ -35,7 +35,7 @@ func (d *BlackDatabase) RemoveBlack(ctx context.Context, ownerUserID, blockUserI
 	return err
 }
 
-// FindBlackInfos 查找黑名单信�?
+// FindBlackInfos Һ??
 func (d *BlackDatabase) FindBlackInfos(ctx context.Context, ownerUserID string, blockUserIDs []string) ([]*model.Black, error) {
 	filter := bson.M{
 		"owner_user_id": ownerUserID,
@@ -54,7 +54,7 @@ func (d *BlackDatabase) FindBlackInfos(ctx context.Context, ownerUserID string, 
 	return blacks, nil
 }
 
-// IsBlack 检查是否在黑名�?
+// IsBlack Ƿں??
 func (d *BlackDatabase) IsBlack(ctx context.Context, ownerUserID, blockUserID string) (bool, error) {
 	count, err := d.collection.CountDocuments(ctx, bson.M{
 		"owner_user_id": ownerUserID,
@@ -66,17 +66,17 @@ func (d *BlackDatabase) IsBlack(ctx context.Context, ownerUserID, blockUserID st
 	return count > 0, nil
 }
 
-// PageOwnerBlacks 分页获取黑名�?
+// PageOwnerBlacks ҳȡ??
 func (d *BlackDatabase) PageOwnerBlacks(ctx context.Context, ownerUserID string, offset, limit int32) (int64, []*model.Black, error) {
 	filter := bson.M{"owner_user_id": ownerUserID}
 
-	// 获取总数
+	// ȡ
 	total, err := d.collection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().
 		SetSkip(int64(offset)).
 		SetLimit(int64(limit)).

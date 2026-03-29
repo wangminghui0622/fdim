@@ -48,7 +48,7 @@ func (l *SendMsgLogic) SendMsg(req *msg.SendMsgReq) (*msg.SendMsgResp, error) {
 		return nil, errs.ErrArgs.WrapMsg("sendID is required")
 	}
 
-	// 单聊必须有 recvID，群聊必须有 groupID
+	// 单聊必须?recvID，群聊必须有 groupID
 	if msgData.SessionType == constant.SingleChatType && msgData.RecvID == "" {
 		return nil, errs.ErrArgs.WrapMsg("recvID is required for single chat")
 	}
@@ -89,7 +89,7 @@ func (l *SendMsgLogic) SendMsg(req *msg.SendMsgReq) (*msg.SendMsgResp, error) {
 		}, nil
 	}
 
-	// 2. 计算会话 ID（与官方一致：通知消息使用 n_ 前缀，普通消息使用 si_/sg_ 前缀）
+	// 2. 计算会话 ID（与官方一致：通知消息使用 n_ 前缀，普通消息使?si_/sg_ 前缀?
 	conversationID := msgprocessor.GetConversationIDByMsg(msgData)
 	if conversationID == "" {
 		return nil, errs.ErrArgs.WrapMsg("failed to generate conversationID")
@@ -107,7 +107,7 @@ func (l *SendMsgLogic) SendMsg(req *msg.SendMsgReq) (*msg.SendMsgResp, error) {
 		}
 	}
 
-	// 3. 分配 seq（通过 MsgCache.IncrMaxSeq，内部委托给官方 SeqConversation.Malloc）
+	// 3. 分配 seq（通过 MsgCache.IncrMaxSeq，内部委托给官方 SeqConversation.Malloc?
 	if l.svcCtx.MsgCache == nil {
 		return nil, errs.ErrInternalServer.WrapMsg("message cache not initialized")
 	}
@@ -120,8 +120,8 @@ func (l *SendMsgLogic) SendMsg(req *msg.SendMsgReq) (*msg.SendMsgResp, error) {
 
 	// 填充 protobuf 消息字段
 	msgData.Seq = seq
-	// 方案A：sendTime = 服务器 UTC 毫秒（不信任客户端时间，不加时区偏移）
-	// 客户端显示时用 .toLocal() 转为手机本地时区
+	// 方案A：sendTime = 服务?UTC 毫秒（不信任客户端时间，不加时区偏移?
+	// 客户端显示时?.toLocal() 转为手机本地时区
 	// senderTimeZone 仅作为元数据保留在消息中
 	serverNowMs := timeutil.GetCurrentTimestampByMill()
 	msgData.CreateTime = serverNowMs
@@ -130,15 +130,15 @@ func (l *SendMsgLogic) SendMsg(req *msg.SendMsgReq) (*msg.SendMsgResp, error) {
 
 	now := time.Now()
 
-	// 4. 投递到 NATS [toRedis] topic → msgtransfer 负责：
-	//    - 写 Redis 消息缓存
-	//    - 转发到 [toMongo] → MongoDB 持久化
-	//    - 转发到 [toPush]  → push 服务推送
+	// 4. 投递到 NATS [toRedis] topic ?msgtransfer 负责?
+	//    - ?Redis 消息缓存
+	//    - 转发?[toMongo] ?MongoDB 持久?
+	//    - 转发?[toPush]  ?push 服务推?
 	
-	// 确保 context 包含必需的 operationID
+	// 确保 context 包含必需?operationID
 	ctx := l.ctx
 	if mcontext.GetOperationID(ctx) == "" {
-		// 如果 context 中没有 operationID，使用 clientMsgID 作为 operationID
+		// 如果 context 中没?operationID，使?clientMsgID 作为 operationID
 		ctx = mcontext.SetOperationID(ctx, msgData.ClientMsgID)
 		l.Infow("Added operationID to context", logx.Field("operationID", msgData.ClientMsgID))
 	}
@@ -218,7 +218,7 @@ func (l *SendMsgLogic) SendMsg(req *msg.SendMsgReq) (*msg.SendMsgResp, error) {
 		go l.ensureConversation(msgData, conversationID)
 	}
 
-	// 详细日志：验证会话ID传递
+	// 详细日志：验证会话ID传?
 	l.Infow("SendMsg success: conversationID generated and validated",
 		logx.Field("conversationID", conversationID),
 		logx.Field("seq", seq),
@@ -236,7 +236,7 @@ func (l *SendMsgLogic) SendMsg(req *msg.SendMsgReq) (*msg.SendMsgResp, error) {
 	}, nil
 }
 
-// ensureConversation 确保会话存在（与官方一致：仅单聊在 SendMsg 后自动创建，群聊由 group RPC 管理）
+// ensureConversation 确保会话存在（与官方一致：仅单聊在 SendMsg 后自动创建，群聊?group RPC 管理?
 func (l *SendMsgLogic) ensureConversation(msgData *sdkws.MsgData, conversationID string) {
 	if msgData.SessionType != constant.SingleChatType {
 		return
@@ -258,7 +258,7 @@ func (l *SendMsgLogic) ensureConversation(msgData *sdkws.MsgData, conversationID
 	}
 }
 
-// msgDataToDoc 将 protobuf MsgData 转换为 model.MsgDoc（仅 NATS 不可用时的回退路径使用）
+// msgDataToDoc ?protobuf MsgData 转换?model.MsgDoc（仅 NATS 不可用时的回退路径使用?
 func msgDataToDoc(conversationID string, pb *sdkws.MsgData, now time.Time) *model.MsgDoc {
 	return &model.MsgDoc{
 		ConversationID:   conversationID,
@@ -276,7 +276,7 @@ func msgDataToDoc(conversationID string, pb *sdkws.MsgData, now time.Time) *mode
 		ContentType:      pb.ContentType,
 		Content:          pb.Content,
 		CreateTime:       now.UnixMilli(),  // 转换为毫秒时间戳
-		SendTime:         pb.SendTime,      // 直接使用 int64 时间戳
+		SendTime:         pb.SendTime,      // 直接使用 int64 时间?
 		Status:           pb.Status,
 		Options:          pb.Options,
 		AtUserIDs:        pb.AtUserIDList,
@@ -284,6 +284,6 @@ func msgDataToDoc(conversationID string, pb *sdkws.MsgData, now time.Time) *mode
 		Ex:               pb.Ex,
 		IsRead:           false, // 默认未读
 		ReadTime:         0,      // 0 表示未读
-		BurnTime:         0,      // 0 表示未设置
+		BurnTime:         0,      // 0 表示未设?
 	}
 }

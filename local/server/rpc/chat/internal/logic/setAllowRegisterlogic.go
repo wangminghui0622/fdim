@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -23,8 +23,8 @@ func NewSetAllowRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *SetAllowRegisterLogic) SetAllowRegister(req *chat.SetAllowRegisterReq) (*chat.SetAllowRegisterResp, error) {
-	// 简化实现：直接更新配置
-	// 实际应该保存到数据库或配置文件
+	// ʵֱ֣Ӹ
+	// ʵӦñ浽ݿļ
 	l.svcCtx.Config.AllowRegister = req.AllowRegister
 
 	l.Infof("Set allow register: %v", req.AllowRegister)

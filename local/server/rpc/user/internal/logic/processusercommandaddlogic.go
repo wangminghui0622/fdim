@@ -30,7 +30,7 @@ func (l *ProcessUserCommandAddLogic) ProcessUserCommandAdd(req *user.ProcessUser
 		return nil, err
 	}
 
-	// TODO: 实现 AddUserCommand 数据库方法
-	// 当前返回未实现错误
+	// TODO: 实现 AddUserCommand 数据库方?
+	// 当前返回未实现错?
 	return nil, fmt.Errorf("ProcessUserCommandAdd not fully implemented yet: AddUserCommand database method needed")
 }

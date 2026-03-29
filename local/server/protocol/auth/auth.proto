@@ -1,5 +1,5 @@
 syntax = "proto3";
-package openim.auth;
+package fdim.auth;
 
 option go_package = "fdim/protocol/auth";
 

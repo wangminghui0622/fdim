@@ -28,7 +28,7 @@ func (l *CreateSingleChatConversationsLogic) CreateSingleChatConversations(req *
 	resp := &conversation.CreateSingleChatConversationsResp{}
 	now := time.Now()
 
-	// 官方行为：为双方各创建一条会话记录（OwnerUserID 不同，UserID 指向对方）
+	// 官方行为：为双方各创建一条会话记录（OwnerUserID 不同，UserID 指向对方?
 	convs := []*model.Conversation{
 		{
 			ConversationID:   req.ConversationID,

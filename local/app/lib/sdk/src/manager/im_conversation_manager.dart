@@ -189,7 +189,7 @@ class ConversationManager {
     listener.totalUnreadMessageCountChanged(LocalStore.getTotalUnreadCount());
 
     try {
-      final seqInfo = await OpenIM.iMManager.messageManager.getHasReadAndMaxSeq(
+      final seqInfo = await FDIM.iMManager.messageManager.getHasReadAndMaxSeq(
         conversationID,
       );
       final maxSeq = seqInfo['maxSeq'] ?? LocalStore.getMaxSeq(conversationID);

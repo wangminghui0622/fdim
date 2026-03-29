@@ -14,7 +14,7 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-// CronHandler Cron 任务处理器
+// CronHandler Cron 任务处理?
 type CronHandler struct {
 	config             *config.Config
 	cron               *cron.Cron
@@ -23,7 +23,7 @@ type CronHandler struct {
 	thirdClient        third.ThirdClient
 }
 
-// NewCronHandler 创建 Cron 处理器
+// NewCronHandler 创建 Cron 处理?
 func NewCronHandler(ctx context.Context, cfg *config.Config) (*CronHandler, error) {
 	svcCtx := svc.NewServiceContext(*cfg)
 
@@ -45,7 +45,7 @@ func NewCronHandler(ctx context.Context, cfg *config.Config) (*CronHandler, erro
 
 // registerTasks 注册定时任务
 func (h *CronHandler) registerTasks() error {
-	// 清理 S3 文件任务（每天凌晨 2 点执行）
+	// 清理 S3 文件任务（每天凌?2 点执行）
 	_, err := h.cron.AddFunc("0 0 2 * * *", func() {
 		logx.Info("Running cleanup S3 files task...")
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
@@ -63,7 +63,7 @@ func (h *CronHandler) registerTasks() error {
 		return fmt.Errorf("failed to register cleanup S3 files task: %w", err)
 	}
 
-	// 删除过期消息任务（每天凌晨 3 点执行）
+	// 删除过期消息任务（每天凌?3 点执行）
 	_, err = h.cron.AddFunc("0 0 3 * * *", func() {
 		logx.Info("Running delete expired messages task...")
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
@@ -81,11 +81,11 @@ func (h *CronHandler) registerTasks() error {
 		return fmt.Errorf("failed to register delete expired messages task: %w", err)
 	}
 
-	// 清理用户消息任务（每天凌晨 4 点执行）
+	// 清理用户消息任务（每天凌?4 点执行）
 	_, err = h.cron.AddFunc("0 0 4 * * *", func() {
 		logx.Info("Running cleanup user conversation messages task...")
 		
-		// 检查 conversationClient 是否为 nil
+		// 检?conversationClient 是否?nil
 		if h.conversationClient == nil {
 			logx.Error("ConversationClient is nil, skipping cleanup task")
 			return
@@ -115,7 +115,7 @@ func (h *CronHandler) Start(ctx context.Context) error {
 	logx.Info("Starting cron service...")
 	h.cron.Start()
 
-	// 等待上下文取消
+	// 等待上下文取?
 	<-ctx.Done()
 	logx.Info("Cron service context cancelled, stopping...")
 	h.cron.Stop()

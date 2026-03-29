@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -27,23 +27,23 @@ func NewUpdateUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Up
 }
 
 func (l *UpdateUserInfoLogic) UpdateUserInfo(req *chat.UpdateUserInfoReq) (*chat.UpdateUserInfoResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if req.UserID == "" {
 		return nil, errs.ErrArgs.WrapMsg("user ID cannot be empty")
 	}
 
-	// 2. 检查用户是否存在
+	// 2. ûǷ
 	_, err := l.svcCtx.ChatDB.GetUserAccountByUserID(l.ctx, req.UserID)
 	if err != nil {
 		return nil, errs.ErrArgs.WrapMsg("user not found")
 	}
 
-	// 3. 验证手机号和区号必须同时设置
+	// 3. ֻ֤źűͬʱ
 	if (req.PhoneNumber != nil && req.PhoneNumber.Value != "") || (req.AreaCode != nil && req.AreaCode.Value != "") {
 		if req.PhoneNumber == nil || req.AreaCode == nil || req.PhoneNumber.Value == "" || req.AreaCode.Value == "" {
 			return nil, errs.ErrArgs.WrapMsg("area code and phone number must be set together")
 		}
-		// 验证手机号格式
+		// ֻ֤Ÿʽ
 		if !strings.HasPrefix(req.AreaCode.Value, "+") {
 			areaCodeValue := "+" + req.AreaCode.Value
 			req.AreaCode = &wrapperspb.StringValue{Value: areaCodeValue}
@@ -56,7 +56,7 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *chat.UpdateUserInfoReq) (*chat
 		}
 	}
 
-	// 4. 构建更新字段
+	// 4. ֶ
 	update := make(map[string]interface{})
 	if req.Account != nil && req.Account.Value != "" {
 		update["account"] = req.Account.Value
@@ -101,7 +101,7 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *chat.UpdateUserInfoReq) (*chat
 		update["register_type"] = req.RegisterType.Value
 	}
 
-	// 5. 更新用户信息
+	// 5. ûϢ
 	if len(update) > 0 {
 		if err := l.svcCtx.ChatDB.UpdateUserInfo(l.ctx, req.UserID, update); err != nil {
 			l.Errorf("UpdateUserInfo failed: %v", err)
@@ -109,7 +109,7 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *chat.UpdateUserInfoReq) (*chat
 		}
 	}
 
-	// 6. 更新用户账户信息（如果需要）
+	// 6. û˻ϢҪ
 	accountUpdate := make(map[string]interface{})
 	if req.Account != nil && req.Account.Value != "" {
 		accountUpdate["account"] = req.Account.Value
@@ -129,7 +129,7 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *chat.UpdateUserInfoReq) (*chat
 		}
 	}
 
-	// 7. 获取更新后的信息用于返回
+	// 7. ȡºϢڷ
 	userInfos, err := l.svcCtx.ChatDB.FindUserFullInfo(l.ctx, []string{req.UserID})
 	if err != nil || len(userInfos) == 0 {
 		return &chat.UpdateUserInfoResp{}, nil

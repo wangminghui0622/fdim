@@ -41,10 +41,10 @@ func (l *InitiateMultipartUploadLogic) InitiateMultipartUpload(req *third.Initia
 		return l.initiateMultipartUploadSimple(req)
 	}
 
-	// 使用真实的 MinIO 接口
+	// 使用真实?MinIO 接口
 	name := req.Name
 	if name == "" {
-		name = fmt.Sprintf("openim/data/%s/%s", req.Hash[:2], req.Hash)
+		name = fmt.Sprintf("FDIM/data/%s/%s", req.Hash[:2], req.Hash)
 	}
 
 	result, err := l.svcCtx.ObjectStorage.InitiateMultipartUpload(l.ctx, name, nil)

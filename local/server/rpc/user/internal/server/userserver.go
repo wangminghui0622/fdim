@@ -43,7 +43,7 @@ func (s *UserServer) SetGlobalRecvMessageOpt(ctx context.Context, req *user.SetG
 	return l.SetGlobalRecvMessageOpt(req)
 }
 
-// AccountCheck 账户检查
+// AccountCheck 账户检?
 func (s *UserServer) AccountCheck(ctx context.Context, req *user.AccountCheckReq) (*user.AccountCheckResp, error) {
 	l := logic.NewAccountCheckLogic(ctx, s.svcCtx)
 	return l.AccountCheck(req)
@@ -79,25 +79,25 @@ func (s *UserServer) GetAllUserID(ctx context.Context, req *user.GetAllUserIDReq
 	return l.GetAllUserID(req)
 }
 
-// GetUserStatus 获取用户状态
+// GetUserStatus 获取用户状?
 func (s *UserServer) GetUserStatus(ctx context.Context, req *user.GetUserStatusReq) (*user.GetUserStatusResp, error) {
 	l := logic.NewGetUserStatusLogic(ctx, s.svcCtx)
 	return l.GetUserStatus(req)
 }
 
-// SetUserStatus 设置用户状态
+// SetUserStatus 设置用户状?
 func (s *UserServer) SetUserStatus(ctx context.Context, req *user.SetUserStatusReq) (*user.SetUserStatusResp, error) {
 	l := logic.NewSetUserStatusLogic(ctx, s.svcCtx)
 	return l.SetUserStatus(req)
 }
 
-// SetUserOnlineStatus 设置用户在线状态
+// SetUserOnlineStatus 设置用户在线状?
 func (s *UserServer) SetUserOnlineStatus(ctx context.Context, req *user.SetUserOnlineStatusReq) (*user.SetUserOnlineStatusResp, error) {
 	l := logic.NewSetUserOnlineStatusLogic(ctx, s.svcCtx)
 	return l.SetUserOnlineStatus(req)
 }
 
-// GetAllOnlineUsers 获取所有在线用户
+// GetAllOnlineUsers 获取所有在线用?
 func (s *UserServer) GetAllOnlineUsers(ctx context.Context, req *user.GetAllOnlineUsersReq) (*user.GetAllOnlineUsersResp, error) {
 	l := logic.NewGetAllOnlineUsersLogic(ctx, s.svcCtx)
 	return l.GetAllOnlineUsers(req)
@@ -109,13 +109,13 @@ func (s *UserServer) UserRegisterCount(ctx context.Context, req *user.UserRegist
 	return l.UserRegisterCount(req)
 }
 
-// SubscribeOrCancelUsersStatus 订阅或取消订阅用户状态
+// SubscribeOrCancelUsersStatus 订阅或取消订阅用户状?
 func (s *UserServer) SubscribeOrCancelUsersStatus(ctx context.Context, req *user.SubscribeOrCancelUsersStatusReq) (*user.SubscribeOrCancelUsersStatusResp, error) {
 	l := logic.NewSubscribeOrCancelUsersStatusLogic(ctx, s.svcCtx)
 	return l.SubscribeOrCancelUsersStatus(req)
 }
 
-// GetSubscribeUsersStatus 获取订阅用户状态
+// GetSubscribeUsersStatus 获取订阅用户状?
 func (s *UserServer) GetSubscribeUsersStatus(ctx context.Context, req *user.GetSubscribeUsersStatusReq) (*user.GetSubscribeUsersStatusResp, error) {
 	l := logic.NewGetSubscribeUsersStatusLogic(ctx, s.svcCtx)
 	return l.GetSubscribeUsersStatus(req)
@@ -145,7 +145,7 @@ func (s *UserServer) ProcessUserCommandGet(ctx context.Context, req *user.Proces
 	return l.ProcessUserCommandGet(req)
 }
 
-// ProcessUserCommandGetAll 获取所有用户命令
+// ProcessUserCommandGetAll 获取所有用户命?
 func (s *UserServer) ProcessUserCommandGetAll(ctx context.Context, req *user.ProcessUserCommandGetAllReq) (*user.ProcessUserCommandGetAllResp, error) {
 	l := logic.NewProcessUserCommandGetAllLogic(ctx, s.svcCtx)
 	return l.ProcessUserCommandGetAll(req)
@@ -181,25 +181,25 @@ func (s *UserServer) SortQuery(ctx context.Context, req *user.SortQueryReq) (*us
 	return l.SortQuery(req)
 }
 
-// GetUserClientConfig 获取用户客户端配置
+// GetUserClientConfig 获取用户客户端配?
 func (s *UserServer) GetUserClientConfig(ctx context.Context, req *user.GetUserClientConfigReq) (*user.GetUserClientConfigResp, error) {
 	l := logic.NewGetUserClientConfigLogic(ctx, s.svcCtx)
 	return l.GetUserClientConfig(req)
 }
 
-// SetUserClientConfig 设置用户客户端配置
+// SetUserClientConfig 设置用户客户端配?
 func (s *UserServer) SetUserClientConfig(ctx context.Context, req *user.SetUserClientConfigReq) (*user.SetUserClientConfigResp, error) {
 	l := logic.NewSetUserClientConfigLogic(ctx, s.svcCtx)
 	return l.SetUserClientConfig(req)
 }
 
-// DelUserClientConfig 删除用户客户端配置
+// DelUserClientConfig 删除用户客户端配?
 func (s *UserServer) DelUserClientConfig(ctx context.Context, req *user.DelUserClientConfigReq) (*user.DelUserClientConfigResp, error) {
 	l := logic.NewDelUserClientConfigLogic(ctx, s.svcCtx)
 	return l.DelUserClientConfig(req)
 }
 
-// PageUserClientConfig 分页获取用户客户端配置
+// PageUserClientConfig 分页获取用户客户端配?
 func (s *UserServer) PageUserClientConfig(ctx context.Context, req *user.PageUserClientConfigReq) (*user.PageUserClientConfigResp, error) {
 	l := logic.NewPageUserClientConfigLogic(ctx, s.svcCtx)
 	return l.PageUserClientConfig(req)

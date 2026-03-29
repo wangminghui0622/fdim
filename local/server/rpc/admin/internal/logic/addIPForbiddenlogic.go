@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -26,12 +26,12 @@ func NewAddIPForbiddenLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ad
 }
 
 func (l *AddIPForbiddenLogic) AddIPForbidden(req *admin.AddIPForbiddenReq) (*admin.AddIPForbiddenResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.Forbiddens) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("forbiddens cannot be empty")
 	}
 
-	// 2. 构建IP禁止列表
+	// 2. IPֹб
 	forbiddens := make([]*database.IPForbidden, len(req.Forbiddens))
 	now := time.Now()
 	for i, fb := range req.Forbiddens {
@@ -43,7 +43,7 @@ func (l *AddIPForbiddenLogic) AddIPForbidden(req *admin.AddIPForbiddenReq) (*adm
 		}
 	}
 
-	// 3. 添加IP禁止
+	// 3. IPֹ
 	if err := l.svcCtx.AdminDB.AddIPForbidden(l.ctx, forbiddens); err != nil {
 		l.Errorf("AddIPForbidden failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to add IP forbidden")

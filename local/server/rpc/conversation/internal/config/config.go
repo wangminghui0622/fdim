@@ -13,7 +13,7 @@ type Config struct {
 	}
 	Cache cache.CacheConf `yaml:"Cache"`
 
-	// RPC 客户端配置
+	// RPC 客户端配?
 	MsgRpc  zrpc.RpcClientConf `yaml:"MsgRpc" json:",optional"`
 	UserRpc zrpc.RpcClientConf `yaml:"UserRpc" json:",optional"`
 }

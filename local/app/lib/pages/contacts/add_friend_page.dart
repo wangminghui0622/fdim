@@ -75,7 +75,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
     _sending = true;
     EasyLoading.show();
     try {
-      await OpenIM.iMManager.friendshipManager.addFriend(
+      await FDIM.iMManager.friendshipManager.addFriend(
         userID: toUserID,
         reason: reqMsg,
       );

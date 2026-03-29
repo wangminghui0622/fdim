@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -26,12 +26,12 @@ func NewGetFriendApplyUnhandledCountLogic(ctx context.Context, svcCtx *svc.Servi
 func (l *GetFriendApplyUnhandledCountLogic) GetFriendApplyUnhandledCount(req *user.GetSelfUnhandledApplyCountReq) (*user.GetSelfUnhandledApplyCountResp, error) {
 	resp := &user.GetSelfUnhandledApplyCountResp{}
 
-	// Ȩ����֤
+	// ??????
 	if err := authverify.CheckAccess(l.ctx, req.UserID); err != nil {
 		return nil, err
 	}
 
-	// ��ȡδ����ĺ�����������
+	// ???????????????????
 	count, err := l.svcCtx.FriendDB.GetUnhandledFriendRequestCount(l.ctx, req.UserID, req.Time)
 	if err != nil {
 		return nil, err

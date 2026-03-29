@@ -1,14 +1,13 @@
 package types
 
-// 用户相关请求和响应类型
-// 注意：这些类型需要与 open-im-server 的 API 接口保持一致
+// 用户相关请求和响应类?
 
 type UserRegisterReq struct {
-	Secret   string   `json:"secret,optional"`
-	UserID   string   `json:"userID,optional"`
-	Nickname string   `json:"nickname,optional"`
-	FaceURL  string   `json:"faceURL,optional"`
-	Password string   `json:"password"` // 密码字段（必填）
+	Secret   string `json:"secret,optional"`
+	UserID   string `json:"userID,optional"`
+	Nickname string `json:"nickname,optional"`
+	FaceURL  string `json:"faceURL,optional"`
+	Password string `json:"password"` // 密码字段（必填）
 }
 
 type UserInfo struct {
@@ -36,7 +35,7 @@ type UpdateUserInfoExReq struct {
 }
 
 type UserInfoEx struct {
-	UserID   string `json:"userID"`
+	UserID   string  `json:"userID"`
 	Nickname *string `json:"nickname,optional"`
 	FaceURL  *string `json:"faceURL,optional"`
 	Ex       *string `json:"ex,optional"`
@@ -66,12 +65,12 @@ type AccountCheckResp struct {
 
 type AccountCheckResult struct {
 	UserID string `json:"userID"`
-	Result int32  `json:"result"` // 0: 不存在, 1: 存在
+	Result int32  `json:"result"` // 0: 不存? 1: 存在
 }
 
 type SetGlobalRecvMessageOptReq struct {
-	UserID         string `json:"userID"`
-	GlobalRecvMsgOpt int32  `json:"globalRecvMsgOpt"` // 0: 接收, 1: 不接收, 2: 接收但不提醒
+	UserID           string `json:"userID"`
+	GlobalRecvMsgOpt int32  `json:"globalRecvMsgOpt"` // 0: 接收, 1: 不接? 2: 接收但不提醒
 }
 
 type SetGlobalRecvMessageOptResp struct {
@@ -89,7 +88,7 @@ type Pagination struct {
 
 type GetAllUsersIDResp struct {
 	BaseResp
-	Total  int32    `json:"total"`
+	Total   int32    `json:"total"`
 	UserIDs []string `json:"userIDs"`
 }
 
@@ -106,7 +105,7 @@ type GetUsersResp struct {
 }
 
 type UserRegisterCountReq struct {
-	Start int64 `json:"start"` // 开始时间戳（秒）
+	Start int64 `json:"start"` // 开始时间戳（秒?
 	End   int64 `json:"end"`   // 结束时间戳（秒）
 }
 
@@ -141,9 +140,9 @@ type GetUserStatusResp struct {
 
 // SubscribeOrCancelUsersStatus 相关类型
 type SubscribeOrCancelUsersStatusReq struct {
-	UserID     string   `json:"userID"`
-	UserIDs    []string `json:"userIDs"`
-	Genre      int32    `json:"genre"` // 0: 订阅, 1: 取消订阅
+	UserID  string   `json:"userID"`
+	UserIDs []string `json:"userIDs"`
+	Genre   int32    `json:"genre"` // 0: 订阅, 1: 取消订阅
 }
 
 type SubscribeOrCancelUsersStatusResp struct {
@@ -222,17 +221,17 @@ type ProcessUserCommandGetAllResp struct {
 
 // NotificationAccount 相关类型
 type AddNotificationAccountReq struct {
-	UserID        string `json:"userID"`
-	NickName      string `json:"nickName"`
-	FaceURL       string `json:"faceURL"`
+	UserID         string `json:"userID"`
+	NickName       string `json:"nickName"`
+	FaceURL        string `json:"faceURL"`
 	AppMangerLevel int32  `json:"appMangerLevel"`
 }
 
 type AddNotificationAccountResp struct {
 	BaseResp
-	UserID        string `json:"userID"`
-	FaceURL       string `json:"faceURL"`
-	NickName      string `json:"nickName"`
+	UserID         string `json:"userID"`
+	FaceURL        string `json:"faceURL"`
+	NickName       string `json:"nickName"`
 	AppMangerLevel int32  `json:"appMangerLevel"`
 }
 
@@ -247,21 +246,21 @@ type UpdateNotificationAccountInfoResp struct {
 }
 
 type SearchNotificationAccountReq struct {
-	Keyword        string     `json:"keyword"`
+	Keyword         string     `json:"keyword"`
 	AppManagerLevel *int32     `json:"appManagerLevel,optional"`
-	Pagination     Pagination `json:"pagination"`
+	Pagination      Pagination `json:"pagination"`
 }
 
 type NotificationAccountInfo struct {
-	UserID        string `json:"userID"`
-	FaceURL       string `json:"faceURL"`
-	NickName      string `json:"nickName"`
+	UserID         string `json:"userID"`
+	FaceURL        string `json:"faceURL"`
+	NickName       string `json:"nickName"`
 	AppMangerLevel int32  `json:"appMangerLevel"`
 }
 
 type SearchNotificationAccountResp struct {
 	BaseResp
-	Total                int64                   `json:"total"`
+	Total                int64                     `json:"total"`
 	NotificationAccounts []NotificationAccountInfo `json:"notificationAccounts"`
 }
 
@@ -310,15 +309,15 @@ type PageUserClientConfigResp struct {
 	Configs []ClientConfig `json:"configs"`
 }
 
-// GetUsersOnlineStatus 相关类型（需要 msggateway 服务）
+// GetUsersOnlineStatus 相关类型（需?msggateway 服务?
 type GetUsersOnlineStatusReq struct {
 	UserIDs []string `json:"userIDs"`
 }
 
 type UserOnlineStatus struct {
-	UserID               string                      `json:"userID"`
-	Status               int32                       `json:"status"`
-	DetailPlatformStatus []UserOnlinePlatformStatus  `json:"detailPlatformStatus,omitempty"`
+	UserID               string                     `json:"userID"`
+	Status               int32                      `json:"status"`
+	DetailPlatformStatus []UserOnlinePlatformStatus `json:"detailPlatformStatus,omitempty"`
 }
 
 type UserOnlinePlatformStatus struct {
@@ -332,7 +331,7 @@ type GetUsersOnlineStatusResp struct {
 	FailedResult  []interface{}      `json:"failedResult,omitempty"`
 }
 
-// GetUsersOnlineTokenDetail 相关类型（需要 msggateway 服务）
+// GetUsersOnlineTokenDetail 相关类型（需?msggateway 服务?
 type GetUsersOnlineTokenDetailReq struct {
 	UserIDs []string `json:"userIDs"`
 }
@@ -447,7 +446,7 @@ type SearchFriendResp struct {
 	Friends interface{} `json:"friends"`
 }
 
-// ========== 验证码 ==========
+// ========== 验证?==========
 
 type SendVerifyCodeReq struct {
 	UsedFor     int32  `json:"usedFor"`
@@ -470,7 +469,7 @@ type VerifyCodeReq struct {
 
 type VerifyCodeResp struct{}
 
-// ========== Chat 层用户接口 ==========
+// ========== Chat 层用户接?==========
 
 type FindUserFullInfoReq struct {
 	UserIDs []string `json:"userIDs"`
@@ -494,7 +493,7 @@ type ChatUpdateUserInfoReq struct {
 
 type ChatUpdateUserInfoResp struct{}
 
-// ========== 客户端配置 ==========
+// ========== 客户端配?==========
 
 type GetClientConfigReq struct{}
 
@@ -502,7 +501,7 @@ type GetClientConfigResp struct {
 	Config interface{} `json:"config"`
 }
 
-// ========== Chat 层: user/find/public, user/search/public ==========
+// ========== Chat ? user/find/public, user/search/public ==========
 
 type FindUserPublicInfoReq struct {
 	UserIDs []string `json:"userIDs"`
@@ -663,15 +662,15 @@ type DeleteApplicationVersionReq struct {
 
 type DeleteApplicationVersionResp struct{}
 
-// ========== OpenIM Callback ==========
+// ========== FDIM Callback ==========
 
-type OpenIMCallbackReq struct {
+type FDIMCallbackReq struct {
 	Command     string      `json:"command"`
 	Body        interface{} `json:"body"`
 	CallbackKey string      `json:"callbackKey,optional"`
 }
 
-type OpenIMCallbackResp struct{}
+type FDIMCallbackResp struct{}
 
 // ========== Admin ==========
 
@@ -901,10 +900,10 @@ type SearchIPForbiddenReq struct {
 }
 
 type IPForbiddenInfo struct {
-	Ip         string `json:"ip"`
-	LimitLogin bool   `json:"limitLogin"`
-	LimitRegister bool `json:"limitRegister"`
-	CreateTime int64  `json:"createTime"`
+	Ip            string `json:"ip"`
+	LimitLogin    bool   `json:"limitLogin"`
+	LimitRegister bool   `json:"limitRegister"`
+	CreateTime    int64  `json:"createTime"`
 }
 
 type SearchIPForbiddenResp struct {
@@ -1026,12 +1025,10 @@ type LoginUserCountResp struct {
 	DateCounts []DateCount `json:"dateCounts"`
 }
 
-// ========== Statistics (open-im-server) ==========
-
 type GetActiveUserReq struct {
-	Start int64  `json:"start"`
-	End   int64  `json:"end"`
-	Ase   bool   `json:"ase,optional"`
+	Start int64 `json:"start"`
+	End   int64 `json:"end"`
+	Ase   bool  `json:"ase,optional"`
 }
 
 type ActiveUser struct {
@@ -1079,9 +1076,9 @@ type GetActiveGroupResp struct {
 // ========== JSSDK ==========
 
 type JSSdkGetConversationsReq struct {
-	UserID         string     `json:"userID"`
-	ConversationIDs []string  `json:"conversationIDs,optional"`
-	Pagination     Pagination `json:"pagination,optional"`
+	UserID          string     `json:"userID"`
+	ConversationIDs []string   `json:"conversationIDs,optional"`
+	Pagination      Pagination `json:"pagination,optional"`
 }
 
 type JSSdkGetConversationsResp struct {

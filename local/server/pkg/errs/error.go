@@ -284,7 +284,6 @@ func toString(s string, kv []any) string {
 	return buf.String()
 }
 
-// Predefined errors (all error codes in one place, matching official OpenIM)
 var (
 	ErrSecretNotChanged = NewCodeError(SecretNotChangedError, "secret not changed, please change secret in config/share.yml for security reasons")
 

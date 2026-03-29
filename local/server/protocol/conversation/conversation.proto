@@ -1,5 +1,5 @@
 syntax = "proto3";
-package openim.conversation;
+package fdim.conversation;
 
 import "sdkws/sdkws.proto";
 import "wrapperspb/wrapperspb.proto";
@@ -31,17 +31,17 @@ message ConversationReq {
   int32 conversationType = 2;
   string userID = 3;
   string groupID = 4;
-  openim.protobuf.Int32Value recvMsgOpt = 5;
-  openim.protobuf.BoolValue isPinned = 6;
-  openim.protobuf.StringValue attachedInfo = 7;
-  openim.protobuf.BoolValue isPrivateChat = 8;
-  openim.protobuf.StringValue ex = 9;
-  openim.protobuf.Int32Value burnDuration = 10;
-  openim.protobuf.Int64Value minSeq = 11;
-  openim.protobuf.Int64Value maxSeq = 12;
-  openim.protobuf.Int32Value groupAtType = 13;
-  openim.protobuf.Int64Value msgDestructTime = 14;
-  openim.protobuf.BoolValue isMsgDestruct = 15;
+  fdim.protobuf.Int32Value recvMsgOpt = 5;
+  fdim.protobuf.BoolValue isPinned = 6;
+  fdim.protobuf.StringValue attachedInfo = 7;
+  fdim.protobuf.BoolValue isPrivateChat = 8;
+  fdim.protobuf.StringValue ex = 9;
+  fdim.protobuf.Int32Value burnDuration = 10;
+  fdim.protobuf.Int64Value minSeq = 11;
+  fdim.protobuf.Int64Value maxSeq = 12;
+  fdim.protobuf.Int32Value groupAtType = 13;
+  fdim.protobuf.Int64Value msgDestructTime = 14;
+  fdim.protobuf.BoolValue isMsgDestruct = 15;
 }
 
 message SetConversationReq {
@@ -207,18 +207,18 @@ message GetConversationNotReceiveMessageUserIDsResp {
 message UpdateConversationReq {
   string conversationID = 1;
   repeated string userIDs = 2;
-  openim.protobuf.Int32Value recvMsgOpt = 3;
-  openim.protobuf.BoolValue isPinned = 4;
-  openim.protobuf.StringValue attachedInfo = 5;
-  openim.protobuf.BoolValue isPrivateChat = 6;
-  openim.protobuf.StringValue ex = 7;
-  openim.protobuf.Int32Value burnDuration = 8;
-  openim.protobuf.Int64Value minSeq = 9;
-  openim.protobuf.Int64Value maxSeq = 10;
-  openim.protobuf.Int32Value groupAtType = 11;
-  openim.protobuf.Int64Value msgDestructTime = 12;
-  openim.protobuf.BoolValue isMsgDestruct = 13;
-  openim.protobuf.Int64Value latestMsgDestructTime = 14;
+  fdim.protobuf.Int32Value recvMsgOpt = 3;
+  fdim.protobuf.BoolValue isPinned = 4;
+  fdim.protobuf.StringValue attachedInfo = 5;
+  fdim.protobuf.BoolValue isPrivateChat = 6;
+  fdim.protobuf.StringValue ex = 7;
+  fdim.protobuf.Int32Value burnDuration = 8;
+  fdim.protobuf.Int64Value minSeq = 9;
+  fdim.protobuf.Int64Value maxSeq = 10;
+  fdim.protobuf.Int32Value groupAtType = 11;
+  fdim.protobuf.Int64Value msgDestructTime = 12;
+  fdim.protobuf.BoolValue isMsgDestruct = 13;
+  fdim.protobuf.Int64Value latestMsgDestructTime = 14;
 }
 
 message UpdateConversationResp {}
@@ -252,7 +252,7 @@ message GetIncrementalConversationResp {
 
 message GetOwnerConversationReq {
   string userID = 1;
-  openim.sdkws.RequestPagination pagination = 2;
+  fdim.sdkws.RequestPagination pagination = 2;
 }
 
 message GetOwnerConversationResp {
@@ -292,7 +292,7 @@ message ClearUserConversationMsgResp {
 
 message UpdateConversationsByUserReq {
   string userID = 1;
-  openim.protobuf.StringValue ex = 2;
+  fdim.protobuf.StringValue ex = 2;
 }
 
 message UpdateConversationsByUserResp {}

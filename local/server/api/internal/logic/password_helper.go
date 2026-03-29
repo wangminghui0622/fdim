@@ -7,8 +7,8 @@ import (
 )
 
 // VerifyPassword 验证密码是否匹配
-// plainPassword: 用户输入的明文密码
-// hashedPassword: 数据库中存储的加密密码
+// plainPassword: 用户输入的明文密?
+// hashedPassword: 数据库中存储的加密密?
 func VerifyPassword(plainPassword, hashedPassword string) bool {
 	// 使用 SHA256 加密明文密码
 	hash := sha256.Sum256([]byte(plainPassword))
@@ -18,7 +18,7 @@ func VerifyPassword(plainPassword, hashedPassword string) bool {
 	return encrypted == hashedPassword
 }
 
-// HashPassword 加密密码（用于注册时）
+// HashPassword 加密密码（用于注册时?
 func HashPassword(password string) (string, error) {
 	if password == "" {
 		return "", errors.New("密码不能为空")

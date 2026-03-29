@@ -165,16 +165,16 @@ func PageApplicationVersionHandler(svcCtx *svc.ServiceContext) http.HandlerFunc 
 	}
 }
 
-func OpenIMCallbackHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func FDIMCallbackHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req types.OpenIMCallbackReq
+		var req types.FDIMCallbackReq
 		if err := httpx.Parse(r, &req); err != nil {
 			ParamError(w, err)
 			return
 		}
 
-		l := logic.NewOpenIMCallbackLogic(r.Context(), svcCtx)
-		resp, err := l.OpenIMCallback(&req)
+		l := logic.NewFDIMCallbackLogic(r.Context(), svcCtx)
+		resp, err := l.FDIMCallback(&req)
 		if err != nil {
 			ServerError(w, err)
 		} else {

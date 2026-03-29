@@ -12,8 +12,8 @@ import '../live_controller.dart';
 import '../local_store.dart';
 import '../ws_client.dart';
 
-/// IMController - mirrors the official OpenIM Flutter demo's im_controller.dart
-/// Uses OpenIM.iMManager (our pure-Dart SDK) for all IM operations.
+/// IMController - mirrors the official FDIM Flutter demo's im_controller.dart
+/// Uses FDIM.iMManager (our pure-Dart SDK) for all IM operations.
 class IMController extends GetxController with LiveController {
   final conversations = <ConversationInfo>[].obs;
   final totalUnreadCount = 0.obs;
@@ -62,13 +62,13 @@ class IMController extends GetxController with LiveController {
     c2cReadReceiptSubject.close();
     msgRevokedSubject.close();
     onCloseLive();
-    OpenIM.iMManager.dispose();
+    FDIM.iMManager.dispose();
     super.onClose();
   }
 
   /// Initialize SDK and set all listeners (call after login tokens are stored)
-  Future<void> initOpenIM() async {
-    await OpenIM.iMManager.initSDK(
+  Future<void> initFDIM() async {
+    await FDIM.iMManager.initSDK(
       platformID: Config.platformID,
       apiAddr: Config.apiUrl,
       wsAddr: Config.wsUrl,
@@ -93,7 +93,7 @@ class IMController extends GetxController with LiveController {
     );
 
     // Set conversation listener
-    OpenIM.iMManager.conversationManager.setConversationListener(
+    FDIM.iMManager.conversationManager.setConversationListener(
       OnConversationListener(
         onConversationChanged: (list) {
           conversationChangedSubject.add(list);
@@ -108,7 +108,7 @@ class IMController extends GetxController with LiveController {
     );
 
     // Set message listener
-    OpenIM.iMManager.messageManager.setAdvancedMsgListener(
+    FDIM.iMManager.messageManager.setAdvancedMsgListener(
       OnAdvancedMsgListener(
         onRecvNewMessage: (msg) {
           // 自定义消息：区分信令（200-204）和通话结果（210）
@@ -148,7 +148,7 @@ class IMController extends GetxController with LiveController {
     // Set friendship listener
     // Official pattern: on ANY friend application event, re-fetch count from server
     // (never manual increment — matches HomeLogic.getUnhandledFriendApplicationCount)
-    OpenIM.iMManager.friendshipManager.setFriendshipListener(
+    FDIM.iMManager.friendshipManager.setFriendshipListener(
       OnFriendshipListener(
         onFriendApplicationAdded: (info) {
           loadFriendApplyCount();
@@ -187,7 +187,7 @@ class IMController extends GetxController with LiveController {
     );
 
     // Set user listener
-    OpenIM.iMManager.userManager.setUserListener(
+    FDIM.iMManager.userManager.setUserListener(
       OnUserListener(
         onSelfInfoUpdated: (info) {
           selfInfoUpdatedSubject.add(info);
@@ -198,12 +198,12 @@ class IMController extends GetxController with LiveController {
     );
 
     // Set group listener
-    OpenIM.iMManager.groupManager.setGroupListener(OnGroupListener());
+    FDIM.iMManager.groupManager.setGroupListener(OnGroupListener());
   }
 
   /// Login via SDK
   Future<UserInfo> loginSDK() async {
-    final info = await OpenIM.iMManager.login(
+    final info = await FDIM.iMManager.login(
       userID: Config.userID,
       token: Config.token,
     );
@@ -211,7 +211,7 @@ class IMController extends GetxController with LiveController {
     await LocalStore.init();
 
     try {
-      await OpenIM.iMManager.conversationManager.getConversationListSplit(
+      await FDIM.iMManager.conversationManager.getConversationListSplit(
         offset: 0,
         count: 100,
       );
@@ -227,7 +227,7 @@ class IMController extends GetxController with LiveController {
 
   /// Logout via SDK
   Future<void> logoutSDK() async {
-    await OpenIM.iMManager.logout();
+    await FDIM.iMManager.logout();
     await LocalStore.close();
     isLoggedIn.value = false;
   }
@@ -236,7 +236,7 @@ class IMController extends GetxController with LiveController {
   /// Called after login to initialize badge, and on WS reconnect.
   Future<void> loadFriendApplyCount() async {
     try {
-      final list = await OpenIM.iMManager.friendshipManager
+      final list = await FDIM.iMManager.friendshipManager
           .getFriendApplicationListAsRecipient();
       final pending = list.where((e) => e.handleResult == 0).length;
       friendApplyCount.value = pending;
@@ -273,7 +273,7 @@ class IMController extends GetxController with LiveController {
       String reqMsg = info.reqMsg ?? '';
       if (reqMsg.isEmpty) {
         try {
-          final applies = await OpenIM.iMManager.friendshipManager
+          final applies = await FDIM.iMManager.friendshipManager
               .getFriendApplicationListAsApplicant();
           for (final a in applies) {
             if (a.toUserID == otherID && (a.reqMsg ?? '').isNotEmpty) {
@@ -293,7 +293,7 @@ class IMController extends GetxController with LiveController {
         otherFaceURL = info.toFaceURL;
       } else {
         try {
-          final users = await OpenIM.iMManager.userManager.getUsersInfo(
+          final users = await FDIM.iMManager.userManager.getUsersInfo(
             userIDList: [otherID],
           );
           if (users.isNotEmpty) {
@@ -360,9 +360,9 @@ class IMController extends GetxController with LiveController {
       await LocalStore.putConversation(conv);
 
       // 通知 UI 刷新
-      OpenIM.iMManager.conversationManager.listener
+      FDIM.iMManager.conversationManager.listener
           .conversationChanged([conv]);
-      OpenIM.iMManager.conversationManager.listener
+      FDIM.iMManager.conversationManager.listener
           .totalUnreadMessageCountChanged(LocalStore.getTotalUnreadCount());
 
       debugPrint('[IMController] Created conversation $convID with 2 messages for friend $otherNickname');

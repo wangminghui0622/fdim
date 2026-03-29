@@ -53,10 +53,10 @@ func (l *SetConversationLogic) SetConversation(req *conversation.SetConversation
 		CreateTime:       time.Now(),
 	}
 
-	// 更新或创建会话
+	// 更新或创建会?
 	err := l.svcCtx.ConversationDB.Update(l.ctx, conv)
 	if err != nil {
-		// 如果不存在，则创建
+		// 如果不存在，则创?
 		err = l.svcCtx.ConversationDB.Create(l.ctx, []*model.Conversation{conv})
 		if err != nil {
 			return nil, fmt.Errorf("failed to set conversation: %w", err)

@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -25,12 +25,12 @@ func NewDelAdminAccountLogic(ctx context.Context, svcCtx *svc.ServiceContext) *D
 }
 
 func (l *DelAdminAccountLogic) DelAdminAccount(req *admin.DelAdminAccountReq) (*admin.DelAdminAccountResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.UserIDs) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("userIDs is empty")
 	}
 
-	// 2. 检查是否有重复的 userID
+	// 2. Ƿظ userID
 	userIDMap := make(map[string]bool)
 	for _, userID := range req.UserIDs {
 		if userIDMap[userID] {
@@ -39,8 +39,8 @@ func (l *DelAdminAccountLogic) DelAdminAccount(req *admin.DelAdminAccountReq) (*
 		userIDMap[userID] = true
 	}
 
-	// 3. 检查是否是超级管理员（不能删除超级管理员）
-	// 超级管理员级别是 100 (AdvancedUserLevel)
+	// 3. ǷǳԱɾԱ
+	// Ա 100 (AdvancedUserLevel)
 	const AdvancedUserLevel = 100
 	for _, userID := range req.UserIDs {
 		adminInfo, err := l.svcCtx.AdminDB.GetAdminUserID(l.ctx, userID)
@@ -53,7 +53,7 @@ func (l *DelAdminAccountLogic) DelAdminAccount(req *admin.DelAdminAccountReq) (*
 		}
 	}
 
-	// 4. 删除管理员账户
+	// 4. ɾԱ˻
 	if err := l.svcCtx.AdminDB.DelAdminAccount(l.ctx, req.UserIDs); err != nil {
 		l.Errorf("DelAdminAccount failed: %v", err)
 		return nil, fmt.Errorf("failed to delete admin account: %w", err)

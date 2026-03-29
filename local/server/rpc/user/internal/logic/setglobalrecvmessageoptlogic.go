@@ -27,23 +27,23 @@ func NewSetGlobalRecvMessageOptLogic(ctx context.Context, svcCtx *svc.ServiceCon
 func (l *SetGlobalRecvMessageOptLogic) SetGlobalRecvMessageOpt(req *user.SetGlobalRecvMessageOptReq) (*user.SetGlobalRecvMessageOptResp, error) {
 	resp := &user.SetGlobalRecvMessageOptResp{}
 
-	// Ȩ����֤
+	// Ȩ֤
 	if err := authverify.CheckAccess(l.ctx, req.UserID); err != nil {
 		return nil, err
 	}
 
-	// ������֤
+	// ֤
 	if req.UserID == "" {
 		return nil, fmt.Errorf("userID is empty")
 	}
 
-	// ����û��Ƿ����
+	// ûǷ
 	_, err := l.svcCtx.UserDB.Take(l.ctx, req.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("user not found: %v", err)
 	}
 
-	// ����ȫ�ֽ�����Ϣѡ��
+	// ȫֽϢѡ
 	data := map[string]interface{}{
 		"global_recv_msg_opt": req.GlobalRecvMsgOpt,
 	}
@@ -51,7 +51,7 @@ func (l *SetGlobalRecvMessageOptLogic) SetGlobalRecvMessageOpt(req *user.SetGlob
 		return nil, err
 	}
 
-	// �����û���Ϣ����֪ͨ��֪ͨ�û��Լ���
+	// ûϢ֪֪ͨͨûԼ
 	if l.svcCtx.UserNotification != nil {
 		l.svcCtx.UserNotification.UserInfoUpdatedNotification(l.ctx, req.UserID, req.UserID)
 	}

@@ -28,8 +28,8 @@ func NewDeleteMsgsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Delete
 	}
 }
 
-// DeleteMsgs 选择性删除指定会话中的部分消息。
-// 删除后发送 DeleteMsgsNotification (2102) 通知客户端同步。
+// DeleteMsgs 选择性删除指定会话中的部分消息?
+// 删除后发?DeleteMsgsNotification (2102) 通知客户端同步?
 func (l *DeleteMsgsLogic) DeleteMsgs(req *msg.DeleteMsgsReq) (*msg.DeleteMsgsResp, error) {
 	if req.ConversationID == "" || len(req.Seqs) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("conversationID and seqs are required")
@@ -38,13 +38,13 @@ func (l *DeleteMsgsLogic) DeleteMsgs(req *msg.DeleteMsgsReq) (*msg.DeleteMsgsRes
 		return nil, errs.ErrInternalServer.WrapMsg("message database not initialized")
 	}
 
-	// 从 Mongo 中删除
+	// ?Mongo 中删?
 	if err := l.svcCtx.MsgDB.DeleteMessagesBySeq(l.ctx, req.ConversationID, req.Seqs); err != nil {
 		l.Errorw("DeleteMessagesBySeq failed", logx.Field("conversationID", req.ConversationID), logx.Field("seqs", req.Seqs), logx.Field("error", err))
 		return nil, errs.WrapMsg(err, "failed to delete messages")
 	}
 
-	// 从 Redis 中清理这些消息缓存（忽略错误）
+	// ?Redis 中清理这些消息缓存（忽略错误?
 	if l.svcCtx.MsgCache != nil {
 		for _, seq := range req.Seqs {
 			key := l.svcCtx.MsgCacheKey(req.ConversationID, seq)
@@ -54,7 +54,7 @@ func (l *DeleteMsgsLogic) DeleteMsgs(req *msg.DeleteMsgsReq) (*msg.DeleteMsgsRes
 		}
 	}
 
-	// 发送 DeleteMsgsNotification 通知（与官方一致）
+	// 发?DeleteMsgsNotification 通知（与官方一致）
 	if l.svcCtx.SendMsgFunc != nil && req.UserID != "" {
 		go l.sendDeleteMsgsNotification(req.UserID, req.ConversationID, req.Seqs)
 	}

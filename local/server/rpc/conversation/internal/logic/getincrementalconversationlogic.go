@@ -30,9 +30,9 @@ func NewGetIncrementalConversationLogic(ctx context.Context, svcCtx *svc.Service
 func (l *GetIncrementalConversationLogic) GetIncrementalConversation(req *conversation.GetIncrementalConversationReq) (*conversation.GetIncrementalConversationResp, error) {
 	resp := &conversation.GetIncrementalConversationResp{}
 
-	// 目前 go-im 的 ConversationDatabase 尚未实现版本日志表，为保持简单并保证正确性：
-	// - 当客户端未携带 version（或 version=0）时，返回全量会话并标记 Full=true；
-	// - 当携带 version>0 时，暂时仍返回全量（兼容行为），后续可接入完整 VersionLog 机制。
+	// 目前 go-im ?ConversationDatabase 尚未实现版本日志表，为保持简单并保证正确性：
+	// - 当客户端未携?version（或 version=0）时，返回全量会话并标记 Full=true?
+	// - 当携?version>0 时，暂时仍返回全量（兼容行为），后续可接入完?VersionLog 机制?
 
 	conversations, err := l.svcCtx.ConversationDB.FindUserIDAllConversations(l.ctx, req.UserID)
 	if err != nil {
@@ -61,7 +61,7 @@ func (l *GetIncrementalConversationLogic) GetIncrementalConversation(req *conver
 		})
 	}
 
-	// 简化版版本信息：使用一个递增的 uint 版本号（这里用会话数量近似），VersionID 使用固定标识
+	// 简化版版本信息：使用一个递增?uint 版本号（这里用会话数量近似），VersionID 使用固定标识
 	resp.Version = uint64(len(conversations))
 	resp.VersionID = VersionSortChangeID
 	resp.Full = true

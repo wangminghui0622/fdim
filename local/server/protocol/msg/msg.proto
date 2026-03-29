@@ -1,5 +1,5 @@
 syntax = "proto3";
-package openim.msg;
+package fdim.msg;
 
 import "conversation/conversation.proto";
 import "sdkws/sdkws.proto";
@@ -195,6 +195,7 @@ message Seqs {
   int64 maxSeq = 1;
   int64 hasReadSeq = 2;
   int64 maxSeqTime = 3;
+  int64 peerReadSeq = 4;  // 对方已读到的最大 seq（单聊时使用）
 }
 
 message GetConversationsHasReadAndMaxSeqResp {

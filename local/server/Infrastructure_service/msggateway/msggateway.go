@@ -28,12 +28,12 @@ func main() {
 	var c config.Config
 	conf.MustLoad(*configFile, &c)
 
-	// 调试：打印配置
+	// 调试：打印配
 	fmt.Printf("Config loaded: LongConnServer.Ports=%v\n", c.LongConnServer.Ports)
 
 	svcCtx := svc.NewServiceContext(c)
 
-	// 启动 gRPC 服务器
+	// 启动 gRPC 服务
 	grpcServer := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
 		msggateway.RegisterMsgGatewayServer(grpcServer, server.NewMsgGatewayServer(svcCtx))
 
@@ -43,11 +43,11 @@ func main() {
 	})
 	defer grpcServer.Stop()
 
-	// 创建上下文
+	// 创建上下
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// 启动 WebSocket 服务器
+	// 启动 WebSocket 服务
 	if len(c.LongConnServer.Ports) > 0 {
 		port := c.LongConnServer.Ports[0]
 		fmt.Printf("Launching WebSocket server on port %d...\n", port)

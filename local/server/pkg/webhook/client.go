@@ -1,4 +1,4 @@
-﻿package webhook
+package webhook
 
 import (
 	"bytes"
@@ -12,16 +12,16 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-// Client Webhook 客户�?
+// Client Webhook ͻ??
 type Client struct {
 	url    string
 	client *http.Client
 }
 
-// NewWebhookClient 创建 Webhook 客户�?
+// NewWebhookClient  Webhook ͻ??
 func NewWebhookClient(url string) *Client {
 	if url == "" {
-		return nil // 如果 URL 为空，返�?nil，表示不启用 webhook
+		return nil //  URL Ϊգ??nilʾ webhook
 	}
 	return &Client{
 		url: url,
@@ -31,17 +31,17 @@ func NewWebhookClient(url string) *Client {
 	}
 }
 
-// CallbackReq Webhook 回调请求接口
+// CallbackReq Webhook صӿ
 type CallbackReq interface {
 	GetCallbackCommand() string
 }
 
-// CallbackResp Webhook 回调响应接口
+// CallbackResp Webhook صӦӿ
 type CallbackResp interface {
 	Parse() error
 }
 
-// CommonCallbackResp 通用回调响应
+// CommonCallbackResp ͨûصӦ
 type CommonCallbackResp struct {
 	ActionCode int32  `json:"actionCode"`
 	ErrCode    int32  `json:"errCode"`
@@ -51,21 +51,21 @@ type CommonCallbackResp struct {
 }
 
 const (
-	// Next 继续执行
+	// Next ִ
 	Next = 1
-	// NoError 无错�?
+	// NoError ޴??
 	NoError = 0
-	// CallbackError 回调错误代码
+	// CallbackError ص
 	CallbackError = 1000
 )
 
-// ErrCallbackContinue 表示 webhook 回调失败但应该继续执�?
+// ErrCallbackContinue ʾ webhook صʧܵӦüִ??
 var ErrCallbackContinue = fmt.Errorf("webhook callback error but continue")
 
-// Parse 解析响应
+// Parse Ӧ
 func (c *CommonCallbackResp) Parse() error {
 	if c.ActionCode == NoError && c.NextCode == Next {
-		// 如果 ErrCode �?CallbackError，返�?ErrCallbackContinue，允许继续执�?
+		//  ErrCode ??CallbackError??ErrCallbackContinueִ??
 		if c.ErrCode == CallbackError {
 			return ErrCallbackContinue
 		}
@@ -74,10 +74,10 @@ func (c *CommonCallbackResp) Parse() error {
 	return nil
 }
 
-// SyncPost 同步发�?Webhook 回调（Before 回调�?
+// SyncPost ͬ??Webhook صBefore ص??
 func (c *Client) SyncPost(ctx context.Context, command string, req CallbackReq, resp CallbackResp, timeout int) error {
 	if c == nil {
-		return nil // 未启�?webhook
+		return nil // δ??webhook
 	}
 
 	fullURL := c.url + "/" + command
@@ -85,13 +85,13 @@ func (c *Client) SyncPost(ctx context.Context, command string, req CallbackReq, 
 
 	logx.WithContext(ctx).Infof("webhook sync post: url=%s, command=%s, operationID=%s", fullURL, command, operationID)
 
-	// 创建请求�?
+	// ??
 	reqBody, err := json.Marshal(req)
 	if err != nil {
 		return fmt.Errorf("failed to marshal webhook request: %w", err)
 	}
 
-	// 创建请求
+	// 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, fullURL, bytes.NewReader(reqBody))
 	if err != nil {
 		return fmt.Errorf("failed to create webhook request: %w", err)
@@ -102,26 +102,26 @@ func (c *Client) SyncPost(ctx context.Context, command string, req CallbackReq, 
 		httpReq.Header.Set("operationID", operationID)
 	}
 
-	// 设置超时
+	// óʱ
 	if timeout > 0 {
 		ctx, cancel := context.WithTimeout(ctx, time.Duration(timeout)*time.Second)
 		defer cancel()
 		httpReq = httpReq.WithContext(ctx)
 	}
 
-	// 发送请�?
+	// ??
 	httpResp, err := c.client.Do(httpReq)
 	if err != nil {
 		return fmt.Errorf("webhook request failed: %w", err)
 	}
 	defer httpResp.Body.Close()
 
-	// 解析响应
+	// Ӧ
 	if err := json.NewDecoder(httpResp.Body).Decode(resp); err != nil {
 		return fmt.Errorf("failed to decode webhook response: %w", err)
 	}
 
-	// 解析错误
+	// 
 	if err := resp.Parse(); err != nil {
 		return err
 	}
@@ -130,15 +130,15 @@ func (c *Client) SyncPost(ctx context.Context, command string, req CallbackReq, 
 	return nil
 }
 
-// AsyncPost 异步发�?Webhook 回调（After 回调�?
+// AsyncPost 첽??Webhook صAfter ص??
 func (c *Client) AsyncPost(ctx context.Context, command string, req CallbackReq, resp CallbackResp, timeout int) {
 	if c == nil {
-		return // 未启�?webhook
+		return // δ??webhook
 	}
 
-	// 异步执行
+	// 첽ִ
 	go func() {
-		// 使用新的 context，避免原 context 被取�?
+		// ʹµ contextԭ context ȡ??
 		asyncCtx := context.Background()
 		if err := c.SyncPost(asyncCtx, command, req, resp, timeout); err != nil {
 			logx.WithContext(asyncCtx).Errorf("webhook async post failed: %v", err)
@@ -146,7 +146,7 @@ func (c *Client) AsyncPost(ctx context.Context, command string, req CallbackReq,
 	}()
 }
 
-// WithCondition 条件执行 Webhook 回调
+// WithCondition ִ Webhook ص
 func WithCondition(ctx context.Context, enable bool, callback func(context.Context) error) error {
 	if !enable {
 		return nil

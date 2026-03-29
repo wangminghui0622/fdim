@@ -13,7 +13,7 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-// FcmPusher 使用 FCM 进行离线推送
+// FcmPusher 使用 FCM 进行离线推?
 type FcmPusher struct {
 	redis     *redis.Client
 	serverKey string
@@ -51,7 +51,7 @@ type fcmRequest struct {
 	Data         *fcmData        `json:"data,omitempty"`
 }
 
-// Push 根据 userIDs 查找各自的 FCM token，并发送通知
+// Push 根据 userIDs 查找各自?FCM token，并发送通知
 func (p *FcmPusher) Push(ctx context.Context, userIDs []string, title, content string, opts *Options) error {
 	if len(userIDs) == 0 {
 		return nil
@@ -61,7 +61,7 @@ func (p *FcmPusher) Push(ctx context.Context, userIDs []string, title, content s
 		return nil
 	}
 
-	// 1. 从 Redis 读取每个用户的 FCM token（支持多终端）
+	// 1. ?Redis 读取每个用户?FCM token（支持多终端?
 	tokens := make([]string, 0)
 	for _, userID := range userIDs {
 		prefix := fmt.Sprintf("fcm_token:%s:", userID)
@@ -88,7 +88,7 @@ func (p *FcmPusher) Push(ctx context.Context, userIDs []string, title, content s
 		return nil
 	}
 
-	// 2. 构造 FCM 请求体
+	// 2. 构?FCM 请求?
 	data := &fcmData{}
 	if opts != nil {
 		data.Ex = opts.Ex

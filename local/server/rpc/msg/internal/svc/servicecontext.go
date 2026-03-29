@@ -27,28 +27,28 @@ type ServiceContext struct {
 	Redis   *redis2.Client
 	// 消息存储与缓存（与官方一致，使用 controller 层）
 	MsgDatabase        controller.CommonMsgDatabase
-	MsgCache           cache.MsgCache                // 使用 pkg/cache 接口（兼容旧代码）
+	MsgCache           cache.MsgCache                // 使用 pkg/cache 接口（兼容旧代码?
 	MsgDB              database.MsgDatabase          // 简化的数据库接口（兼容旧代码）
 	SeqConversation    storagecache.SeqConversationCache // 官方 seq 分配器（SendMsg 必须使用此接口）
 	// NATS producers
-	ToRedisProducer mq.Producer // 发送到 toRedis topic，触发 msgtransfer 链路
-	ToPushProducer  mq.Producer // 直接发送到 toPush topic，用于回退时推送
+	ToRedisProducer mq.Producer // 发送到 toRedis topic，触?msgtransfer 链路
+	ToPushProducer  mq.Producer // 直接发送到 toPush topic，用于回退时推?
 	// 内部 SendMsg 函数引用（用于发送通知，避免循环依赖）
 	SendMsgFunc func(ctx context.Context, req *msg.SendMsgReq) (*msg.SendMsgResp, error)
 	// 通知发送器（与官方一致）
 	NotificationSender *notification.NotificationSender
-	// RPC 客户端
+	// RPC 客户?
 	ConversationClient conversation.ConversationClient
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	// 初始化 MongoDB
+	// 初始?MongoDB
 	mongoDB := database.NewMongoDB(c.Mongo.Host, c.Mongo.Database, c.Mongo.Username, c.Mongo.Password)
 
-	// 初始化 Redis
+	// 初始?Redis
 	redisClient := cache.NewRedisClient(c.Cache)
 
-	// 初始化消息数据库（使用官方 storage 层接口）
+	// 初始化消息数据库（使用官?storage 层接口）
 	msgDocModel, err := mgo.NewMsgMongo(mongoDB.GetDatabase())
 	if err != nil {
 		logx.Errorf("Failed to create MsgMongo: %v", err)
@@ -57,21 +57,21 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	// 初始化消息缓存（使用官方 storage 层接口）
 	msgCacheModel := redis.NewMsgCache(redisClient, msgDocModel)
 	
-	// 初始化 SeqConversation（与官方一致）
+	// 初始?SeqConversation（与官方一致）
 	seqConversation, err := mgo.NewSeqConversationMongo(mongoDB.GetDatabase())
 	if err != nil {
 		logx.Errorf("Failed to create SeqConversation: %v", err)
 	}
 	seqConversationCache := redis.NewSeqConversationCacheRedis(redisClient, seqConversation)
 	
-	// 初始化 SeqUser（与官方一致）
+	// 初始?SeqUser（与官方一致）
 	seqUser, err := mgo.NewSeqUserMongo(mongoDB.GetDatabase())
 	if err != nil {
 		logx.Errorf("Failed to create SeqUser: %v", err)
 	}
 	seqUserCache := redis.NewSeqUserCacheRedis(redisClient, seqUser)
 
-	// 初始化 NATS Producers
+	// 初始?NATS Producers
 	var toRedisProducer, toPushProducer mq.Producer
 	
 	// toRedis producer
@@ -98,11 +98,11 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		}
 	}
 
-	// 初始化 controller 层的 MsgDatabase（与官方一致）
+	// 初始?controller 层的 MsgDatabase（与官方一致）
 	msgDatabase := controller.NewCommonMsgDatabase(msgDocModel, msgCacheModel, seqUserCache, seqConversationCache, toRedisProducer)
 	
 	// 为了兼容旧代码，同时保留简化的 MsgCache 接口
-	// 通过 SetSeqProvider 将 seq 操作委托给官方 SeqConversationCache，确保 seq 读写一致
+	// 通过 SetSeqProvider ?seq 操作委托给官?SeqConversationCache，确?seq 读写一?
 	var simpleMsgCache cache.MsgCache
 	if redisClient != nil {
 		simpleMsgDocDB := database.NewMsgDocDatabase(mongoDB)
@@ -114,16 +114,16 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		simpleMsgCache = rmc
 	}
 
-	// 初始化 Conversation RPC 客户端（增加超时和重试）
+	// 初始?Conversation RPC 客户端（增加超时和重试）
 	var convClient conversation.ConversationClient
-	// 支持 Etcd 服务发现或直连方式
+	// 支持 Etcd 服务发现或直连方?
 	if len(c.ConversationRpc.Etcd.Hosts) > 0 || c.ConversationRpc.Target != "" || len(c.ConversationRpc.Endpoints) > 0 {
 		// 设置更长的超时时间（10秒）
 		if c.ConversationRpc.Timeout == 0 {
-			c.ConversationRpc.Timeout = 10000 // 10秒
+			c.ConversationRpc.Timeout = 10000 // 10?
 		}
 		
-		// 尝试连接，最多重试3次
+		// 尝试连接，最多重??
 		var conn zrpc.Client
 		var err error
 		for i := 0; i < 3; i++ {
@@ -174,6 +174,6 @@ func (s *ServiceContext) MsgCacheKey(conversationID string, seq int64) string {
 	if s.Redis == nil {
 		return ""
 	}
-	// 与 RedisMsgCache.getMessageKey 保持一致
+	// ?RedisMsgCache.getMessageKey 保持一?
 	return fmt.Sprintf("msg:%s:%d", conversationID, seq)
 }

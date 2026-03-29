@@ -36,7 +36,7 @@ func (l *UpdateConversationsByUserLogic) UpdateConversationsByUser(req *conversa
 		return resp, nil
 	}
 
-	// 更新用户的所有会话
+	// 更新用户的所有会?
 	_, err := l.svcCtx.ConversationDB.UpdateUserConversations(l.ctx, req.UserID, args)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update conversations: %w", err)

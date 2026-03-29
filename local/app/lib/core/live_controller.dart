@@ -114,10 +114,10 @@ mixin LiveController {
         'customType': CustomMessageType.callingBusy,
         'data': signaling.invitation!.toJson(),
       };
-      final message = await OpenIM.iMManager.messageManager
+      final message = await FDIM.iMManager.messageManager
           .createCustomMessage(
               data: jsonEncode(data), extension: '', description: '');
-      await OpenIM.iMManager.messageManager.sendMessage(
+      await FDIM.iMManager.messageManager.sendMessage(
         message: message,
         offlinePushInfo: OfflinePushInfo(),
         userID: signaling.invitation!.inviterUserID,
@@ -209,11 +209,11 @@ mixin LiveController {
       'customType': CustomMessageType.callingInvite,
       'data': signaling.invitation!.toJson(),
     };
-    final message = await OpenIM.iMManager.messageManager
+    final message = await FDIM.iMManager.messageManager
         .createCustomMessage(
             data: jsonEncode(data), extension: '', description: '');
     debugPrint('[RTC] _onDialSingle: sending signaling message...');
-    await OpenIM.iMManager.messageManager.sendMessage(
+    await FDIM.iMManager.messageManager.sendMessage(
       message: message,
       offlinePushInfo: OfflinePushInfo(),
       userID: signaling.invitation!.inviteeUserIDList!.first,
@@ -235,10 +235,10 @@ mixin LiveController {
       'customType': CustomMessageType.callingAccept,
       'data': signaling.invitation!.toJson(),
     };
-    final message = await OpenIM.iMManager.messageManager
+    final message = await FDIM.iMManager.messageManager
         .createCustomMessage(
             data: jsonEncode(data), extension: '', description: '');
-    await OpenIM.iMManager.messageManager.sendMessage(
+    await FDIM.iMManager.messageManager.sendMessage(
       message: message,
       offlinePushInfo: OfflinePushInfo(),
       userID: signaling.invitation!.inviterUserID,
@@ -258,14 +258,14 @@ mixin LiveController {
       'customType': CustomMessageType.callingReject,
       'data': signaling.invitation!.toJson(),
     };
-    final message = await OpenIM.iMManager.messageManager
+    final message = await FDIM.iMManager.messageManager
         .createCustomMessage(
             data: jsonEncode(data), extension: '', description: '');
     final recvUserID =
         signaling.invitation!.inviterUserID == Config.userID
             ? signaling.invitation!.inviteeUserIDList!.first
             : signaling.invitation!.inviterUserID;
-    await OpenIM.iMManager.messageManager.sendMessage(
+    await FDIM.iMManager.messageManager.sendMessage(
       message: message,
       offlinePushInfo: OfflinePushInfo(),
       userID: recvUserID,
@@ -285,14 +285,14 @@ mixin LiveController {
       'customType': CustomMessageType.callingCancel,
       'data': signaling.invitation!.toJson(),
     };
-    final message = await OpenIM.iMManager.messageManager
+    final message = await FDIM.iMManager.messageManager
         .createCustomMessage(
             data: jsonEncode(data), extension: '', description: '');
     final recvUserID =
         signaling.invitation!.inviterUserID == Config.userID
             ? signaling.invitation!.inviteeUserIDList!.first
             : signaling.invitation!.inviterUserID;
-    await OpenIM.iMManager.messageManager.sendMessage(
+    await FDIM.iMManager.messageManager.sendMessage(
       message: message,
       offlinePushInfo: OfflinePushInfo(),
       userID: recvUserID,
@@ -312,7 +312,7 @@ mixin LiveController {
       'customType': CustomMessageType.callingCancel,
       'data': signaling.invitation!.toJson(),
     };
-    final message = await OpenIM.iMManager.messageManager
+    final message = await FDIM.iMManager.messageManager
         .createCustomMessage(
             data: jsonEncode(data), extension: '', description: '');
     final recvUserID =
@@ -320,7 +320,7 @@ mixin LiveController {
             ? signaling.invitation!.inviteeUserIDList!.first
             : signaling.invitation!.inviterUserID;
     try {
-      await OpenIM.iMManager.messageManager.sendMessage(
+      await FDIM.iMManager.messageManager.sendMessage(
         message: message,
         offlinePushInfo: OfflinePushInfo(),
         userID: recvUserID,
@@ -346,14 +346,14 @@ mixin LiveController {
         'customType': CustomMessageType.callingHungup,
         'data': signaling.invitation!.toJson(),
       };
-      final message = await OpenIM.iMManager.messageManager
+      final message = await FDIM.iMManager.messageManager
           .createCustomMessage(
               data: jsonEncode(data), extension: '', description: '');
       final recvUserID =
           signaling.invitation!.inviterUserID == Config.userID
               ? signaling.invitation!.inviteeUserIDList!.first
               : signaling.invitation!.inviterUserID;
-      await OpenIM.iMManager.messageManager.sendMessage(
+      await FDIM.iMManager.messageManager.sendMessage(
         message: message,
         offlinePushInfo: OfflinePushInfo(),
         userID: recvUserID,
@@ -375,7 +375,7 @@ mixin LiveController {
   Future<Map<String, dynamic>?> _onSyncUserInfo(String userID) async {
     try {
       final list =
-          await OpenIM.iMManager.userManager.getUsersInfo(userIDList: [userID]);
+          await FDIM.iMManager.userManager.getUsersInfo(userIDList: [userID]);
       if (list.isNotEmpty) {
         return {
           'nickname': list.first.nickname,
@@ -414,14 +414,14 @@ mixin LiveController {
         'customType': CustomMessageType.callResult,
         'data': callResult.toJson(),
       };
-      final message = await OpenIM.iMManager.messageManager
+      final message = await FDIM.iMManager.messageManager
           .createCustomMessage(
               data: jsonEncode(data), extension: '', description: '');
       final recvUserID =
           signaling.invitation!.inviterUserID == Config.userID
               ? signaling.invitation!.inviteeUserIDList!.first
               : signaling.invitation!.inviterUserID;
-      await OpenIM.iMManager.messageManager.sendMessage(
+      await FDIM.iMManager.messageManager.sendMessage(
         message: message,
         offlinePushInfo: OfflinePushInfo(),
         userID: recvUserID,

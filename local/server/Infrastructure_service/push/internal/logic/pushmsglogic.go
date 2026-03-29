@@ -25,7 +25,7 @@ func NewPushMsgLogic(ctx context.Context, svcCtx *svc.ServiceContext) *PushMsgLo
 }
 
 func (l *PushMsgLogic) PushMsg(req *push.PushMsgReq) (*push.PushMsgResp, error) {
-	// 1. 验证推送消息的合法性
+	// 1. 验证推送消息的合法?
 	if req.MsgData == nil {
 		return nil, fmt.Errorf("msgData is empty")
 	}
@@ -36,9 +36,9 @@ func (l *PushMsgLogic) PushMsg(req *push.PushMsgReq) (*push.PushMsgResp, error) 
 		return &push.PushMsgResp{}, nil
 	}
 
-	// 2. 调用 MessageGateway 进行在线推送
+	// 2. 调用 MessageGateway 进行在线推?
 	if l.svcCtx.MessageGatewayClient != nil {
-		// 使用 OnlineBatchPushOneMsg 进行批量推送
+		// 使用 OnlineBatchPushOneMsg 进行批量推?
 		_, err := l.svcCtx.MessageGatewayClient.OnlineBatchPushOneMsg(l.ctx, &msggateway.OnlineBatchPushOneMsgReq{
 			MsgData:       req.MsgData,
 			PushToUserIDs: req.UserIDs,
@@ -50,6 +50,6 @@ func (l *PushMsgLogic) PushMsg(req *push.PushMsgReq) (*push.PushMsgResp, error) 
 		l.Infof("Pushed message to %d users: conversationID=%s", len(req.UserIDs), req.ConversationID)
 	}
 
-	// 3. 返回推送结果
+	// 3. 返回推送结?
 	return &push.PushMsgResp{}, nil
 }

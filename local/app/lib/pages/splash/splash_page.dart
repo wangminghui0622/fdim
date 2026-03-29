@@ -31,7 +31,7 @@ class _SplashPageState extends State<SplashPage> {
         final authCtrl = Get.find<AuthController>();
         
         // Initialize SDK and login via SDK to reconnect WebSocket
-        await imCtrl.initOpenIM();
+        await imCtrl.initFDIM();
         final info = await imCtrl.loginSDK();
         authCtrl.userInfo.value = info;
         

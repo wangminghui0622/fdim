@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,19 +24,19 @@ func NewFindInvitationCodeLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 }
 
 func (l *FindInvitationCodeLogic) FindInvitationCode(req *admin.FindInvitationCodeReq) (*admin.FindInvitationCodeResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.Codes) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("codes cannot be empty")
 	}
 
-	// 2. 查找邀请码
+	// 2. 
 	invitations, err := l.svcCtx.AdminDB.FindInvitationRegister(l.ctx, req.Codes)
 	if err != nil {
 		l.Errorf("FindInvitationRegister failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to find invitation codes")
 	}
 
-	// 3. 转换为响应格式
+	// 3. תΪӦʽ
 	results := make([]*admin.InvitationRegister, 0, len(invitations))
 	for _, inv := range invitations {
 		results = append(results, &admin.InvitationRegister{

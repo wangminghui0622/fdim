@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -30,7 +30,7 @@ func NewSetGroupMemberInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 func (l *SetGroupMemberInfoLogic) SetGroupMemberInfo(req *user.SetGroupMemberInfoReq) (*user.SetGroupMemberInfoResp, error) {
 	resp := &user.SetGroupMemberInfoResp{}
 
-	// ������֤
+	// ???????
 	if len(req.Members) == 0 {
 		return nil, fmt.Errorf("members is empty")
 	}
@@ -40,7 +40,7 @@ func (l *SetGroupMemberInfoLogic) SetGroupMemberInfo(req *user.SetGroupMemberInf
 		return nil, fmt.Errorf("no operator user id")
 	}
 
-	// ��������ÿ����Ա
+	// ??????????????
 	for _, memberInfo := range req.Members {
 		if memberInfo.GroupID == "" {
 			return nil, fmt.Errorf("groupID is empty")
@@ -49,38 +49,38 @@ func (l *SetGroupMemberInfoLogic) SetGroupMemberInfo(req *user.SetGroupMemberInf
 			return nil, fmt.Errorf("userID is empty")
 		}
 
-		// ���Ⱥ��Ա�Ƿ����
+		// ?????????????
 		member, err := l.svcCtx.GroupDB.TakeGroupMember(l.ctx, memberInfo.GroupID, memberInfo.UserID)
 		if err != nil {
 			return nil, fmt.Errorf("member not found: %s in group %s", memberInfo.UserID, memberInfo.GroupID)
 		}
 
-		// Ȩ�޼��
+		// ?????
 		isAdmin := authverify.IsAdmin(l.ctx)
 		if !isAdmin {
-			// ���������Ƿ���Ⱥ��Ա
+			// ?????????????????
 			opMember, err := l.svcCtx.GroupDB.TakeGroupMember(l.ctx, memberInfo.GroupID, opUserID)
 			if err != nil {
 				return nil, fmt.Errorf("operator not in group")
 			}
 
-			// ��ɫ������֤
+			// ??????????
 			if memberInfo.RoleLevel != nil {
 				switch memberInfo.RoleLevel.Value {
 				case constant.GroupOwner:
 					return nil, fmt.Errorf("cannot set to group owner")
 				case constant.GroupAdmin, constant.GroupOrdinaryUsers:
-					// ����
+					// ????
 				default:
 					return nil, fmt.Errorf("invalid role level")
 				}
 
-				// ���ݲ����˽�ɫ���Ȩ��
+				// ?????????????????
 				switch opMember.RoleLevel {
 				case constant.GroupOwner:
-					// Ⱥ�������޸��κ��ˣ����˲�������ΪȺ����
+					// ????????????????????????????????
 				case constant.GroupAdmin:
-					// ����Ա�����޸�Ⱥ������������Ա
+					// ??????????????????????????
 					if member.RoleLevel == constant.GroupOwner {
 						return nil, fmt.Errorf("admin cannot change group owner")
 					}
@@ -88,7 +88,7 @@ func (l *SetGroupMemberInfoLogic) SetGroupMemberInfo(req *user.SetGroupMemberInf
 						return nil, fmt.Errorf("admin cannot change other admin")
 					}
 				case constant.GroupOrdinaryUsers:
-					// ��ͨ��Աֻ���޸��Լ�����Ϣ���Ҳ����޸Ľ�ɫ��
+					// ??????????????????????????????????
 					if member.UserID != opUserID {
 						return nil, fmt.Errorf("ordinary member can only change own info")
 					}
@@ -97,19 +97,19 @@ func (l *SetGroupMemberInfoLogic) SetGroupMemberInfo(req *user.SetGroupMemberInf
 					}
 				}
 
-				// �����Լ�������ɫ����
+				// ??????????????????
 				if member.UserID == opUserID && memberInfo.RoleLevel.Value > member.RoleLevel {
 					return nil, fmt.Errorf("cannot improve own role level")
 				}
 
-				// Ⱥ�������޸��Լ��Ľ�ɫ
+				// ?????????????????
 				if member.UserID == opUserID && member.RoleLevel == constant.GroupOwner {
 					return nil, fmt.Errorf("group owner cannot change own role level")
 				}
 			} else {
-				// û���޸Ľ�ɫ�����޸�������Ϣ
+				// ??????????????????????
 				if member.UserID != opUserID {
-					// �޸ı��˵���Ϣ����Ҫ��Ⱥ�������Ա
+					// ??????????????????????????
 					if opMember.RoleLevel != constant.GroupOwner && opMember.RoleLevel != constant.GroupAdmin {
 						return nil, fmt.Errorf("only owner or admin can change other member info")
 					}
@@ -117,7 +117,7 @@ func (l *SetGroupMemberInfoLogic) SetGroupMemberInfo(req *user.SetGroupMemberInf
 			}
 		}
 
-		// ׼�� Webhook �ص�����
+		// ??? Webhook ???????
 		var nickname, faceURL, ex *string
 		if memberInfo.Nickname != nil {
 			nickname = &memberInfo.Nickname.Value
@@ -129,7 +129,7 @@ func (l *SetGroupMemberInfoLogic) SetGroupMemberInfo(req *user.SetGroupMemberInf
 			ex = &memberInfo.Ex.Value
 		}
 
-		// Webhook BeforeSetGroupMemberInfo �ص�
+		// Webhook BeforeSetGroupMemberInfo ???
 		if l.svcCtx.WebhookClient != nil {
 			cbReq := &webhook.CallbackBeforeSetGroupMemberInfoReq{
 				CallbackCommand: webhook.CallbackBeforeSetGroupMemberInfoCommand,
@@ -144,9 +144,9 @@ func (l *SetGroupMemberInfoLogic) SetGroupMemberInfo(req *user.SetGroupMemberInf
 				if err != webhook.ErrCallbackContinue {
 					return nil, err
 				}
-				// ErrCallbackContinue ��ʾ����ִ��
+				// ErrCallbackContinue ??????????
 			}
-			// ��� webhook �������޸ĺ��ֵ��ʹ����
+			// ??? webhook ???????????????????
 			if cbResp.Nickname != nil && memberInfo.Nickname != nil {
 				memberInfo.Nickname.Value = *cbResp.Nickname
 			}
@@ -158,7 +158,7 @@ func (l *SetGroupMemberInfoLogic) SetGroupMemberInfo(req *user.SetGroupMemberInf
 			}
 		}
 
-		// ������������
+		// ????????????
 		data := make(map[string]interface{})
 		if memberInfo.Nickname != nil {
 			data["nickname"] = memberInfo.Nickname.Value
@@ -179,29 +179,29 @@ func (l *SetGroupMemberInfoLogic) SetGroupMemberInfo(req *user.SetGroupMemberInf
 			}
 		}
 
-		// ����֪ͨ
+		// ??????
 		if memberInfo.RoleLevel != nil {
 			switch memberInfo.RoleLevel.Value {
 			case constant.GroupAdmin:
-				// ����Ⱥ��Ա����Ϊ����Ա֪ͨ
+				// ????????????????????
 				if l.svcCtx.GroupNotification != nil {
 					l.svcCtx.GroupNotification.GroupMemberSetToAdminNotification(l.ctx, memberInfo.GroupID, opUserID, []string{memberInfo.UserID})
 				}
 			case constant.GroupOrdinaryUsers:
-				// ����Ⱥ��Ա����Ϊ��ͨ�û�֪ͨ
+				// ?????????????????????
 				if l.svcCtx.GroupNotification != nil {
 					l.svcCtx.GroupNotification.GroupMemberSetToOrdinaryUserNotification(l.ctx, memberInfo.GroupID, opUserID, []string{memberInfo.UserID})
 				}
 			}
 		}
 		if memberInfo.Nickname != nil || memberInfo.FaceURL != nil || memberInfo.Ex != nil {
-			// ����Ⱥ��Ա��Ϣ����֪ͨ
+			// ?????????????????
 			if l.svcCtx.GroupNotification != nil {
 				l.svcCtx.GroupNotification.GroupMemberInfoSetNotification(l.ctx, memberInfo.GroupID, opUserID, memberInfo.UserID)
 			}
 		}
 
-		// Webhook AfterSetGroupMemberInfo �ص�
+		// Webhook AfterSetGroupMemberInfo ???
 		if l.svcCtx.WebhookClient != nil {
 			nicknameStr := ""
 			faceURLStr := ""

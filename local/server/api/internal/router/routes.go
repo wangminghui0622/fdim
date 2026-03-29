@@ -6,7 +6,7 @@ import (
 	"github.com/zeromicro/go-zero/rest"
 )
 
-// RegisterHandlers 将所有 HTTP 路由注册到 server
+// RegisterHandlers 将所?HTTP 路由注册?server
 func RegisterHandlers(server *rest.Server, ctx *svc.ServiceContext) {
 	// User 相关路由
 	server.AddRoute(rest.Route{
@@ -148,7 +148,7 @@ func RegisterHandlers(server *rest.Server, ctx *svc.ServiceContext) {
 		Path:    "/user/page_user_client_config",
 		Handler: handler.PageUserClientConfigHandler(ctx),
 	})
-	//好友在线状态查询
+	//好友在线状态查
 	server.AddRoute(rest.Route{
 		Method:  "POST",
 		Path:    "/user/get_users_online_status",
@@ -603,7 +603,7 @@ func RegisterHandlers(server *rest.Server, ctx *svc.ServiceContext) {
 		Path:    "/msg/search_msg",
 		Handler: handler.SearchMsgHandler(ctx),
 	})
-	//发送消息
+	//发送消
 	server.AddRoute(rest.Route{
 		Method:  "POST",
 		Path:    "/msg/send_msg",
@@ -743,7 +743,7 @@ func RegisterHandlers(server *rest.Server, ctx *svc.ServiceContext) {
 		Handler: handler.SearchLogsHandler(ctx),
 	})
 
-	// Object 相关路由（官方在 /object 根路径下，不在 /third/object 下）
+	// Object 相关路由（官方在 /object 根路径下，不?/third/object 下）
 	server.AddRoute(rest.Route{
 		Method:  "POST",
 		Path:    "/object/part_limit",
@@ -798,14 +798,14 @@ func RegisterHandlers(server *rest.Server, ctx *svc.ServiceContext) {
 		Handler: handler.ObjectRedirectHandler(ctx),
 	})
 
-	// Statistics 统计相关路由（与官方一致，在 /statistics 组下）
+	// Statistics 统计相关路由（与官方一致，?/statistics 组下
 	server.AddRoute(rest.Route{
 		Method:  "POST",
 		Path:    "/statistics/user/register",
 		Handler: handler.UserRegisterCountHandler(ctx),
 	})
 
-	// Favorite 收藏相关路由（自定义扩展）
+	// Favorite 收藏相关路由（自定义扩展
 	server.AddRoute(rest.Route{
 		Method:  "POST",
 		Path:    "/favorite/add",
@@ -824,7 +824,7 @@ func RegisterHandlers(server *rest.Server, ctx *svc.ServiceContext) {
 		Handler: handler.GetFavoriteListHandler(ctx),
 	})
 
-	// Account 登录/注册路由（通过 chat RPC 验证密码）
+	// Account 登录/注册路由（通过 chat RPC 验证密码
 	server.AddRoute(rest.Route{
 		Method:  "POST",
 		Path:    "/account/login",
@@ -855,7 +855,7 @@ func RegisterHandlers(server *rest.Server, ctx *svc.ServiceContext) {
 		Handler: handler.SearchFriendHandler(ctx),
 	})
 
-	// 验证码路由（对齐官方 chat server）
+	// 验证码路由（对齐官方 chat server
 	server.AddRoute(rest.Route{
 		Method:  "POST",
 		Path:    "/account/code/send",
@@ -868,7 +868,7 @@ func RegisterHandlers(server *rest.Server, ctx *svc.ServiceContext) {
 		Handler: handler.VerifyCodeHandler(ctx),
 	})
 
-	// Chat 层用户接口（对齐官方 chat server）
+	// Chat 层用户接口（对齐官方 chat server
 	server.AddRoute(rest.Route{
 		Method:  "POST",
 		Path:    "/user/find/full",
@@ -899,14 +899,14 @@ func RegisterHandlers(server *rest.Server, ctx *svc.ServiceContext) {
 		Handler: handler.ChatUpdateUserInfoHandler(ctx),
 	})
 
-	// 客户端配置
+	// 客户端配
 	server.AddRoute(rest.Route{
 		Method:  "POST",
 		Path:    "/client_config/get",
 		Handler: handler.GetClientConfigHandler(ctx),
 	})
 
-	// Applet 小程序
+	// Applet 小程
 	server.AddRoute(rest.Route{
 		Method:  "POST",
 		Path:    "/applet/find",
@@ -926,11 +926,11 @@ func RegisterHandlers(server *rest.Server, ctx *svc.ServiceContext) {
 		Handler: handler.PageApplicationVersionHandler(ctx),
 	})
 
-	// OpenIM 回调
+	// FDIM 回调
 	server.AddRoute(rest.Route{
 		Method:  "POST",
 		Path:    "/callback/open_im",
-		Handler: handler.OpenIMCallbackHandler(ctx),
+		Handler: handler.FDIMCallbackHandler(ctx),
 	})
 
 	// Statistics 统计扩展路由
@@ -1023,7 +1023,7 @@ func RegisterHandlers(server *rest.Server, ctx *svc.ServiceContext) {
 		Handler: handler.ImportUserByJsonHandler(ctx),
 	})
 
-	// Admin: 注册开关
+	// Admin: 注册开
 	server.AddRoute(rest.Route{
 		Method:  "POST",
 		Path:    "/user/allow_register/get",
@@ -1149,7 +1149,7 @@ func RegisterHandlers(server *rest.Server, ctx *svc.ServiceContext) {
 		Handler: handler.SearchUserIPLimitLoginHandler(ctx),
 	})
 
-	// Admin: 小程序管理
+	// Admin: 小程序管
 	server.AddRoute(rest.Route{
 		Method:  "POST",
 		Path:    "/applet/add",
@@ -1200,7 +1200,7 @@ func RegisterHandlers(server *rest.Server, ctx *svc.ServiceContext) {
 		Handler: handler.AdminResetUserPasswordHandler(ctx),
 	})
 
-	// Admin: 客户端配置管理
+	// Admin: 客户端配置管
 	server.AddRoute(rest.Route{
 		Method:  "POST",
 		Path:    "/client_config/set",

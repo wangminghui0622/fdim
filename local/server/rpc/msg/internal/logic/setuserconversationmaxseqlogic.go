@@ -34,7 +34,7 @@ func (l *SetUserConversationMaxSeqLogic) SetUserConversationMaxSeq(req *msg.SetU
 		return nil, errs.ErrInternalServer.WrapMsg("message cache not initialized")
 	}
 
-	// 对于每个 ownerUserID，将会话的 MaxSeq 更新为给定值
+	// 对于每个 ownerUserID，将会话?MaxSeq 更新为给定?
 	for _, owner := range req.OwnerUserID {
 		if owner == "" {
 			continue

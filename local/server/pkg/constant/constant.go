@@ -136,3 +136,13 @@ const (
 	// CtxTempAdminKey Context 中临时管理员标记的键
 	CtxTempAdminKey = "CtxTempAdminKey"
 )
+const (
+	OperationID    = "operationID"
+	OpUserID       = "opUserID"
+	ConnID         = "connID"
+	OpUserPlatform = "platform"
+	Token          = "token"
+	CheckKey       = "CheckKey"
+	TriggerID      = "triggerID"
+	RemoteAddr     = "remoteAddr"
+)

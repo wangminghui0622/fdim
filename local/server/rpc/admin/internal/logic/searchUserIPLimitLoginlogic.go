@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,19 +24,19 @@ func NewSearchUserIPLimitLoginLogic(ctx context.Context, svcCtx *svc.ServiceCont
 }
 
 func (l *SearchUserIPLimitLoginLogic) SearchUserIPLimitLogin(req *admin.SearchUserIPLimitLoginReq) (*admin.SearchUserIPLimitLoginResp, error) {
-	// 1. 验证分页参数
+	// 1. ֤ҳ
 	if req.Pagination == nil || req.Pagination.PageNumber <= 0 || req.Pagination.ShowNumber <= 0 {
 		return nil, errs.ErrArgs.WrapMsg("invalid pagination parameters")
 	}
 
-	// 2. 搜索用户IP登录限制
+	// 2. ûIP¼
 	total, limits, err := l.svcCtx.AdminDB.SearchUserLimitLogin(l.ctx, req.Keyword, req.Pagination)
 	if err != nil {
 		l.Errorf("SearchUserLimitLogin failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to search user IP limit login")
 	}
 
-	// 3. 转换为响应格式
+	// 3. תΪӦʽ
 	results := make([]*admin.LimitUserLoginIP, 0, len(limits))
 	for _, limit := range limits {
 		results = append(results, &admin.LimitUserLoginIP{

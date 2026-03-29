@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"strings"
 
 	"fdim/pkg/errs"
 	"fdim/protocol/msg"
@@ -53,13 +54,44 @@ func (l *GetConversationsHasReadAndMaxSeqLogic) GetConversationsHasReadAndMaxSeq
 			continue
 		}
 
+		// 获取对方的已读状态（peerReadSeq）
+		// 单聊会话格式: si_userA_userB，需要找到对方用户的 hasReadSeq
+		var peerReadSeq int64 = 0
+		if strings.HasPrefix(convID, "si_") {
+			peerUserID := l.getPeerUserID(convID, req.UserID)
+			if peerUserID != "" {
+				peerReadSeq, _ = l.svcCtx.MsgCache.GetHasReadSeq(l.ctx, convID, peerUserID)
+			}
+		}
+
 		resp.Seqs[convID] = &msg.Seqs{
-			MaxSeq:     maxSeq,
-			HasReadSeq: hasReadSeq,
-			// MaxSeqTime 暂不从存储中反查，先置 0
+			MaxSeq:      maxSeq,
+			HasReadSeq:  hasReadSeq,
+			PeerReadSeq: peerReadSeq,
 		}
 	}
 
-	// pinnedConversationIDs 暂不实现，保持为空
 	return resp, nil
+}
+
+// getPeerUserID 从单聊会话ID中提取对方用户ID
+// 会话ID格式: si_userA_userB
+func (l *GetConversationsHasReadAndMaxSeqLogic) getPeerUserID(convID, myUserID string) string {
+	// 移除 "si_" 前缀
+	if !strings.HasPrefix(convID, "si_") {
+		return ""
+	}
+	suffix := strings.TrimPrefix(convID, "si_")
+	// 格式: userA_userB
+	parts := strings.Split(suffix, "_")
+	if len(parts) != 2 {
+		return ""
+	}
+	if parts[0] == myUserID {
+		return parts[1]
+	}
+	if parts[1] == myUserID {
+		return parts[0]
+	}
+	return ""
 }

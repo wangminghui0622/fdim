@@ -24,6 +24,6 @@ func NewSubscribeOrCancelUsersStatusLogic(ctx context.Context, svcCtx *svc.Servi
 
 func (l *SubscribeOrCancelUsersStatusLogic) SubscribeOrCancelUsersStatus(req *user.SubscribeOrCancelUsersStatusReq) (*user.SubscribeOrCancelUsersStatusResp, error) {
 	// TODO: 实现订阅/取消订阅用户状态的逻辑
-	// 当前返回空实现
+	// 当前返回空实?
 	return &user.SubscribeOrCancelUsersStatusResp{}, nil
 }

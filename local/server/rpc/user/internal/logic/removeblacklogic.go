@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -27,7 +27,7 @@ func NewRemoveBlackLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Remov
 func (l *RemoveBlackLogic) RemoveBlack(req *user.RemoveBlackReq) (*user.RemoveBlackResp, error) {
 	resp := &user.RemoveBlackResp{}
 
-	// Ȩ����֤
+	// ??????
 	if err := authverify.CheckAccess(l.ctx, req.OwnerUserID); err != nil {
 		return nil, err
 	}
@@ -36,12 +36,12 @@ func (l *RemoveBlackLogic) RemoveBlack(req *user.RemoveBlackReq) (*user.RemoveBl
 		return nil, err
 	}
 
-	// ���ͺ�����ɾ��֪ͨ
+	// ??????????????
 	if l.svcCtx.FriendNotification != nil {
 		l.svcCtx.FriendNotification.BlackDeletedNotification(l.ctx, req.OwnerUserID, req.BlackUserID)
 	}
 
-	// Webhook AfterRemoveBlack �ص�
+	// Webhook AfterRemoveBlack ???
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackAfterRemoveBlackReq{
 			CallbackCommand: webhook.CallbackAfterRemoveBlackCommand,

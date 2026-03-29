@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GinLogger 简化的日志中间件
+// GinLogger 简化的日志中间?
 func GinLogger(skipPath ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()

@@ -10,7 +10,6 @@ import (
 )
 
 // Friend API Handlers
-// 注意：这些接口需要与 open-im-server 的接口完全一致
 
 func ApplyToAddFriendHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

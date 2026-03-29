@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -30,7 +30,7 @@ func NewQuitGroupLogic(ctx context.Context, svcCtx *svc.ServiceContext) *QuitGro
 func (l *QuitGroupLogic) QuitGroup(req *user.QuitGroupReq) (*user.QuitGroupResp, error) {
 	resp := &user.QuitGroupResp{}
 
-	// Ȩ����֤�����ָ����UserID����Ҫ���Ȩ�ޣ�����ʹ�ò����û�ID
+	// ????????????????UserID????????????????????????ID
 	opUserID := mcontext.GetOpUserID(l.ctx)
 	if req.UserID == "" {
 		if opUserID == "" {
@@ -43,28 +43,28 @@ func (l *QuitGroupLogic) QuitGroup(req *user.QuitGroupReq) (*user.QuitGroupResp,
 		}
 	}
 
-	// ����Ƿ���Ⱥ��Ա
+	// ????????????
 	member, err := l.svcCtx.GroupDB.TakeGroupMember(l.ctx, req.GroupID, req.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("user not in group")
 	}
 
-	// ����Ƿ���Ⱥ����Ⱥ�������˳���ֻ�ܽ�ɢ��
+	// ????????????????????????????????
 	if member.RoleLevel == constant.GroupOwner {
 		return nil, fmt.Errorf("group owner cannot quit, please dismiss group")
 	}
 
-	// ɾ��Ⱥ��Ա
+	// ???????
 	if err := l.svcCtx.GroupDB.DeleteGroupMember(l.ctx, req.GroupID, []string{req.UserID}); err != nil {
 		return nil, err
 	}
 
-	// ���ͳ�Ա�˳�֪ͨ
+	// ???????????
 	if l.svcCtx.GroupNotification != nil {
 		l.svcCtx.GroupNotification.MemberQuitNotification(l.ctx, req.GroupID, req.UserID)
 	}
 
-	// Webhook AfterQuitGroup �ص�
+	// Webhook AfterQuitGroup ???
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackAfterQuitGroupReq{
 			CallbackCommand: webhook.CallbackAfterQuitGroupCommand,
@@ -74,7 +74,7 @@ func (l *QuitGroupLogic) QuitGroup(req *user.QuitGroupReq) (*user.QuitGroupResp,
 		cbResp := &webhook.CallbackAfterQuitGroupResp{}
 		l.svcCtx.WebhookClient.AsyncPost(l.ctx, cbReq.GetCallbackCommand(), cbReq, cbResp, 30)
 	}
-	// TODO: ���ûỰ���кţ�deleteMemberAndSetConversationSeq��
+	// TODO: ??????????deleteMemberAndSetConversationSeq??
 
 	return resp, nil
 }

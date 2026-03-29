@@ -30,20 +30,20 @@ func (l *GetUsersOnlineStatusLogic) GetUsersOnlineStatus(req *msggateway.GetUser
 		return resp, nil
 	}
 
-	// 从 WebSocket 服务器获取在线状态
+	// ?WebSocket 服务器获取在线状?
 	onlineUsers := l.svcCtx.WsServer.GetOnlineUsers(req.UserIDs)
 
 	// 构建响应
 	for _, userID := range req.UserIDs {
 		if online, ok := onlineUsers[userID]; ok && online {
-			// 获取该用户的所有连接
+			// 获取该用户的所有连?
 			sessions := l.svcCtx.WsServer.GetUserSessions(userID)
 			successResult := &msggateway.GetUsersOnlineStatusResp_SuccessResult{
 				UserID: userID,
 				Status: 1, // 在线
 			}
 
-			// 为每个平台构建详情
+			// 为每个平台构建详?
 			for platformIDStr, session := range sessions {
 				platformIDInt, err := strconv.Atoi(platformIDStr)
 				if err != nil {
@@ -51,9 +51,9 @@ func (l *GetUsersOnlineStatusLogic) GetUsersOnlineStatus(req *msggateway.GetUser
 					continue
 				}
 
-				// 从 session 中获取信息
+				// ?session 中获取信?
 				connID := session.RemoteAddr().String() // 使用 RemoteAddr 作为 connID
-				isBackground := false                   // 默认为 false，可以从 session 中获取
+				isBackground := false                   // 默认?false，可以从 session 中获?
 				detail := &msggateway.GetUsersOnlineStatusResp_SuccessDetail{
 					PlatformID:   int32(platformIDInt),
 					ConnID:       connID,
@@ -64,7 +64,7 @@ func (l *GetUsersOnlineStatusLogic) GetUsersOnlineStatus(req *msggateway.GetUser
 
 			resp.SuccessResult = append(resp.SuccessResult, successResult)
 		} else {
-			// 用户不在线
+			// 用户不在?
 			failedDetail := &msggateway.GetUsersOnlineStatusResp_FailedDetail{
 				UserID: userID,
 			}

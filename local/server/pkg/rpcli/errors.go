@@ -1,10 +1,10 @@
-﻿package rpcli
+package rpcli
 
 import "errors"
 
 var (
-	// ErrUserNotFound 用户未找�?
+	// ErrUserNotFound ûδ??
 	ErrUserNotFound = errors.New("user not found")
-	// ErrGroupNotFound 群组未找�?
+	// ErrGroupNotFound Ⱥδ??
 	ErrGroupNotFound = errors.New("group not found")
 )

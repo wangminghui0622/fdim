@@ -28,11 +28,11 @@ func NewSearchMessageLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Sea
 	}
 }
 
-// SearchMessage 在消息存储中按简单条件搜索聊天记录。
-// 为了保持实现可控，这里实现一个简化版：
-// - 支持按 sendID / recvID / contentType / sessionType 过滤
-// - 支持按 sendTime（时间戳字符串）作为起始时间过滤
-// - 支持分页（RequestPagination）和按 send_time 倒序排序
+// SearchMessage 在消息存储中按简单条件搜索聊天记录?
+// 为了保持实现可控，这里实现一个简化版?
+// - 支持?sendID / recvID / contentType / sessionType 过滤
+// - 支持?sendTime（时间戳字符串）作为起始时间过滤
+// - 支持分页（RequestPagination）和?send_time 倒序排序
 func (l *SearchMessageLogic) SearchMessage(req *msg.SearchMessageReq) (*msg.SearchMessageResp, error) {
 	coll := l.svcCtx.MongoDB.GetCollection("stream_msg")
 	if coll == nil {
@@ -54,7 +54,7 @@ func (l *SearchMessageLogic) SearchMessage(req *msg.SearchMessageReq) (*msg.Sear
 		filter["session_type"] = req.SessionType
 	}
 	if req.SendTime != "" {
-		// SendTime 约定为毫秒时间戳字符串
+		// SendTime 约定为毫秒时间戳字符?
 		if ts, err := timeFromMillisString(req.SendTime); err == nil {
 			filter["send_time"] = bson.M{"$gte": ts.UnixMilli()}
 		}
@@ -111,7 +111,7 @@ func (l *SearchMessageLogic) SearchMessage(req *msg.SearchMessageReq) (*msg.Sear
 			SendID:           d.SendID,
 			RecvID:           d.RecvID,
 			GroupID:          d.GroupID,
-			RecvNickname:     "", // 简化：不反查昵称
+			RecvNickname:     "", // 简化：不反查昵?
 			SenderPlatformID: d.SenderPlatformID,
 			SenderNickname:   d.SenderNickname,
 			SenderFaceURL:    d.SenderFaceURL,
@@ -122,7 +122,7 @@ func (l *SearchMessageLogic) SearchMessage(req *msg.SearchMessageReq) (*msg.Sear
 			Content:          string(d.Content),
 			Status:           d.Status,
 			SendTime:         d.SendTime,
-			CreateTime:       d.CreateTime,  // 已经是 int64 时间戳
+			CreateTime:       d.CreateTime,  // 已经?int64 时间?
 			Ex:               d.Ex,
 			GroupFaceURL:     "",
 			GroupMemberCount: 0,
@@ -139,9 +139,9 @@ func (l *SearchMessageLogic) SearchMessage(req *msg.SearchMessageReq) (*msg.Sear
 	return resp, nil
 }
 
-// timeFromMillisString 将毫秒时间戳的字符串转换为 time.Time
+// timeFromMillisString 将毫秒时间戳的字符串转换?time.Time
 func timeFromMillisString(s string) (time.Time, error) {
-	// 允许空字符串在外层忽略错误
+	// 允许空字符串在外层忽略错?
 	if s == "" {
 		return time.Time{}, errs.ErrArgs.WrapMsg("empty time string")
 	}

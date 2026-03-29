@@ -37,7 +37,7 @@ func (l *ForceLogoutLogic) ForceLogout(req *auth.ForceLogoutReq) (*auth.ForceLog
 		return nil, fmt.Errorf("auth database not initialized")
 	}
 
-	// 1. 在 AuthDB 中将该用户在指定平台上的所有 token 标记为 Kicked
+	// 1. ?AuthDB 中将该用户在指定平台上的所?token 标记?Kicked
 	statusMap, err := l.svcCtx.AuthDB.GetTokens(l.ctx, req.UserID, req.PlatformID)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (l *ForceLogoutLogic) ForceLogout(req *auth.ForceLogoutReq) (*auth.ForceLog
 	l.Infof("[Force Logout] Tokens marked as kicked - userID=%s, platformID=%d, tokenCount=%d",
 		req.UserID, req.PlatformID, len(tokens))
 
-	// 2. 调用 MsgGateway 踢出用户 WebSocket 连接（如果已配置）
+	// 2. 调用 MsgGateway 踢出用户 WebSocket 连接（如果已配置?
 	if l.svcCtx.MsgGatewayClient != nil {
 		l.Infof("[Force Logout] Calling MsgGateway to kick user - userID=%s, platformID=%d",
 			req.UserID, req.PlatformID)

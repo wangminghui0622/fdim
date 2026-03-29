@@ -34,12 +34,12 @@ func (l *AddNotificationAccountLogic) AddNotificationAccount(req *user.AddNotifi
 		return nil, err
 	}
 
-	// 检查 appMangerLevel
+	// 检?appMangerLevel
 	if req.AppMangerLevel < constant.AppNotificationAdmin {
 		return nil, fmt.Errorf("app level not supported")
 	}
 
-	// 如果 UserID 为空，生成一个
+	// 如果 UserID 为空，生成一?
 	if req.UserID == "" {
 		for i := 0; i < 20; i++ {
 			userID := l.genUserID()
@@ -54,7 +54,7 @@ func (l *AddNotificationAccountLogic) AddNotificationAccount(req *user.AddNotifi
 			return nil, fmt.Errorf("gen user id failed")
 		}
 	} else {
-		// 检查 UserID 是否已被使用
+		// 检?UserID 是否已被使用
 		_, err := l.svcCtx.UserDB.FindWithError(l.ctx, []string{req.UserID})
 		if err == nil {
 			return nil, fmt.Errorf("userID is used")

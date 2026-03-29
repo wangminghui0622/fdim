@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,7 +24,7 @@ func NewInvalidateTokenLogic(ctx context.Context, svcCtx *svc.ServiceContext) *I
 }
 
 func (l *InvalidateTokenLogic) InvalidateToken(req *admin.InvalidateTokenReq) (*admin.InvalidateTokenResp, error) {
-	// 使指定用户的所有 Token 失效
+	// ʹָû Token ʧЧ
 	if err := l.svcCtx.AdminDB.InvalidateToken(l.ctx, req.UserID); err != nil {
 		l.Errorf("InvalidateToken failed: %v", err)
 		return nil, fmt.Errorf("failed to invalidate token: %w", err)

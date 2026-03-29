@@ -1,21 +1,21 @@
 Name: cron
 Mode: dev
 
-# Cron 任务配置
+# Cron 配置
 CronTask:
-  # Cron 执行时间表达式，例如 "0 0 2 * * *" 表示每天凌晨2点执行
+  # Cron 表达式 "0 0 2 * * *" 表示每天凌晨2点执行
   CronExecuteTime: "0 0 2 * * *"
-  # 保留聊天记录天数，超过此天数的记录将被删除（0 表示禁用）
+  # 0 表示永不删除
   RetainChatRecords: 30
-  # 文件过期时间（天），超过此时间的文件将被删除（0 表示禁用）
+  # 文件过期时间 天
   FileExpireTime: 7
-  # 要删除的对象类型列表
+  # 删除对象类型
   DeleteObjectType:
     - "image"
     - "video"
     - "file"
 
-# RPC 客户端配置
+# RPC 配置
 MsgRpc:
   Etcd:
     Hosts:
@@ -34,7 +34,7 @@ ThirdRpc:
       - 127.0.0.1:2379
     Key: third.rpc
 
-# 管理员用户ID（用于执行定时任务）
+# 管理员ID
 AdminUserIDs:
   - "admin"
 

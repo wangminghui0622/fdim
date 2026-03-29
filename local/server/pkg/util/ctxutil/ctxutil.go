@@ -13,7 +13,7 @@ const (
 	operationKey contextKey = "operationID"
 )
 
-// GetUserID 从 context 中获取用户ID
+// GetUserID ?context 中获取用户ID
 func GetUserID(ctx context.Context) string {
 	if v := ctx.Value(userIDKey); v != nil {
 		if userID, ok := v.(string); ok {
@@ -23,12 +23,12 @@ func GetUserID(ctx context.Context) string {
 	return ""
 }
 
-// SetUserID 设置用户ID到 context
+// SetUserID 设置用户ID?context
 func SetUserID(ctx context.Context, userID string) context.Context {
 	return context.WithValue(ctx, userIDKey, userID)
 }
 
-// GetToken 从 context 中获取 token
+// GetToken ?context 中获?token
 func GetToken(ctx context.Context) string {
 	if v := ctx.Value(tokenKey); v != nil {
 		if token, ok := v.(string); ok {
@@ -58,7 +58,7 @@ func SetPlatform(ctx context.Context, platform int) context.Context {
 	return context.WithValue(ctx, platformKey, platform)
 }
 
-// GetOperationID 从 context 中获取操作ID
+// GetOperationID ?context 中获取操作ID
 func GetOperationID(ctx context.Context) string {
 	if v := ctx.Value(operationKey); v != nil {
 		if opID, ok := v.(string); ok {
@@ -68,7 +68,7 @@ func GetOperationID(ctx context.Context) string {
 	return ""
 }
 
-// SetOperationID 设置操作ID到 context
+// SetOperationID 设置操作ID?context
 func SetOperationID(ctx context.Context, operationID string) context.Context {
 	return context.WithValue(ctx, operationKey, operationID)
 }

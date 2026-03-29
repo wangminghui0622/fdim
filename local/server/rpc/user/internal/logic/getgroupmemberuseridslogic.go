@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -28,7 +28,7 @@ func NewGetGroupMemberUserIDsLogic(ctx context.Context, svcCtx *svc.ServiceConte
 func (l *GetGroupMemberUserIDsLogic) GetGroupMemberUserIDs(req *user.GetGroupMemberUserIDsReq) (*user.GetGroupMemberUserIDsResp, error) {
 	resp := &user.GetGroupMemberUserIDsResp{}
 
-	// Ȩ�޼�飺��Ҫ��Ⱥ��Ա�����Ա
+	// ???????????????????
 	if !authverify.IsAdmin(l.ctx) {
 		opUserID := mcontext.GetOpUserID(l.ctx)
 		_, err := l.svcCtx.GroupDB.TakeGroupMember(l.ctx, req.GroupID, opUserID)
@@ -37,18 +37,18 @@ func (l *GetGroupMemberUserIDsLogic) GetGroupMemberUserIDs(req *user.GetGroupMem
 		}
 	}
 
-	// ������֤
+	// ???????
 	if req.GroupID == "" {
 		return nil, fmt.Errorf("groupID is empty")
 	}
 
-	// ��ȡ����Ⱥ��Ա
+	// ???????????
 	members, err := l.svcCtx.GroupDB.FindGroupMemberAll(l.ctx, req.GroupID)
 	if err != nil {
 		return nil, err
 	}
 
-	// ��ȡ�û�ID�б�
+	// ??????ID??
 	userIDs := make([]string, 0, len(members))
 	for _, m := range members {
 		userIDs = append(userIDs, m.UserID)

@@ -29,17 +29,17 @@ func NewUpdateUserInfoExLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 func (l *UpdateUserInfoExLogic) UpdateUserInfoEx(req *user.UpdateUserInfoExReq) (*user.UpdateUserInfoExResp, error) {
 	resp := &user.UpdateUserInfoExResp{}
 
-	// Ȩ����֤
+	// Ȩ֤
 	if err := authverify.CheckAccess(l.ctx, req.UserInfo.UserID); err != nil {
 		return nil, err
 	}
 
-	// ������֤
+	// ֤
 	if req.UserInfo.UserID == "" {
 		return nil, fmt.Errorf("userID is empty")
 	}
 
-	// ����û��Ƿ����
+	// ûǷ
 	user, err := l.svcCtx.UserDB.Take(l.ctx, req.UserInfo.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("user not found: %v", err)
@@ -48,7 +48,7 @@ func (l *UpdateUserInfoExLogic) UpdateUserInfoEx(req *user.UpdateUserInfoExReq) 
 		return nil, fmt.Errorf("user not found: %s", req.UserInfo.UserID)
 	}
 
-	// Webhook Before �ص�
+	// Webhook Before ص
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackBeforeUpdateUserInfoExReq{
 			CallbackCommand: webhook.CallbackBeforeUpdateUserInfoExCommand,
@@ -68,9 +68,9 @@ func (l *UpdateUserInfoExLogic) UpdateUserInfoEx(req *user.UpdateUserInfoExReq) 
 			if err != webhook.ErrCallbackContinue {
 				return nil, err
 			}
-			// ErrCallbackContinue ��ʾ����ִ��
+			// ErrCallbackContinue ʾִ
 		}
-		// �����������ݣ���� webhook �������޸ģ�
+		// ݣ?webhook ޸ģ
 		if cbResp.FaceURL != nil && req.UserInfo.FaceURL != nil {
 			req.UserInfo.FaceURL.Value = *cbResp.FaceURL
 		}
@@ -82,22 +82,22 @@ func (l *UpdateUserInfoExLogic) UpdateUserInfoEx(req *user.UpdateUserInfoExReq) 
 		}
 	}
 
-	// ת���������û���Ϣ
+	// תûϢ
 	data := convert.UserPb2DBMapEx(req.UserInfo)
 	if len(data) == 0 {
-		return resp, nil // û����Ҫ���µ��ֶ�
+		return resp, nil // ûҪµֶ
 	}
 
 	if err := l.svcCtx.UserDB.UpdateByMap(l.ctx, req.UserInfo.UserID, data); err != nil {
 		return nil, err
 	}
 
-	// �����û���Ϣ����֪ͨ��֪ͨ�û��Լ���
+	// ûϢ֪֪ͨͨûԼ
 	if l.svcCtx.UserNotification != nil {
 		l.svcCtx.UserNotification.UserInfoUpdatedNotification(l.ctx, req.UserInfo.UserID, req.UserInfo.UserID)
 	}
 
-	// Webhook After �ص�
+	// Webhook After ص
 	if l.svcCtx.WebhookClient != nil {
 		faceURL := ""
 		nickname := ""

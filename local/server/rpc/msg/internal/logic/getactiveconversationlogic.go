@@ -38,7 +38,7 @@ func (l *GetActiveConversationLogic) GetActiveConversation(req *msg.GetActiveCon
 		return nil, errs.ErrInternalServer.WrapMsg("message collection not initialized")
 	}
 
-	// 聚合：按会话分组，取最近发送时间和最大 seq
+	// 聚合：按会话分组，取最近发送时间和最?seq
 	pipeline := mongo.Pipeline{
 		{{Key: "$match", Value: bson.M{
 			"conversation_id": bson.M{"$in": req.ConversationIDs},

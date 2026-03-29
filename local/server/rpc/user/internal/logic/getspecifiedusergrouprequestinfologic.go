@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,6 +24,6 @@ func NewGetSpecifiedUserGroupRequestInfoLogic(ctx context.Context, svcCtx *svc.S
 }
 
 func (l *GetSpecifiedUserGroupRequestInfoLogic) GetSpecifiedUserGroupRequestInfo(req *user.GetSpecifiedUserGroupRequestInfoReq) (*user.GetSpecifiedUserGroupRequestInfoResp, error) {
-	// TODO: 实现获取指定用户群组请求信息的逻辑
+	// TODO: ʵֻȡָûȺϢ߼
 	return nil, fmt.Errorf("GetSpecifiedUserGroupRequestInfo not fully implemented yet")
 }

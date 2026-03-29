@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package openim.protobuf;
+package fdim.protobuf;
 
 option go_package = "fdim/protocol/wrapperspb";
 

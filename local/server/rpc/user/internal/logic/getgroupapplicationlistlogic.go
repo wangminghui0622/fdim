@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -31,15 +31,15 @@ func NewGetGroupApplicationListLogic(ctx context.Context, svcCtx *svc.ServiceCon
 func (l *GetGroupApplicationListLogic) GetGroupApplicationList(req *user.GetGroupApplicationListReq) (*user.GetGroupApplicationListResp, error) {
 	resp := &user.GetGroupApplicationListResp{}
 
-	// ������֤
+	// ???????
 	if len(req.GroupIDs) == 0 {
 		return nil, fmt.Errorf("groupIDs is empty")
 	}
 
-	// Ȩ����֤������Ƿ��ǹ���Ա��Ⱥ��/����Ա
+	// ?????????????????????????/?????
 	opUserID := mcontext.GetOpUserID(l.ctx)
 	if !authverify.IsAdmin(l.ctx) {
-		// ���ÿ��Ⱥ���в����û��Ƿ���Ⱥ�������Ա
+		// ??????????????????????????????
 		for _, groupID := range req.GroupIDs {
 			isAdmin, err := l.svcCtx.GroupDB.IsGroupAdmin(l.ctx, groupID, opUserID)
 			if err != nil {
@@ -51,17 +51,17 @@ func (l *GetGroupApplicationListLogic) GetGroupApplicationList(req *user.GetGrou
 		}
 	}
 
-	// ת�� handleResults
+	// ??? handleResults
 	var handleResults []int32
 	if len(req.HandleResults) > 0 {
 		handleResults = req.HandleResults
 	}
 
-	// �����ҳ����
+	// ??????????
 	offset := util.CalculateOffset(req.Pagination.PageNumber, req.Pagination.ShowNumber)
 	limit := util.CalculateLimit(req.Pagination.ShowNumber)
 
-	// ��ҳ��ѯȺ������
+	// ?????????????
 	total, requests, err := l.svcCtx.GroupDB.PageGroupRequestByGroup(
 		l.ctx,
 		req.GroupIDs,
@@ -73,9 +73,9 @@ func (l *GetGroupApplicationListLogic) GetGroupApplicationList(req *user.GetGrou
 		return nil, err
 	}
 
-	// ת��Ϊ Protocol Buffer ��ʽ
+	// ???? Protocol Buffer ???
 	resp.Total = uint32(total)
-	// ����������������ȡ�û���Ⱥ����Ϣ
+	// ????????????????????????????
 	getUserInfo := func(userID string) *sdkws.PublicUserInfo {
 		user, err := l.svcCtx.UserDB.Take(l.ctx, userID)
 		if err != nil || user == nil {

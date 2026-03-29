@@ -1,11 +1,11 @@
-﻿package model
+package model
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
-// Friend 好友模型
+// Friend ģ
 type Friend struct {
 	ID             primitive.ObjectID `bson:"_id"`
 	OwnerUserID    string             `bson:"owner_user_id"`
@@ -18,7 +18,7 @@ type Friend struct {
 	IsPinned       bool               `bson:"is_pinned"`
 }
 
-// FriendRequest 好友申请模型
+// FriendRequest ģ
 type FriendRequest struct {
 	FromUserID    string    `bson:"from_user_id"`
 	ToUserID      string    `bson:"to_user_id"`

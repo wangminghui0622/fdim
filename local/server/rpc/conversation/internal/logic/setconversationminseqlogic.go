@@ -35,7 +35,7 @@ func (l *SetConversationMinSeqLogic) SetConversationMinSeq(req *conversation.Set
 		return nil, errs.ErrArgs.WrapMsg("conversationID is required")
 	}
 
-	// 1. 更新会话表中的 min_seq
+	// 1. 更新会话表中?min_seq
 	args := map[string]interface{}{
 		"min_seq": req.MinSeq,
 	}

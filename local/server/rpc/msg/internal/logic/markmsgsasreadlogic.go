@@ -38,7 +38,7 @@ func (l *MarkMsgsAsReadLogic) MarkMsgsAsRead(req *msg.MarkMsgsAsReadReq) (*msg.M
 		return nil, errs.ErrInternalServer.WrapMsg("message cache not initialized")
 	}
 
-	// 取最大 seq 作为该用户的已读 seq
+	// 取最?seq 作为该用户的已读 seq
 	var maxSeq int64
 	for _, s := range req.Seqs {
 		if s > maxSeq {
@@ -56,7 +56,7 @@ func (l *MarkMsgsAsReadLogic) MarkMsgsAsRead(req *msg.MarkMsgsAsReadReq) (*msg.M
 		return nil, errs.WrapMsg(err, "failed to set has read seqs")
 	}
 
-	// 发送 HasReadReceipt 通知（与官方一致）
+	// 发?HasReadReceipt 通知（与官方一致）
 	if l.svcCtx.NotificationSender != nil {
 		go l.sendMarkAsReadNotification(req.UserID, req.ConversationID, req.Seqs, maxSeq)
 	}
@@ -64,7 +64,7 @@ func (l *MarkMsgsAsReadLogic) MarkMsgsAsRead(req *msg.MarkMsgsAsReadReq) (*msg.M
 	return &msg.MarkMsgsAsReadResp{}, nil
 }
 
-// sendMarkAsReadNotification 发送已读回执通知（完全参考官方 as_read.go 实现）
+// sendMarkAsReadNotification 发送已读回执通知（完全参考官?as_read.go 实现?
 func (l *MarkMsgsAsReadLogic) sendMarkAsReadNotification(userID, conversationID string, seqs []int64, hasReadSeq int64) {
 	// 获取会话信息以确定接收方（与官方一致）
 	convResp, err := l.svcCtx.ConversationClient.GetConversation(l.ctx, &conversation.GetConversationReq{
@@ -83,11 +83,11 @@ func (l *MarkMsgsAsReadLogic) sendMarkAsReadNotification(userID, conversationID 
 		HasReadSeq:       hasReadSeq,
 	}
 
-	// 确定接收方（与官方 conversationAndGetRecvID 逻辑一致）
+	// 确定接收方（与官?conversationAndGetRecvID 逻辑一致）
 	var recvID string
 	if convResp.Conversation.ConversationType == constant.SingleChatType ||
 		convResp.Conversation.ConversationType == constant.NotificationChatType {
-		// 单聊：发给对方
+		// 单聊：发给对?
 		if userID == convResp.Conversation.OwnerUserID {
 			recvID = convResp.Conversation.UserID
 		} else {

@@ -16,6 +16,6 @@ type Config struct {
 		WebsocketMaxMsgLen  int
 	}
 	
-	// RPC 客户端配置
+	// RPC 客户端配?
 	AuthRpc zrpc.RpcClientConf
 }

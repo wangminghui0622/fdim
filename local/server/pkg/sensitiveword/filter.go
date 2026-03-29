@@ -48,7 +48,7 @@ func (f *Filter) AddWord(word string) {
 	node.isEnd = true
 }
 
-// AddWords 批量添加敏感词
+// AddWords 批量添加敏感
 func (f *Filter) AddWords(words []string) {
 	for _, word := range words {
 		f.AddWord(word)

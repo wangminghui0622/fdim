@@ -1,6 +1,6 @@
-﻿package util
+package util
 
-// HasDuplicate 检查切片中是否有重复元�?
+// HasDuplicate ƬǷظԪ??
 func HasDuplicate(slice []string) bool {
 	seen := make(map[string]bool)
 	for _, s := range slice {
@@ -12,7 +12,7 @@ func HasDuplicate(slice []string) bool {
 	return false
 }
 
-// Contains 检查切片中是否包含指定元素
+// Contains ƬǷָԪ
 func Contains(slice []string, item string) bool {
 	for _, s := range slice {
 		if s == item {

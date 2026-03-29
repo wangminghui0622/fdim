@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -29,7 +29,7 @@ func NewGetTokenForVideoMeetingLogic(ctx context.Context, svcCtx *svc.ServiceCon
 }
 
 func (l *GetTokenForVideoMeetingLogic) GetTokenForVideoMeeting(req *chat.GetTokenForVideoMeetingReq) (*chat.GetTokenForVideoMeetingResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if req.Room == "" {
 		return nil, errs.ErrArgs.WrapMsg("room cannot be empty")
 	}
@@ -37,7 +37,7 @@ func (l *GetTokenForVideoMeetingLogic) GetTokenForVideoMeeting(req *chat.GetToke
 		return nil, errs.ErrArgs.WrapMsg("identity cannot be empty")
 	}
 
-	// 2. 简化实现：基于配置生成签名 Token（避免纯占位符）
+	// 2. ʵ֣ǩ Tokenⴿռλ
 	serverURL := l.svcCtx.Config.RTC.ServerURL
 	if serverURL == "" {
 		serverURL = "https://video-meeting.example.com"

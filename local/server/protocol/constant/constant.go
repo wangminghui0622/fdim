@@ -1,9 +1,6 @@
 package constant
 
 const (
-
-	///ContentType
-	//UserRelated.
 	ContentTypeBegin = 100
 	Text             = 101
 	Picture          = 102
@@ -343,7 +340,7 @@ func GroupIsBanPrivateChat(status int32) bool {
 	return true
 }
 
-const LogFileName = "OpenIM.log"
+const LogFileName = "FDIM.log"
 
 const LocalHost = "0.0.0.0"
 
@@ -356,7 +353,7 @@ const (
 	FlagConf                  = "config_folder_path"
 )
 
-const OpenIMCommonConfigKey = "OpenIMServerConfig"
+const FDIMCommonConfigKey = "FDIMServerConfig"
 
 const CallbackCommand = "command"
 

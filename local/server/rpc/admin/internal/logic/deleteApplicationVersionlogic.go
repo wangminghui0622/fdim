@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,12 +24,12 @@ func NewDeleteApplicationVersionLogic(ctx context.Context, svcCtx *svc.ServiceCo
 }
 
 func (l *DeleteApplicationVersionLogic) DeleteApplicationVersion(req *admin.DeleteApplicationVersionReq) (*admin.DeleteApplicationVersionResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.Id) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("id cannot be empty")
 	}
 
-	// 2. 删除应用版本
+	// 2. ɾӦð汾
 	if err := l.svcCtx.AdminDB.DeleteApplicationVersion(l.ctx, req.Id); err != nil {
 		l.Errorf("DeleteApplicationVersion failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to delete application versions")

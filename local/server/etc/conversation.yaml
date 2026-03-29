@@ -7,8 +7,8 @@ Etcd:
   Key: conversation.rpc
 
 Mongo:
-  Url: "mongodb://root:test625@127.0.0.1:27017/openim_v3?authSource=admin"
-  Db: openim_v3
+  Url: "mongodb://root:test625@127.0.0.1:27017/fdim?authSource=admin"
+  Db: fdim
 
 Cache:
   - Host: 127.0.0.1:6379

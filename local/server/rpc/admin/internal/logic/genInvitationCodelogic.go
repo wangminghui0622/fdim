@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -29,18 +29,18 @@ func NewGenInvitationCodeLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 }
 
 func (l *GenInvitationCodeLogic) GenInvitationCode(req *admin.GenInvitationCodeReq) (*admin.GenInvitationCodeResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if req.Len <= 0 {
-		req.Len = 8 // 默认长度
+		req.Len = 8 // Ĭϳ
 	}
 	if req.Num <= 0 {
-		req.Num = 1 // 默认数量
+		req.Num = 1 // Ĭ
 	}
 	if req.Chars == "" {
-		req.Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" // 默认字符集
+		req.Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" // Ĭַ
 	}
 
-	// 2. 生成邀请码
+	// 2. 
 	codes := make([]string, 0, req.Num)
 	charsLen := big.NewInt(int64(len(req.Chars)))
 
@@ -56,18 +56,18 @@ func (l *GenInvitationCodeLogic) GenInvitationCode(req *admin.GenInvitationCodeR
 		codes = append(codes, code)
 	}
 
-	// 3. 检查是否已存在（避免重复）
+	// 3. ǷѴڣظ
 	exists, err := l.svcCtx.AdminDB.FindInvitationRegister(l.ctx, codes)
 	if err != nil {
 		l.Errorf("FindInvitationRegister failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to check invitation codes")
 	}
 	if len(exists) > 0 {
-		// 如果存在重复，重新生成（简化处理，实际应该重试）
+		// ظɣ򻯴ʵӦԣ
 		return nil, fmt.Errorf("generated codes conflict with existing codes, please try again")
 	}
 
-	// 4. 构建邀请码列表并添加
+	// 4. б
 	invitations := make([]*database.InvitationRegister, len(codes))
 	now := time.Now()
 	for i, code := range codes {

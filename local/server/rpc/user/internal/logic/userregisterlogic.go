@@ -34,12 +34,12 @@ func (l *UserRegisterLogic) UserRegister(req *user.UserRegisterReq) (*user.UserR
 		return nil, fmt.Errorf("users is empty")
 	}
 
-	// 注：移除管理员权限检查，允许用户自注册
+	// 注：移除管理员权限检查，允许用户自注?
 	// if err := authverify.CheckAdmin(l.ctx); err != nil {
 	// 	return nil, err
 	// }
 
-	// ����û�ID�Ƿ��ظ�
+	// ûIDǷظ
 	userIDs := make([]string, 0, len(req.Users))
 	userIDMap := make(map[string]bool)
 	for _, u := range req.Users {
@@ -56,7 +56,7 @@ func (l *UserRegisterLogic) UserRegister(req *user.UserRegisterReq) (*user.UserR
 		userIDs = append(userIDs, u.UserID)
 	}
 
-	// ����û��Ƿ��Ѵ���
+	// ûǷѴ?
 	exist, err := l.svcCtx.UserDB.IsExist(l.ctx, userIDs)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func (l *UserRegisterLogic) UserRegister(req *user.UserRegisterReq) (*user.UserR
 		return nil, fmt.Errorf("userID registered already")
 	}
 
-	// Webhook BeforeUserRegister �ص�
+	// Webhook BeforeUserRegister ص
 	usersData := make([]map[string]interface{}, 0, len(req.Users))
 	for _, u := range req.Users {
 		userData := map[string]interface{}{
@@ -89,15 +89,15 @@ func (l *UserRegisterLogic) UserRegister(req *user.UserRegisterReq) (*user.UserR
 			if err != webhook.ErrCallbackContinue {
 				return nil, err
 			}
-			// ErrCallbackContinue ��ʾ����ִ��
+			// ErrCallbackContinue ʾִ
 		}
-		// ��� webhook �������޸ĺ���û��б��ʹ����
+		// ?webhook ޸ĺûбʹ
 		if len(cbResp.Users) > 0 {
 			usersData = cbResp.Users
 		}
 	}
 
-	// �����û�
+	// û
 	now := time.Now()
 	users := make([]*model.User, 0, len(usersData))
 	for _, userData := range usersData {
@@ -133,9 +133,9 @@ func (l *UserRegisterLogic) UserRegister(req *user.UserRegisterReq) (*user.UserR
 		return nil, err
 	}
 
-	// Webhook AfterUserRegister �ص�
+	// Webhook AfterUserRegister ص
 	if l.svcCtx.WebhookClient != nil {
-		// ���¹����û��������� After �ص�
+		// ¹û After ص
 		afterUsersData := make([]map[string]interface{}, 0, len(users))
 		for _, u := range users {
 			userData := map[string]interface{}{

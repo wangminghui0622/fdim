@@ -38,7 +38,7 @@ const (
 	maxImageWidth      = 1024
 	maxImageHeight     = 1024
 	maxImageSize       = 1024 * 1024 * 50
-	imageThumbnailPath = "openim/thumbnail"
+	imageThumbnailPath = "FDIM/thumbnail"
 )
 
 const successCode = http.StatusOK
@@ -535,8 +535,8 @@ func (m *Minio) clearObjectImageInfoKey(ctx context.Context, name string, etag s
 			}
 			if first == false {
 				first = true
-				// openim/thumbnail/039395be6547fb10724fd0999ea3e834/image_w640_h640.png
-				// MINIO:IMAGE:openim/data/hash/f4061e92af6f0215f9e7ef4d4b78f234
+				// FDIM/thumbnail/039395be6547fb10724fd0999ea3e834/image_w640_h640.png
+				// MINIO:IMAGE:FDIM/data/hash/f4061e92af6f0215f9e7ef4d4b78f234
 				if err := m.cache.DelObjectImageInfoKey(ctx, etag); err != nil {
 					return err
 				}
@@ -552,8 +552,8 @@ func (m *Minio) clearObjectImageInfoKey(ctx context.Context, name string, etag s
 }
 
 func (m *Minio) deleteThumbnailCache(ctx context.Context, name string, key string) error {
-	// openim/thumbnail/ae20fe3d6466fdb11bcf465386b51312/image_w640_h640.jpeg
-	// MINIO:THUMBNAIL:jpeg:w640:h640:openim/data/hash/f4061e92af6f0215f9e7ef4d4b78f234
+	// FDIM/thumbnail/ae20fe3d6466fdb11bcf465386b51312/image_w640_h640.jpeg
+	// MINIO:THUMBNAIL:jpeg:w640:h640:FDIM/data/hash/f4061e92af6f0215f9e7ef4d4b78f234
 	filename := path.Base(key)
 	ext := path.Ext(filename)
 	filename = strings.TrimSuffix(filename, ext)

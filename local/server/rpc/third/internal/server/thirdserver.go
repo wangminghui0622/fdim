@@ -31,7 +31,7 @@ func (s *ThirdServer) PartSize(ctx context.Context, req *third.PartSizeReq) (*th
 	return l.PartSize(req)
 }
 
-// InitiateMultipartUpload 初始化分片上传
+// InitiateMultipartUpload 初始化分片上?
 func (s *ThirdServer) InitiateMultipartUpload(ctx context.Context, req *third.InitiateMultipartUploadReq) (*third.InitiateMultipartUploadResp, error) {
 	l := logic.NewInitiateMultipartUploadLogic(ctx, s.svcCtx)
 	return l.InitiateMultipartUpload(req)
@@ -55,7 +55,7 @@ func (s *ThirdServer) AccessURL(ctx context.Context, req *third.AccessURLReq) (*
 	return l.AccessURL(req)
 }
 
-// InitiateFormData 初始化表单数据上传
+// InitiateFormData 初始化表单数据上?
 func (s *ThirdServer) InitiateFormData(ctx context.Context, req *third.InitiateFormDataReq) (*third.InitiateFormDataResp, error) {
 	l := logic.NewInitiateFormDataLogic(ctx, s.svcCtx)
 	return l.InitiateFormData(req)

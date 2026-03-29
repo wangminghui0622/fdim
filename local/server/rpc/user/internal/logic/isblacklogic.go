@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -26,19 +26,19 @@ func NewIsBlackLogic(ctx context.Context, svcCtx *svc.ServiceContext) *IsBlackLo
 func (l *IsBlackLogic) IsBlack(req *user.IsBlackReq) (*user.IsBlackResp, error) {
 	resp := &user.IsBlackResp{}
 
-	// Ȩ����֤
+	// ??????
 	if err := authverify.CheckAccessIn(l.ctx, req.UserID1, req.UserID2); err != nil {
 		return nil, err
 	}
 
-	// ��� UserID1 �Ƿ������� UserID2
+	// ??? UserID1 ????????? UserID2
 	isBlack1, err := l.svcCtx.BlackDB.IsBlack(l.ctx, req.UserID1, req.UserID2)
 	if err != nil {
 		return nil, err
 	}
 	resp.InUser1Blacks = isBlack1
 
-	// ��� UserID2 �Ƿ������� UserID1
+	// ??? UserID2 ????????? UserID1
 	isBlack2, err := l.svcCtx.BlackDB.IsBlack(l.ctx, req.UserID2, req.UserID1)
 	if err != nil {
 		return nil, err

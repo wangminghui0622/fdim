@@ -25,7 +25,7 @@ func NewAuthSignLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AuthSign
 }
 
 func (l *AuthSignLogic) AuthSign(req *third.AuthSignReq) (*third.AuthSignResp, error) {
-	// 简化版：不生成真正的 S3 签名，而是基于 UploadID 和 PartNumbers 拼接上传 URL 和部分 query/header
+	// 简化版：不生成真正?S3 签名，而是基于 UploadID ?PartNumbers 拼接上传 URL 和部?query/header
 	if req.UploadID == "" {
 		return nil, fmt.Errorf("uploadID is empty")
 	}
@@ -45,7 +45,7 @@ func (l *AuthSignLogic) AuthSign(req *third.AuthSignReq) (*third.AuthSignResp, e
 		return nil, fmt.Errorf("failed to parse upload url: %w", err)
 	}
 
-	// 将 partNumbers 以逗号拼接到 query 中，方便客户端识别
+	// ?partNumbers 以逗号拼接?query 中，方便客户端识?
 	q := u.Query()
 	for _, part := range req.PartNumbers {
 		q.Add("partNumber", fmt.Sprintf("%d", part))

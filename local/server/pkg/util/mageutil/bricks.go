@@ -20,12 +20,12 @@ func StopBinaries() {
 // StartBinaries Start all binary services.
 func StartBinaries() error {
 	for binary, count := range serviceBinaries {
-		binFullPath := filepath.Join(OpenIMOutputHostBin, binary)
+		binFullPath := filepath.Join(FDIMOutputHostBin, binary)
 		for i := 0; i < count; i++ {
-			args := []string{"-i", strconv.Itoa(i), "-c", OpenIMOutputConfig}
+			args := []string{"-i", strconv.Itoa(i), "-c", FDIMOutputConfig}
 			cmd := exec.Command(binFullPath, args...)
 			fmt.Printf("Starting %s\n", cmd.String())
-			cmd.Dir = OpenIMOutputHostBin
+			cmd.Dir = FDIMOutputHostBin
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Start(); err != nil {
@@ -41,9 +41,9 @@ func StartBinaries() error {
 func StartTools() error {
 	for _, tool := range toolBinaries {
 		toolFullPath := GetToolFullPath(tool)
-		cmd := exec.Command(toolFullPath, "-c", OpenIMOutputConfig)
+		cmd := exec.Command(toolFullPath, "-c", FDIMOutputConfig)
 		fmt.Printf("Starting %s\n", cmd.String())
-		cmd.Dir = OpenIMOutputHostBinTools
+		cmd.Dir = FDIMOutputHostBinTools
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 

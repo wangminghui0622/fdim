@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,12 +24,12 @@ func NewUpdateApplicationVersionLogic(ctx context.Context, svcCtx *svc.ServiceCo
 }
 
 func (l *UpdateApplicationVersionLogic) UpdateApplicationVersion(req *admin.UpdateApplicationVersionReq) (*admin.UpdateApplicationVersionResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if req.Id == "" {
 		return nil, errs.ErrArgs.WrapMsg("id cannot be empty")
 	}
 
-	// 2. 构建更新字段
+	// 2. ֶ
 	update := make(map[string]interface{})
 	if req.Platform != nil {
 		update["platform"] = req.Platform.Value
@@ -48,10 +48,10 @@ func (l *UpdateApplicationVersionLogic) UpdateApplicationVersion(req *admin.Upda
 	}
 	if req.Latest != nil {
 		update["latest"] = req.Latest.Value
-		// 如果设置为最新版本，需要将同平台的其他版本设置为非最新
+		// Ϊ°汾Ҫͬƽ̨汾Ϊ
 		if req.Latest.Value {
-			// 获取当前版本信息以获取平台
-			// 简化处理：先更新当前版本，然后更新同平台其他版本
+			// ȡǰ汾ϢԻȡƽ̨
+			// 򻯴ȸµǰ汾Ȼͬƽ̨汾
 		}
 	}
 	if req.Hot != nil {
@@ -62,7 +62,7 @@ func (l *UpdateApplicationVersionLogic) UpdateApplicationVersion(req *admin.Upda
 		return nil, errs.ErrArgs.WrapMsg("no update fields provided")
 	}
 
-	// 3. 更新应用版本
+	// 3. Ӧð汾
 	if err := l.svcCtx.AdminDB.UpdateApplicationVersion(l.ctx, req.Id, update); err != nil {
 		l.Errorf("UpdateApplicationVersion failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to update application version")

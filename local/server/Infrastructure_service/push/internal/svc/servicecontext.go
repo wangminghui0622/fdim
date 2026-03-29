@@ -1,4 +1,4 @@
-﻿package svc
+package svc
 
 import (
 	"fdim/Infrastructure_service/push/internal/config"
@@ -21,24 +21,24 @@ type ServiceContext struct {
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	// 初始化 MessageGateway 客户端
+	// ʼ MessageGateway ͻ
 	var messageGatewayClient msggateway.MsgGatewayClient
 	if c.MessageGatewayRpc.Etcd.Key != "" || c.MessageGatewayRpc.Target != "" {
 		messageGatewayConn := zrpc.MustNewClient(c.MessageGatewayRpc).Conn()
 		messageGatewayClient = msggateway.NewMsgGatewayClient(messageGatewayConn)
 	}
 
-	// 初始化 Redis 客户端（用于离线推送 token 存储）
+	// ʼ Redis ͻˣ token 洢
 	redisClient := cache.NewRedisClient(c.Cache)
 
-	// 初始化 Group 客户端
+	// ʼ Group ͻ
 	var groupClient user.GroupClient
 	if c.GroupRpc.Etcd.Key != "" || c.GroupRpc.Target != "" {
 		groupConn := zrpc.MustNewClient(c.GroupRpc).Conn()
 		groupClient = user.NewGroupClient(groupConn)
 	}
 
-	// 初始化 NATS Consumer
+	// ʼ NATS Consumer
 	var pushConsumer mq.Consumer
 	if c.Nats.ToPushTopic == "" || c.Nats.ToPushGroupID == "" {
 		logx.Errorf("push consumer not initialized: empty NATS config (ToPushTopic=%q, ToPushGroupID=%q)", c.Nats.ToPushTopic, c.Nats.ToPushGroupID)
@@ -63,7 +63,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		}
 	}
 
-	// 初始化离线推送器
+	// ʼ
 	pushConfig := offlinepush.PushConfig{
 		Enable:            c.Push.Enable,
 		FcmServerKey:      c.Push.FcmServerKey,

@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -27,7 +27,7 @@ func (l *CheckUserExistLogic) CheckUserExist(req *chat.CheckUserExistReq) (*chat
 		return &chat.CheckUserExistResp{IsRegistered: false}, nil
 	}
 
-	// 检查手机号
+	// ֻ
 	if req.User.PhoneNumber != "" && req.User.AreaCode != "" {
 		userAccount, err := l.svcCtx.ChatDB.GetUserAccountByPhone(l.ctx, req.User.AreaCode, req.User.PhoneNumber)
 		if err == nil {
@@ -38,7 +38,7 @@ func (l *CheckUserExistLogic) CheckUserExist(req *chat.CheckUserExistReq) (*chat
 		}
 	}
 
-	// 检查邮箱
+	// 
 	if req.User.Email != "" {
 		userAccount, err := l.svcCtx.ChatDB.GetUserAccountByEmail(l.ctx, req.User.Email)
 		if err == nil {
@@ -49,7 +49,7 @@ func (l *CheckUserExistLogic) CheckUserExist(req *chat.CheckUserExistReq) (*chat
 		}
 	}
 
-	// 检查账户
+	// ˻
 	if req.User.Account != "" {
 		userAccount, err := l.svcCtx.ChatDB.GetUserAccountByAccount(l.ctx, req.User.Account)
 		if err == nil {

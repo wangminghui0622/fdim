@@ -1,4 +1,4 @@
-﻿package database
+package database
 
 import (
 	"context"
@@ -24,7 +24,7 @@ func NewFriendDatabase(db *MongoDB) *FriendDatabase {
 	}
 }
 
-// FindFriends 查找好友
+// FindFriends Һ
 func (d *FriendDatabase) FindFriends(ctx context.Context, ownerUserID string, friendUserIDs []string) ([]*model.Friend, error) {
 	filter := bson.M{
 		"owner_user_id":  ownerUserID,
@@ -43,12 +43,12 @@ func (d *FriendDatabase) FindFriends(ctx context.Context, ownerUserID string, fr
 	return friends, nil
 }
 
-// FindFriendsWithError 查找好友（带错误检查）
+// FindFriendsWithError Һѣ飩
 func (d *FriendDatabase) FindFriendsWithError(ctx context.Context, ownerUserID string, friendUserIDs []string) ([]*model.Friend, error) {
 	return d.FindFriends(ctx, ownerUserID, friendUserIDs)
 }
 
-// CheckIn 检查是否为好友
+// CheckIn ǷΪ
 func (d *FriendDatabase) CheckIn(ctx context.Context, userID1, userID2 string) (bool, bool, error) {
 	count1, err := d.friendCollection.CountDocuments(ctx, bson.M{
 		"owner_user_id":  userID1,
@@ -69,7 +69,7 @@ func (d *FriendDatabase) CheckIn(ctx context.Context, userID1, userID2 string) (
 	return count1 > 0, count2 > 0, nil
 }
 
-// AddFriendRequest 添加好友申请（幂等：同一对 from/to 只保留一条，重复申请则更新）
+// AddFriendRequest Ӻ루ݵȣͬһ from/to ֻһظ£
 func (d *FriendDatabase) AddFriendRequest(ctx context.Context, fromUserID, toUserID, reqMsg, ex string) error {
 	filter := bson.M{
 		"from_user_id": fromUserID,
@@ -95,7 +95,7 @@ func (d *FriendDatabase) AddFriendRequest(ctx context.Context, fromUserID, toUse
 	return err
 }
 
-// BecomeFriends 成为好友
+// BecomeFriends Ϊ
 func (d *FriendDatabase) BecomeFriends(ctx context.Context, ownerUserID string, friendUserIDs []string, addSource int32) error {
 	now := time.Now()
 	docs := make([]interface{}, len(friendUserIDs))
@@ -111,9 +111,9 @@ func (d *FriendDatabase) BecomeFriends(ctx context.Context, ownerUserID string, 
 	return err
 }
 
-// AgreeFriendRequest 同意好友申请
+// AgreeFriendRequest ͬ
 func (d *FriendDatabase) AgreeFriendRequest(ctx context.Context, req *model.FriendRequest) error {
-	// 更新好友申请状�?
+	// º״??
 	filter := bson.M{
 		"from_user_id": req.FromUserID,
 		"to_user_id":   req.ToUserID,
@@ -131,7 +131,7 @@ func (d *FriendDatabase) AgreeFriendRequest(ctx context.Context, req *model.Frie
 		return err
 	}
 
-	// 创建双向好友关系
+	// ˫ѹϵ
 	now := time.Now()
 	friends := []interface{}{
 		model.Friend{
@@ -139,21 +139,21 @@ func (d *FriendDatabase) AgreeFriendRequest(ctx context.Context, req *model.Frie
 			OwnerUserID:  req.FromUserID,
 			FriendUserID: req.ToUserID,
 			CreateTime:   now,
-			AddSource:    constant.BecomeFriendByApply, // 通过申请添加好友
+			AddSource:    constant.BecomeFriendByApply, // ͨӺ
 		},
 		model.Friend{
 			ID:           primitive.NewObjectID(),
 			OwnerUserID:  req.ToUserID,
 			FriendUserID: req.FromUserID,
 			CreateTime:   now,
-			AddSource:    constant.BecomeFriendByApply, // 通过申请添加好友
+			AddSource:    constant.BecomeFriendByApply, // ͨӺ
 		},
 	}
 	_, err = d.friendCollection.InsertMany(ctx, friends)
 	return err
 }
 
-// RefuseFriendRequest 拒绝好友申请
+// RefuseFriendRequest ܾ
 func (d *FriendDatabase) RefuseFriendRequest(ctx context.Context, req *model.FriendRequest) error {
 	filter := bson.M{
 		"from_user_id": req.FromUserID,
@@ -171,7 +171,7 @@ func (d *FriendDatabase) RefuseFriendRequest(ctx context.Context, req *model.Fri
 	return err
 }
 
-// Delete 删除好友
+// Delete ɾ
 func (d *FriendDatabase) Delete(ctx context.Context, ownerUserID string, friendUserIDs []string) error {
 	filter := bson.M{
 		"owner_user_id":  ownerUserID,
@@ -181,7 +181,7 @@ func (d *FriendDatabase) Delete(ctx context.Context, ownerUserID string, friendU
 	return err
 }
 
-// UpdateRemark 更新好友备注
+// UpdateRemark ºѱע
 func (d *FriendDatabase) UpdateRemark(ctx context.Context, ownerUserID, friendUserID, remark string) error {
 	filter := bson.M{
 		"owner_user_id":  ownerUserID,
@@ -196,7 +196,7 @@ func (d *FriendDatabase) UpdateRemark(ctx context.Context, ownerUserID, friendUs
 	return err
 }
 
-// UpdateFriends 批量更新好友信息
+// UpdateFriends ºϢ
 func (d *FriendDatabase) UpdateFriends(ctx context.Context, ownerUserID string, friendUserIDs []string, data map[string]interface{}) error {
 	filter := bson.M{
 		"owner_user_id":  ownerUserID,
@@ -209,7 +209,7 @@ func (d *FriendDatabase) UpdateFriends(ctx context.Context, ownerUserID string, 
 	return err
 }
 
-// FindFriendUserIDs 查找好友用户ID列表
+// FindFriendUserIDs ҺûIDб
 func (d *FriendDatabase) FindFriendUserIDs(ctx context.Context, ownerUserID string) ([]string, error) {
 	filter := bson.M{
 		"owner_user_id": ownerUserID,
@@ -233,20 +233,20 @@ func (d *FriendDatabase) FindFriendUserIDs(ctx context.Context, ownerUserID stri
 	return friendIDs, nil
 }
 
-// PageFriendRequestToMe 分页获取发送给我的好友申请
+// PageFriendRequestToMe ҳȡ͸ҵĺ
 func (d *FriendDatabase) PageFriendRequestToMe(ctx context.Context, toUserID string, handleResults []int32, offset, limit int32) (int64, []*model.FriendRequest, error) {
 	filter := bson.M{"to_user_id": toUserID}
 	if len(handleResults) > 0 {
 		filter["handle_result"] = bson.M{"$in": handleResults}
 	}
 
-	// 获取总数
+	// ȡ
 	total, err := d.requestCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().SetSkip(int64(offset)).SetLimit(int64(limit)).SetSort(bson.D{{Key: "create_time", Value: -1}})
 	cursor, err := d.requestCollection.Find(ctx, filter, opts)
 	if err != nil {
@@ -261,20 +261,20 @@ func (d *FriendDatabase) PageFriendRequestToMe(ctx context.Context, toUserID str
 	return total, requests, nil
 }
 
-// PageFriendRequestFromMe 分页获取我发送的好友申请
+// PageFriendRequestFromMe ҳȡҷ͵ĺ
 func (d *FriendDatabase) PageFriendRequestFromMe(ctx context.Context, fromUserID string, handleResults []int32, offset, limit int32) (int64, []*model.FriendRequest, error) {
 	filter := bson.M{"from_user_id": fromUserID}
 	if len(handleResults) > 0 {
 		filter["handle_result"] = bson.M{"$in": handleResults}
 	}
 
-	// 获取总数
+	// ȡ
 	total, err := d.requestCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().SetSkip(int64(offset)).SetLimit(int64(limit)).SetSort(bson.D{{Key: "create_time", Value: -1}})
 	cursor, err := d.requestCollection.Find(ctx, filter, opts)
 	if err != nil {
@@ -289,11 +289,11 @@ func (d *FriendDatabase) PageFriendRequestFromMe(ctx context.Context, fromUserID
 	return total, requests, nil
 }
 
-// GetUnhandledFriendRequestCount 获取未处理的好友申请数量
+// GetUnhandledFriendRequestCount ȡδĺ
 func (d *FriendDatabase) GetUnhandledFriendRequestCount(ctx context.Context, userID string, ts int64) (int64, error) {
 	filter := bson.M{
 		"to_user_id":    userID,
-		"handle_result": 0, // 未处�?
+		"handle_result": 0, // δ??
 	}
 	if ts != 0 {
 		filter["create_time"] = bson.M{"$gt": time.UnixMilli(ts)}
@@ -301,11 +301,11 @@ func (d *FriendDatabase) GetUnhandledFriendRequestCount(ctx context.Context, use
 	return d.requestCollection.CountDocuments(ctx, filter)
 }
 
-// GetSelfUnhandledFriendRequestCount 获取自己发送的未处理申请数�?
+// GetSelfUnhandledFriendRequestCount ȡԼ͵δ??
 func (d *FriendDatabase) GetSelfUnhandledFriendRequestCount(ctx context.Context, userID string, ts int64) (int64, error) {
 	filter := bson.M{
 		"from_user_id":  userID,
-		"handle_result": 0, // 未处�?
+		"handle_result": 0, // δ??
 	}
 	if ts != 0 {
 		filter["create_time"] = bson.M{"$gt": time.UnixMilli(ts)}
@@ -313,17 +313,17 @@ func (d *FriendDatabase) GetSelfUnhandledFriendRequestCount(ctx context.Context,
 	return d.requestCollection.CountDocuments(ctx, filter)
 }
 
-// PageOwnerFriends 分页获取好友列表
+// PageOwnerFriends ҳȡб
 func (d *FriendDatabase) PageOwnerFriends(ctx context.Context, ownerUserID string, offset, limit int32) (int64, []*model.Friend, error) {
 	filter := bson.M{"owner_user_id": ownerUserID}
 
-	// 获取总数
+	// ȡ
 	total, err := d.friendCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询（按 is_pinned 降序，然后按 _id 升序�?
+	// ҳѯ is_pinned Ȼ _id ??
 	opts := options.Find().
 		SetSkip(int64(offset)).
 		SetLimit(int64(limit)).
@@ -344,7 +344,7 @@ func (d *FriendDatabase) PageOwnerFriends(ctx context.Context, ownerUserID strin
 	return total, friends, nil
 }
 
-// FindBothFriendRequests 查找双向好友申请（用�?GetDesignatedFriendsApply�?
+// FindBothFriendRequests ˫루??GetDesignatedFriendsApply??
 func (d *FriendDatabase) FindBothFriendRequests(ctx context.Context, fromUserID, toUserID string) ([]*model.FriendRequest, error) {
 	filter := bson.M{
 		"$or": []bson.M{

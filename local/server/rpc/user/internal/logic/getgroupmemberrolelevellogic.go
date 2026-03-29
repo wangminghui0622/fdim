@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,6 +24,6 @@ func NewGetGroupMemberRoleLevelLogic(ctx context.Context, svcCtx *svc.ServiceCon
 }
 
 func (l *GetGroupMemberRoleLevelLogic) GetGroupMemberRoleLevel(req *user.GetGroupMemberRoleLevelReq) (*user.GetGroupMemberRoleLevelResp, error) {
-	// TODO: 实现获取群成员角色级别的逻辑
+	// TODO: ʵֻȡȺԱɫ߼
 	return nil, fmt.Errorf("GetGroupMemberRoleLevel not fully implemented yet")
 }

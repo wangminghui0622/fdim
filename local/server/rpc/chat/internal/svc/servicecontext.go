@@ -27,32 +27,32 @@ type ServiceContext struct {
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	// 初始化 MongoDB
+	// 初始?MongoDB
 	mongoDB := database.NewMongoDB(c.Mongo.Url, c.Mongo.Db, "", "")
 
-	// 初始化 Redis
+	// 初始?Redis
 	redisClient := cache.NewRedisClient(c.Cache)
 
-	// 初始化 ChatDatabase
+	// 初始?ChatDatabase
 	chatDB := database.NewChatDatabase(mongoDB)
 
-	// 初始化 Token
+	// 初始?Token
 	tokenExpire := time.Duration(c.TokenPolicy.Expire) * 24 * time.Hour
 	if tokenExpire == 0 {
-		tokenExpire = 7 * 24 * time.Hour // 默认7天
+		tokenExpire = 7 * 24 * time.Hour // 默认7?
 	}
 	token := &tokenverify.Token{
 		Expires: tokenExpire,
 		Secret:  c.Secret,
 	}
 
-	// 初始化 Admin RPC 客户端
+	// 初始?Admin RPC 客户?
 	var adminRpc adminclient.AdminClient
 	if c.AdminRpc.Etcd.Hosts != nil && len(c.AdminRpc.Etcd.Hosts) > 0 {
 		adminRpc = adminclient.NewAdminClient(zrpc.MustNewClient(c.AdminRpc).Conn())
 	}
 
-	// 初始化邮件/短信发送器（可选）
+	// 初始化邮?短信发送器（可选）
 	var mailer email.Mail
 	if c.Email.Enable {
 		mailer = email.NewMail(c.Email.SMTPAddr, c.Email.SMTPPort, c.Email.SenderMail, c.Email.SenderAuthorizationCode, c.Email.Title)

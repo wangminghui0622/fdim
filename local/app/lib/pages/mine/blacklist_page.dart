@@ -22,7 +22,7 @@ class _BlacklistPageState extends State<BlacklistPage> {
 
   Future<void> _load() async {
     try {
-      final list = await OpenIM.iMManager.friendshipManager.getBlacklist();
+      final list = await FDIM.iMManager.friendshipManager.getBlacklist();
       if (mounted) setState(() { _list = list; _loading = false; });
     } catch (_) {
       if (mounted) setState(() => _loading = false);
@@ -44,7 +44,7 @@ class _BlacklistPageState extends State<BlacklistPage> {
     if (confirm != true) return;
     EasyLoading.show();
     try {
-      await OpenIM.iMManager.friendshipManager.removeBlacklist(userID: item.userID ?? '');
+      await FDIM.iMManager.friendshipManager.removeBlacklist(userID: item.userID ?? '');
       EasyLoading.showToast('已移除');
       _load();
     } catch (_) {

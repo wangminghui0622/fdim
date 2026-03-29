@@ -72,7 +72,7 @@ class _ContactsPageState extends State<ContactsPage> {
 
   Future<void> _loadFriends() async {
     try {
-      final list = await OpenIM.iMManager.friendshipManager.getFriendList();
+      final list = await FDIM.iMManager.friendshipManager.getFriendList();
       if (mounted) {
         setState(() {
           _friends = list;
@@ -87,7 +87,7 @@ class _ContactsPageState extends State<ContactsPage> {
 
   Future<void> _loadApplyCount() async {
     try {
-      final list = await OpenIM.iMManager.friendshipManager
+      final list = await FDIM.iMManager.friendshipManager
           .getFriendApplicationListAsRecipient();
       final pending = list.where((e) => e.handleResult == 0).length;
       if (mounted) setState(() => _applyCount = pending);
@@ -103,7 +103,7 @@ class _ContactsPageState extends State<ContactsPage> {
           .map((f) => f.friendUserID ?? '')
           .where((id) => id.isNotEmpty)
           .toList();
-      final result = await OpenIM.iMManager.userManager.getUserStatus(userIDs);
+      final result = await FDIM.iMManager.userManager.getUserStatus(userIDs);
       if (mounted) {
         setState(() {
           for (final item in result) {
@@ -127,7 +127,7 @@ class _ContactsPageState extends State<ContactsPage> {
 
     try {
       // 尝试获取会话，如果不存在会返回一个占位符
-      await OpenIM.iMManager.conversationManager.getOneConversation(
+      await FDIM.iMManager.conversationManager.getOneConversation(
         sourceID: friend.friendUserID ?? '',
         sessionType: ConversationType.single,
       );

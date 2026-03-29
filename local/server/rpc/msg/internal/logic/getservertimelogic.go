@@ -24,7 +24,7 @@ func NewGetServerTimeLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Get
 }
 
 func (l *GetServerTimeLogic) GetServerTime(req *msg.GetServerTimeReq) (*msg.GetServerTimeResp, error) {
-	// 返回当前服务器时间
+	// 返回当前服务器时?
 	return &msg.GetServerTimeResp{
 		ServerTime: time.Now().Unix(),
 	}, nil

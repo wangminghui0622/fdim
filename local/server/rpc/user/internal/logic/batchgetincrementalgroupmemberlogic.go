@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,6 +24,6 @@ func NewBatchGetIncrementalGroupMemberLogic(ctx context.Context, svcCtx *svc.Ser
 }
 
 func (l *BatchGetIncrementalGroupMemberLogic) BatchGetIncrementalGroupMember(req *user.BatchGetIncrementalGroupMemberReq) (*user.BatchGetIncrementalGroupMemberResp, error) {
-	// TODO: 实现批量获取增量群成员的逻辑
+	// TODO: ʵȡȺԱ߼
 	return nil, fmt.Errorf("BatchGetIncrementalGroupMember not fully implemented yet")
 }

@@ -1,4 +1,4 @@
-﻿package database
+package database
 
 import (
 	"context"
@@ -14,7 +14,7 @@ type MongoDB struct {
 	database *mongo.Database
 }
 
-// NewMongoDBFromClient 使用现有的MongoDB客户端创建MongoDB实例
+// NewMongoDBFromClient ʹеMongoDBͻ˴MongoDBʵ
 func NewMongoDBFromClient(client *mongo.Client, databaseName string) *MongoDB {
 	return &MongoDB{
 		client:   client,
@@ -25,16 +25,16 @@ func NewMongoDBFromClient(client *mongo.Client, databaseName string) *MongoDB {
 func NewMongoDB(host, database, username, password string) *MongoDB {
 	var uri string
 
-	// 判断 host 是否已经是完整的 MongoDB URI（含凭据或查询参数）
+	// ж host ǷѾ MongoDB URIƾݻѯ
 	isFullURI := strings.Contains(host, "@") || strings.Contains(host, "?")
 
 	if isFullURI {
-		// host 已经是完整 URI（如 mongodb://root:test625@127.0.0.1:27017/openim_v3?authSource=admin），直接使用
+		// host Ѿ URI mongodb://root:test625@127.0.0.1:27017/FDIM_v3?authSource=adminֱʹ
 		uri = host
 	} else if username != "" && password != "" {
-		// 去掉可能存在的 mongodb:// 前缀，避免重复拼接
+		// ȥܴڵ mongodb:// ǰ׺ظƴ
 		cleanHost := strings.TrimPrefix(host, "mongodb://")
-		// 认证 URI + authSource=admin（root 用户在 admin 库）
+		// ֤ URI + authSource=adminroot û admin ⣩
 		uri = fmt.Sprintf("mongodb://%s:%s@%s/%s?authSource=admin", username, password, cleanHost, database)
 	} else {
 		cleanHost := strings.TrimPrefix(host, "mongodb://")

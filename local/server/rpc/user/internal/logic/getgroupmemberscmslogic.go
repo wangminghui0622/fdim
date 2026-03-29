@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,6 +24,6 @@ func NewGetGroupMembersCMSLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 }
 
 func (l *GetGroupMembersCMSLogic) GetGroupMembersCMS(req *user.GetGroupMembersCMSReq) (*user.GetGroupMembersCMSResp, error) {
-	// TODO: 实现获取群成员CMS的逻辑
+	// TODO: ʵֻȡȺԱCMS߼
 	return nil, fmt.Errorf("GetGroupMembersCMS not fully implemented yet")
 }

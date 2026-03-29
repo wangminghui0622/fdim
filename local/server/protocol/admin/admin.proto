@@ -1,5 +1,5 @@
 syntax = "proto3";
-package openim.admin;
+package fdim.admin;
 
 
 import "sdkws/sdkws.proto";
@@ -33,11 +33,11 @@ message AddAdminAccountReq {
 message AddAdminAccountResp {}
 
 message AdminUpdateInfoReq {
-  openim.protobuf.StringValue account = 1;
-  openim.protobuf.StringValue password = 2;
-  openim.protobuf.StringValue faceURL = 3;
-  openim.protobuf.StringValue nickname = 4;
-  openim.protobuf.Int32Value level = 6;
+  fdim.protobuf.StringValue account = 1;
+  fdim.protobuf.StringValue password = 2;
+  fdim.protobuf.StringValue faceURL = 3;
+  fdim.protobuf.StringValue nickname = 4;
+  fdim.protobuf.Int32Value level = 6;
 }
 
 message AdminUpdateInfoResp {
@@ -69,7 +69,7 @@ message DelAdminAccountReq {
 message DelAdminAccountResp {}
 
 message SearchAdminAccountReq {
-  openim.sdkws.RequestPagination pagination = 2;
+  fdim.sdkws.RequestPagination pagination = 2;
 }
 
 message SearchAdminAccountResp {
@@ -109,13 +109,13 @@ message FindDefaultFriendResp {
 
 message SearchDefaultFriendReq {
   string keyword = 1;
-  openim.sdkws.RequestPagination pagination = 2;
+  fdim.sdkws.RequestPagination pagination = 2;
 }
 
 message DefaultFriendAttribute {
   string userID = 1;
   int64 createTime = 2;
-  openim.sdkws.ChatUserPublicInfo user = 3;
+  fdim.sdkws.ChatUserPublicInfo user = 3;
 }
 
 message SearchDefaultFriendResp {
@@ -145,13 +145,13 @@ message FindDefaultGroupResp {
 
 message SearchDefaultGroupReq {
   string keyword = 1;
-  openim.sdkws.RequestPagination pagination = 2;
+  fdim.sdkws.RequestPagination pagination = 2;
 }
 
 message GroupAttribute {
   string groupID = 1;
   int64 createTime = 2;
-  openim.sdkws.GroupInfo group = 3;
+  fdim.sdkws.GroupInfo group = 3;
 }
 
 message SearchDefaultGroupResp {
@@ -200,7 +200,7 @@ message InvitationRegister {
   string invitationCode = 1;
   int64 createTime = 2;
   string usedUserID = 3;
-  openim.sdkws.ChatUserPublicInfo usedUser = 4;
+  fdim.sdkws.ChatUserPublicInfo usedUser = 4;
 }
 
 message SearchInvitationCodeReq {
@@ -208,7 +208,7 @@ message SearchInvitationCodeReq {
   repeated string userIDs = 2;
   repeated string codes = 3;
   string keyword = 4;
-  openim.sdkws.RequestPagination pagination = 5;
+  fdim.sdkws.RequestPagination pagination = 5;
 }
 
 message SearchInvitationCodeResp {
@@ -220,14 +220,14 @@ message SearchInvitationCodeResp {
 
 message SearchUserIPLimitLoginReq {
   string keyword = 1;
-  openim.sdkws.RequestPagination pagination = 2;
+  fdim.sdkws.RequestPagination pagination = 2;
 }
 
 message LimitUserLoginIP {
   string userID = 1;
   string ip = 2;
   int64 createTime = 3;
-  openim.sdkws.ChatUserPublicInfo user = 4;
+  fdim.sdkws.ChatUserPublicInfo user = 4;
 }
 
 message SearchUserIPLimitLoginResp {
@@ -270,7 +270,7 @@ message IPForbiddenAdd {
 message SearchIPForbiddenReq {
   string keyword = 1;
   int32 status = 2;
-  openim.sdkws.RequestPagination pagination = 3;
+  fdim.sdkws.RequestPagination pagination = 3;
 }
 
 message SearchIPForbiddenResp {
@@ -326,7 +326,7 @@ message UnblockUserResp {}
 
 message SearchBlockUserReq {
   string keyword = 1;
-  openim.sdkws.RequestPagination pagination = 2;
+  fdim.sdkws.RequestPagination pagination = 2;
 }
 
 message BlockUserInfo {
@@ -416,16 +416,16 @@ message DelAppletResp {}
 
 message UpdateAppletReq {
   string id = 1;
-  openim.protobuf.StringValue name = 2;
-  openim.protobuf.StringValue appID = 3;
-  openim.protobuf.StringValue icon = 4;
-  openim.protobuf.StringValue url = 5;
-  openim.protobuf.StringValue md5 = 6;
-  openim.protobuf.Int64Value size = 7;
-  openim.protobuf.StringValue version = 8;
-  openim.protobuf.UInt32Value priority = 9;
-  openim.protobuf.UInt32Value status = 10;
-  openim.protobuf.Int64Value createTime = 11;
+  fdim.protobuf.StringValue name = 2;
+  fdim.protobuf.StringValue appID = 3;
+  fdim.protobuf.StringValue icon = 4;
+  fdim.protobuf.StringValue url = 5;
+  fdim.protobuf.StringValue md5 = 6;
+  fdim.protobuf.Int64Value size = 7;
+  fdim.protobuf.StringValue version = 8;
+  fdim.protobuf.UInt32Value priority = 9;
+  fdim.protobuf.UInt32Value status = 10;
+  fdim.protobuf.Int64Value createTime = 11;
 }
 
 message UpdateAppletResp {}
@@ -433,17 +433,17 @@ message UpdateAppletResp {}
 message FindAppletReq {}
 
 message FindAppletResp {
-  repeated openim.sdkws.ChatAppletInfo applets = 1;
+  repeated fdim.sdkws.ChatAppletInfo applets = 1;
 }
 
 message SearchAppletReq {
   string keyword = 1;
-  openim.sdkws.RequestPagination pagination = 2;
+  fdim.sdkws.RequestPagination pagination = 2;
 }
 
 message SearchAppletResp {
   uint32 total = 1;
-  repeated openim.sdkws.ChatAppletInfo applets = 2;
+  repeated fdim.sdkws.ChatAppletInfo applets = 2;
 }
 
 message SetClientConfigReq {
@@ -510,13 +510,13 @@ message AddApplicationVersionResp {
 
 message UpdateApplicationVersionReq {
   string id = 1;
-  openim.protobuf.StringValue platform = 2;
-  openim.protobuf.StringValue version = 3;
-  openim.protobuf.StringValue url = 4;
-  openim.protobuf.StringValue text = 5;
-  openim.protobuf.BoolValue force = 6;
-  openim.protobuf.BoolValue latest = 7;
-  openim.protobuf.BoolValue hot = 8;
+  fdim.protobuf.StringValue platform = 2;
+  fdim.protobuf.StringValue version = 3;
+  fdim.protobuf.StringValue url = 4;
+  fdim.protobuf.StringValue text = 5;
+  fdim.protobuf.BoolValue force = 6;
+  fdim.protobuf.BoolValue latest = 7;
+  fdim.protobuf.BoolValue hot = 8;
 }
 
 message UpdateApplicationVersionResp {
@@ -533,7 +533,7 @@ message DeleteApplicationVersionResp {
 
 message PageApplicationVersionReq {
   repeated string platform = 1;
-  openim.sdkws.RequestPagination pagination = 2;
+  fdim.sdkws.RequestPagination pagination = 2;
 }
 
 message PageApplicationVersionResp {

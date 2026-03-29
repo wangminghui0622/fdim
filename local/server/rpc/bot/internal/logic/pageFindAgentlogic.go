@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,14 +24,14 @@ func NewPageFindAgentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Pag
 }
 
 func (l *PageFindAgentLogic) PageFindAgent(req *bot.PageFindAgentReq) (*bot.PageFindAgentResp, error) {
-	// 1. 分页查找Agent
+	// 1. ҳAgent
 	total, agents, err := l.svcCtx.BotDB.PageFindAgent(l.ctx, req.UserIDs, req.Pagination)
 	if err != nil {
 		l.Errorf("PageFindAgent failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to find agents")
 	}
 
-	// 2. 转换为protobuf格式
+	// 2. תΪprotobufʽ
 	results := make([]*bot.Agent, 0, len(agents))
 	for _, agent := range agents {
 		results = append(results, &bot.Agent{

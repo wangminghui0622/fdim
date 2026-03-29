@@ -6,7 +6,7 @@ import (
 
 // ParseConversationID 解析会话ID，提取用户ID
 // 单聊: si_{userID1}_{userID2} (按字典序排序)
-// 群聊: g_{groupID} 或 sg_{groupID}
+// 群聊: g_{groupID} ?sg_{groupID}
 func ParseConversationID(conversationID string) (sessionType string, userIDs []string, groupID string) {
 	if strings.HasPrefix(conversationID, "si_") {
 		// 单聊
@@ -19,7 +19,7 @@ func ParseConversationID(conversationID string) (sessionType string, userIDs []s
 		groupID = strings.TrimPrefix(conversationID, "g_")
 		return "group", nil, groupID
 	} else if strings.HasPrefix(conversationID, "sg_") {
-		// 只读群聊（超级群）
+		// 只读群聊（超级群?
 		groupID = strings.TrimPrefix(conversationID, "sg_")
 		return "super_group", nil, groupID
 	}
@@ -39,8 +39,8 @@ func GetGroupIDFromConversationID(conversationID string) string {
 }
 
 // GetRecvUserIDFromMsg 从消息中获取接收者用户ID
-// 对于单聊，返回 RecvID
-// 对于群聊，需要调用 Group 服务获取群成员列表
+// 对于单聊，返?RecvID
+// 对于群聊，需要调?Group 服务获取群成员列?
 func GetRecvUserIDFromMsg(sessionType int32, recvID, groupID string) string {
 	if sessionType == 1 { // SingleChatType
 		return recvID
@@ -70,7 +70,7 @@ func ExtractUserIDsFromMsg(sessionType int32, sendID, recvID, groupID, conversat
 		}
 	case 2, 3: // WriteGroupChatType, ReadGroupChatType - 群聊
 		// 群聊需要从 Group 服务获取成员列表
-		// 这里返回空，需要调用 Group 服务
+		// 这里返回空，需要调?Group 服务
 		userIDs = []string{}
 	default:
 		userIDs = []string{}

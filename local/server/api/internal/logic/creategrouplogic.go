@@ -53,7 +53,7 @@ func (l *CreateGroupLogic) CreateGroup(req *types.CreateGroupReq) (resp *types.C
 			if ex, ok := gi["ex"].(string); ok {
 				groupInfo.Ex = ex
 			}
-			// JSON 数字反序列化到 interface{} 时是 float64
+			// JSON 数字反序列化?interface{} 时是 float64
 			if groupType, ok := gi["groupType"].(float64); ok {
 				groupInfo.GroupType = int32(groupType)
 			}

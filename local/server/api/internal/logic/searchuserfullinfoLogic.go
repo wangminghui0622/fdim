@@ -26,7 +26,7 @@ func (l *SearchUserFullInfoLogic) SearchUserFullInfo(req *types.SearchUserFullIn
 		return nil, errs.ErrInternalServer.WrapMsg("chat service not available")
 	}
 
-	// 调用 Chat RPC SearchUserFullInfo（Chat层存储了手机号等注册信息）
+	// 调用 Chat RPC SearchUserFullInfo（Chat层存储了手机号等注册信息
 	rpcResp, err := l.svcCtx.ChatClient.SearchUserFullInfo(l.ctx, &chat.SearchUserFullInfoReq{
 		Keyword: req.Keyword,
 		Pagination: &sdkws.RequestPagination{

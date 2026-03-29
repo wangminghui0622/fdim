@@ -14,7 +14,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// OnlineMsgHandler 在线消息处理器：消费 [toRedis] topic，分发到 Redis 缓存、MongoDB 持久化、Push 推送
+// OnlineMsgHandler 在线消息处理器：消费 [toRedis] topic，分发到 Redis 缓存、MongoDB 持久化、Push 推
 type OnlineMsgHandler struct {
 	msgCache           cache.MsgCache
 	conversationClient conversation.ConversationClient
@@ -22,7 +22,7 @@ type OnlineMsgHandler struct {
 	toPushProducer     mq.Producer
 }
 
-// NewOnlineMsgHandler 创建在线消息处理器
+// NewOnlineMsgHandler 创建在线消息处理
 func NewOnlineMsgHandler(msgCache cache.MsgCache, conversationClient conversation.ConversationClient, toMongoProducer, toPushProducer mq.Producer) *OnlineMsgHandler {
 	return &OnlineMsgHandler{
 		msgCache:           msgCache,
@@ -38,7 +38,7 @@ func (h *OnlineMsgHandler) HandleMessage(msg mq.Message) error {
 	key := msg.Key()
 	value := msg.Value()
 
-	// 解析消息（toRedis topic 发送的是 PushMsgDataToMQ）
+	// 解析消息（toRedis topic 发送的?PushMsgDataToMQ
 	var pushMsg pbmsg.PushMsgDataToMQ
 	if err := proto.Unmarshal(value, &pushMsg); err != nil {
 		logx.Errorf("Failed to unmarshal message: %v, marking as processed to avoid redelivery", err)
@@ -56,7 +56,7 @@ func (h *OnlineMsgHandler) HandleMessage(msg mq.Message) error {
 		return nil
 	}
 
-	// 转换为 MsgDoc
+	// 转换?MsgDoc
 	msgDoc := onlinePbToMsgDoc(pushMsg.ConversationID, pushMsg.MsgData)
 	if msgDoc == nil {
 		logx.Errorf("Failed to convert message to MsgDoc")
@@ -70,15 +70,15 @@ func (h *OnlineMsgHandler) HandleMessage(msg mq.Message) error {
 		h.createConversationIfNeeded(ctx, pushMsg.ConversationID, pushMsg.MsgData)
 	}
 
-	// 存储到 Redis（使用 SetMessagesToCache，保留消息自带的 seq，不重新分配）
+	// 存储?Redis（使?SetMessagesToCache，保留消息自带的 seq，不重新分配
 	if err := h.msgCache.SetMessagesToCache(ctx, pushMsg.ConversationID, []*model.MsgDoc{msgDoc}); err != nil {
 		logx.Errorf("Failed to set message to cache: %v", err)
 		// 继续处理，不返回错误
 	}
 
-	// 转发到 toMongo
+	// 转发?toMongo
 	if h.toMongoProducer != nil {
-		// 构造 MsgDataToMongoByMQ 消息
+		// 构?MsgDataToMongoByMQ 消息
 		mongoMsg := &pbmsg.MsgDataToMongoByMQ{
 			ConversationID: pushMsg.ConversationID,
 			MsgData:        []*sdkws.MsgData{pushMsg.MsgData},
@@ -102,10 +102,10 @@ func (h *OnlineMsgHandler) HandleMessage(msg mq.Message) error {
 		}
 	}
 
-	// 转发到 toPush
+	// 转发?toPush
 	if h.toPushProducer != nil {
 		logx.Infof("Forwarding message to toPush: conversationID=%s", pushMsg.ConversationID)
-		// 重新序列化 PushMsgDataToMQ 并发送
+		// 重新序列?PushMsgDataToMQ 并发
 		pushMsgBytes, err := proto.Marshal(&pushMsg)
 		if err != nil {
 			logx.Errorf("Failed to marshal push message: %v", err)
@@ -122,7 +122,7 @@ func (h *OnlineMsgHandler) HandleMessage(msg mq.Message) error {
 
 	logx.Infof("Processed message: key=%s, conversationID=%s", key, pushMsg.ConversationID)
 
-	// 标记消息已处理
+	// 标记消息已处
 	msg.Mark()
 	msg.Commit()
 
@@ -149,7 +149,7 @@ func onlinePbToMsgDoc(conversationID string, pb *sdkws.MsgData) *model.MsgDoc {
 		MsgFrom:          pb.MsgFrom,
 		ContentType:      pb.ContentType,
 		Content:          pb.Content,
-		CreateTime:       pb.CreateTime,  // 已经是 int64 时间戳
+		CreateTime:       pb.CreateTime,  // 已经?int64 时间
 		SendTime:         pb.SendTime,
 		Status:           pb.Status,
 		Options:          pb.Options,
@@ -161,10 +161,10 @@ func onlinePbToMsgDoc(conversationID string, pb *sdkws.MsgData) *model.MsgDoc {
 
 // createConversationIfNeeded 创建会话（如果需要）
 func (h *OnlineMsgHandler) createConversationIfNeeded(ctx context.Context, conversationID string, msgData *sdkws.MsgData) {
-	// 根据 sessionType 判断是否需要创建会话
+	// 根据 sessionType 判断是否需要创建会
 	switch msgData.SessionType {
 	case constant.SingleChatType, constant.NotificationChatType:
-		// 单聊和通知类型：创建单聊会话
+		// 单聊和通知类型：创建单聊会
 		req := &conversation.CreateSingleChatConversationsReq{
 			RecvID:           msgData.RecvID,
 			SendID:           msgData.SendID,
@@ -172,7 +172,7 @@ func (h *OnlineMsgHandler) createConversationIfNeeded(ctx context.Context, conve
 			ConversationType: msgData.SessionType,
 		}
 		if _, err := h.conversationClient.CreateSingleChatConversations(ctx, req); err != nil {
-			// 会话可能已存在，只记录警告
+			// 会话可能已存在，只记录警
 			logx.Errorf("Create single chat conversation error: conversationID=%s, sessionType=%d, error=%v",
 				conversationID, msgData.SessionType, err)
 		} else {
@@ -180,7 +180,7 @@ func (h *OnlineMsgHandler) createConversationIfNeeded(ctx context.Context, conve
 				conversationID, msgData.SendID, msgData.RecvID)
 		}
 	case constant.WriteGroupChatType, constant.ReadGroupChatType:
-		// 与官方一致：群聊会话由 Group RPC 管理（CreateGroup/JoinGroup/InviteUserToGroup/GroupApplicationResponse）
+		// 与官方一致：群聊会话?Group RPC 管理（CreateGroup/JoinGroup/InviteUserToGroup/GroupApplicationResponse
 		// msgtransfer 不负责创建群聊会话，群成员在加入群时已通过 CreateGroupChatConversations 创建
 		logx.Debugf("Group chat conversation managed by group RPC: conversationID=%s, groupID=%s",
 			conversationID, msgData.GroupID)

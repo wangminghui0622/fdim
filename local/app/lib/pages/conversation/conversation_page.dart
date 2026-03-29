@@ -66,16 +66,16 @@ class _ConversationPageState extends State<ConversationPage> {
       _conversations.removeWhere((e) => e.conversationID == newConv.conversationID);
     }
     _conversations.insertAll(0, newList);
-    final sorted = OpenIM.iMManager.conversationManager.simpleSort(_conversations);
+    final sorted = FDIM.iMManager.conversationManager.simpleSort(_conversations);
     setState(() => _conversations = sorted);
   }
 
   Future<void> _loadConversations({bool silent = false}) async {
     if (!silent && !_loading) setState(() => _loading = true);
     try {
-      final list = await OpenIM.iMManager.conversationManager
+      final list = await FDIM.iMManager.conversationManager
           .getConversationListSplit(offset: 0, count: 50);
-      final sorted = OpenIM.iMManager.conversationManager.simpleSort(list);
+      final sorted = FDIM.iMManager.conversationManager.simpleSort(list);
       if (mounted) setState(() => _conversations = sorted);
     } catch (_) {}
     if (mounted && _loading) setState(() => _loading = false);
@@ -83,7 +83,7 @@ class _ConversationPageState extends State<ConversationPage> {
 
   void _openChat(ConversationInfo conv) {
     // 与官方一致：markConversationMessageAsRead 会立即清零本地 unreadCount 并通知
-    OpenIM.iMManager.conversationManager.markConversationMessageAsRead(
+    FDIM.iMManager.conversationManager.markConversationMessageAsRead(
       conversationID: conv.conversationID,
     );
 
@@ -195,7 +195,7 @@ class _ConversationPageState extends State<ConversationPage> {
         );
       },
       onDismissed: (_) async {
-        await OpenIM.iMManager.conversationManager
+        await FDIM.iMManager.conversationManager
             .deleteConversationAndDeleteAllMsg(
               conversationID: conv.conversationID,
             );
@@ -417,7 +417,7 @@ class _ConversationPageState extends State<ConversationPage> {
         return '[通话] ${info.getDisplayText(isMe)} $icon';
       }
     }
-    // 群聊消息：显示发送者昵称前缀（与官方微信/OpenIM一致）
+    // 群聊消息：显示发送者昵称前缀（与官方微信/FDIM一致）
     String text = latestMsg.textContent;
     final isGroup = conv?.isGroupChat == true ||
         (conv?.conversationID.startsWith('sg_') ?? false);

@@ -1,5 +1,5 @@
 syntax = "proto3";
-package openim.sdkws;
+package fdim.sdkws;
 
 import "wrapperspb/wrapperspb.proto";
 
@@ -33,10 +33,10 @@ message GroupInfoForSet {
   string notification = 3;
   string introduction = 4;
   string faceURL = 5;
-  openim.protobuf.StringValue ex = 6;
-  openim.protobuf.Int32Value needVerification = 7;
-  openim.protobuf.Int32Value lookMemberInfo = 8;
-  openim.protobuf.Int32Value applyMemberFriend = 9;
+  fdim.protobuf.StringValue ex = 6;
+  fdim.protobuf.Int32Value needVerification = 7;
+  fdim.protobuf.Int32Value lookMemberInfo = 8;
+  fdim.protobuf.Int32Value applyMemberFriend = 9;
 }
 
 message GroupMemberFullInfo {
@@ -74,10 +74,10 @@ message UserInfo {
 
 message UserInfoWithEx {
   string userID = 1;
-  openim.protobuf.StringValue nickname = 2;
-  openim.protobuf.StringValue faceURL = 3;
-  openim.protobuf.StringValue ex = 4;
-  openim.protobuf.Int32Value globalRecvMsgOpt = 7;
+  fdim.protobuf.StringValue nickname = 2;
+  fdim.protobuf.StringValue faceURL = 3;
+  fdim.protobuf.StringValue ex = 4;
+  fdim.protobuf.Int32Value globalRecvMsgOpt = 7;
 }
 
 message FriendInfo {

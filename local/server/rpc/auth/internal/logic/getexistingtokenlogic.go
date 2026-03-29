@@ -32,7 +32,7 @@ func (l *GetExistingTokenLogic) GetExistingToken(req *auth.GetExistingTokenReq) 
 	if err != nil {
 		return nil, err
 	}
-	// auth.proto 定义为 map<string,int32> tokenStates
+	// auth.proto 定义?map<string,int32> tokenStates
 	resp := &auth.GetExistingTokenResp{TokenStates: make(map[string]int32, len(statusMap))}
 	for tk, st := range statusMap {
 		resp.TokenStates[tk] = st

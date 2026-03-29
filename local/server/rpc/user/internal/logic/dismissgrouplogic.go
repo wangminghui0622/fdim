@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -30,13 +30,13 @@ func NewDismissGroupLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Dism
 func (l *DismissGroupLogic) DismissGroup(req *user.DismissGroupReq) (*user.DismissGroupResp, error) {
 	resp := &user.DismissGroupResp{}
 
-	// ���Ⱥ���Ƿ����
+	// ????????????
 	groupInfo, err := l.svcCtx.GroupDB.TakeGroup(l.ctx, req.GroupID)
 	if err != nil {
 		return nil, err
 	}
 
-	// ����Ƿ���Ⱥ����ֻ��Ⱥ�������Ա���Խ�ɢȺ�飩
+	// ?????????????????????????????????
 	owner, err := l.svcCtx.GroupDB.TakeGroupOwner(l.ctx, req.GroupID)
 	if err != nil {
 		return nil, err
@@ -49,12 +49,12 @@ func (l *DismissGroupLogic) DismissGroup(req *user.DismissGroupReq) (*user.Dismi
 		}
 	}
 
-	// ���Ⱥ��״̬
+	// ????????
 	if !req.DeleteMember && groupInfo.Status == constant.GroupStatusDismissed {
 		return nil, fmt.Errorf("group is already dismissed")
 	}
 
-	// ����Ⱥ��״̬Ϊ�ѽ�ɢ
+	// ??????????????
 	data := map[string]interface{}{
 		"status": constant.GroupStatusDismissed,
 	}
@@ -62,7 +62,7 @@ func (l *DismissGroupLogic) DismissGroup(req *user.DismissGroupReq) (*user.Dismi
 		return nil, err
 	}
 
-	// ���DeleteMemberΪtrue��ɾ������Ⱥ��Ա
+	// ???DeleteMember?true?????????????
 	if req.DeleteMember {
 		members, err := l.svcCtx.GroupDB.FindGroupMemberAll(l.ctx, req.GroupID)
 		if err == nil && len(members) > 0 {
@@ -76,12 +76,12 @@ func (l *DismissGroupLogic) DismissGroup(req *user.DismissGroupReq) (*user.Dismi
 		}
 	}
 
-	// ����Ⱥ���ɢ֪ͨ
+	// ???????????
 	if l.svcCtx.GroupNotification != nil {
 		l.svcCtx.GroupNotification.GroupDismissedNotification(l.ctx, req.GroupID, opUserID)
 	}
 
-	// Webhook AfterDismissGroup �ص�
+	// Webhook AfterDismissGroup ???
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackAfterDismissGroupReq{
 			CallbackCommand: webhook.CallbackAfterDismissGroupCommand,

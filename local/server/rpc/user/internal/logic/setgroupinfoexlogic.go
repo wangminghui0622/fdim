@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,6 +24,6 @@ func NewSetGroupInfoExLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Se
 }
 
 func (l *SetGroupInfoExLogic) SetGroupInfoEx(req *user.SetGroupInfoExReq) (*user.SetGroupInfoExResp, error) {
-	// TODO: 实现设置群组信息（扩展）的逻辑
+	// TODO: ʵȺϢչ߼
 	return nil, fmt.Errorf("SetGroupInfoEx not fully implemented yet")
 }

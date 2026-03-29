@@ -27,16 +27,16 @@ func NewGetAllUserIDLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetA
 func (l *GetAllUserIDLogic) GetAllUserID(req *user.GetAllUserIDReq) (*user.GetAllUserIDResp, error) {
 	resp := &user.GetAllUserIDResp{}
 
-	// Ȩ����֤����Ҫ����ԱȨ��
+	// Ȩ֤ҪԱȨ
 	if err := authverify.CheckAdmin(l.ctx); err != nil {
 		return nil, err
 	}
 
-	// �����ҳ����
+	// ҳ?
 	offset := util.CalculateOffset(req.Pagination.PageNumber, req.Pagination.ShowNumber)
 	limit := util.CalculateLimit(req.Pagination.ShowNumber)
 
-	// ��ҳ��ȡ�����û�ID
+	// ҳȡûID
 	total, userIDs, err := l.svcCtx.UserDB.GetAllUserID(l.ctx, offset, limit)
 	if err != nil {
 		return nil, err

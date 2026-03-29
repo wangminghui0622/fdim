@@ -26,13 +26,13 @@ func NewGetAllConversationsLogic(ctx context.Context, svcCtx *svc.ServiceContext
 func (l *GetAllConversationsLogic) GetAllConversations(req *conversation.GetAllConversationsReq) (*conversation.GetAllConversationsResp, error) {
 	resp := &conversation.GetAllConversationsResp{}
 
-	// 查找用户的所有会话
+	// 查找用户的所有会?
 	conversations, err := l.svcCtx.ConversationDB.FindUserIDAllConversations(l.ctx, req.OwnerUserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find conversations: %w", err)
 	}
 
-	// 转换为 protobuf 格式
+	// 转换?protobuf 格式
 	resp.Conversations = make([]*conversation.Conversation, 0, len(conversations))
 	for _, conv := range conversations {
 		resp.Conversations = append(resp.Conversations, &conversation.Conversation{

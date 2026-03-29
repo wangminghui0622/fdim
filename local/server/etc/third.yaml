@@ -1,7 +1,7 @@
-﻿Name: third.rpc
+Name: third.rpc
 ListenOn: 10.0.4.12:8085
 Mode: dev
-# Etcd 配置（开发模式下可以注释掉，如果不需要服务发现）
+# Etcd 配置
 Etcd:
   Hosts:
     - 127.0.0.1:2379
@@ -9,7 +9,7 @@ Etcd:
 
 Mongo:
   Host: mongodb://127.0.0.1:27017
-  Database: openim_v3
+  Database: fdim
   Username: "root"
   Password: "test625"
 
@@ -22,7 +22,7 @@ ObjectStorage:
   Type: minio  # s3, minio, oss
   Endpoint: http://127.0.0.1:9000
   SignEndpoint: http://42.192.129.44:9000
-  Bucket: openim
+  Bucket: fdim
   AccessKeyID: minioadmin
   SecretAccessKey: minioadmin
 

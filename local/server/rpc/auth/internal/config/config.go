@@ -20,12 +20,12 @@ type Config struct {
 	TokenPolicy struct {
 		Expire int // 过期天数
 	}
-	// MultiLogin 是否允许多设备登录
+	// MultiLogin 是否允许多设备登?
 	MultiLogin bool
 	// AdminUserIDs 管理员用户ID列表
 	AdminUserIDs []string `json:",optional"`
 
-	// RPC 客户端配置
+	// RPC 客户端配?
 	Rpc struct {
 		MsgGateway zrpc.RpcClientConf `yaml:"MsgGateway"`
 	} `yaml:"Rpc"`

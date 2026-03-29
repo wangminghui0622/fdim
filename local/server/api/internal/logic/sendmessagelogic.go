@@ -56,7 +56,7 @@ func (l *SendMessageLogic) SendMessage(req *types.SendMsgReq) (resp *types.SendM
 		ContentType:      req.SendMsg.ContentType,
 		Content:          []byte(req.SendMsg.Content),
 		Seq:              req.SendMsg.Seq,
-		SendTime:         0, // 不信任客户端时间，由 RPC 层用服务器时钟设置
+		SendTime:         0, // 不信任客户端时间，由 RPC 层用服务器时钟设
 		CreateTime:       req.SendMsg.CreateTime,
 		Status:           req.SendMsg.Status,
 		IsRead:           req.SendMsg.IsRead,
@@ -78,7 +78,7 @@ func (l *SendMessageLogic) SendMessage(req *types.SendMsgReq) (resp *types.SendM
 		}
 	}
 
-	// isOnlineOnly: 仅在线推送（信令消息），不落库
+	// isOnlineOnly: 仅在线推送（信令消息），不落
 	if req.IsOnlineOnly {
 		if msgData.Options == nil {
 			msgData.Options = make(map[string]bool)

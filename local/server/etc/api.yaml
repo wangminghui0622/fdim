@@ -12,7 +12,7 @@ Log:
   KeepDays: 7
   StackCooldownMillis: 100
 
-# RPC 服务配置（使用etcd服务发现）
+# RPC etcd 配置
 UserRpc:
   Etcd:
     Hosts:
@@ -76,18 +76,18 @@ ChatRpc:
     Key: chat.rpc
   Timeout: 10000
 
-# Secret 用于Token验证
-Secret: "openIM123456"
+# Secret Token 密钥
+Secret: "fdim123456"
 
-# MongoDB 配置（用于搜索用户）
+# MongoDB 配置
 Mongo:
-  URI: "mongodb://root:test625@127.0.0.1:27017/openim_v3?authSource=admin"
-  Database: "openim_v3"
+  URI: "mongodb://root:test625@127.0.0.1:27017/fdim?authSource=admin"
+  Database: "fdim"
 
-# 管理员用户ID列表（可选）
+# 管理员ID
 AdminUserIDs: []
 
-# LiveKit 音视频通话配置
+# LiveKit 配置
 LiveKit:
   URL: "ws://42.192.129.44:7880"
   Key: "APIGPW3gnFTzqHH"

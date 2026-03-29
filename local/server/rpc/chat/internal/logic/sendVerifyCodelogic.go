@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -29,7 +29,7 @@ func NewSendVerifyCodeLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Se
 	}
 }
 
-// genVerifyCode 生成6位数字验证码
+// genVerifyCode 6λ֤
 func (l *SendVerifyCodeLogic) genVerifyCode() string {
 	const length = 6
 	data := make([]byte, length)
@@ -42,22 +42,22 @@ func (l *SendVerifyCodeLogic) genVerifyCode() string {
 }
 
 func (l *SendVerifyCodeLogic) SendVerifyCode(req *chat.SendVerifyCodeReq) (*chat.SendVerifyCodeResp, error) {
-	// usedFor: 1=注册, 2=登录, 3=重置密码
+	// usedFor: 1=ע, 2=¼, 3=
 	const (
 		VerificationCodeForRegister      = 1
 		VerificationCodeForLogin         = 2
 		VerificationCodeForResetPassword = 3
 	)
 
-	// 1. 基础参数校验：至少一个联系方式
+	// 1. У飺һϵʽ
 	if req.Email == "" && (req.AreaCode == "" || req.PhoneNumber == "") {
 		return nil, errs.ErrArgs.WrapMsg("email or phone must be set")
 	}
 
-	// 2. 根据用途进行不同的验证
+	// 2. ;в֤ͬ
 	switch req.UsedFor {
 	case VerificationCodeForRegister:
-		// 检查注册是否被禁止（IP 维度）
+		// עǷ񱻽ֹIP άȣ
 		if l.svcCtx.AdminRpc != nil {
 			_, err := l.svcCtx.AdminRpc.CheckRegisterForbidden(l.ctx, &admin.CheckRegisterForbiddenReq{
 				Ip: req.Ip,
@@ -67,7 +67,7 @@ func (l *SendVerifyCodeLogic) SendVerifyCode(req *chat.SendVerifyCodeReq) (*chat
 			}
 		}
 
-		// 校验手机号或邮箱格式
+		// УֻŻʽ
 		if req.Email == "" {
 			if req.AreaCode == "" || req.PhoneNumber == "" {
 				return nil, errs.ErrArgs.WrapMsg("area code or phone number is empty")
@@ -83,7 +83,7 @@ func (l *SendVerifyCodeLogic) SendVerifyCode(req *chat.SendVerifyCodeReq) (*chat
 			}
 		}
 	case VerificationCodeForLogin, VerificationCodeForResetPassword:
-		// 登录/重置密码时，账号必须已存在
+		// ¼/ʱ˺űѴ
 		if req.Email == "" {
 			if req.AreaCode == "" || req.PhoneNumber == "" {
 				return nil, errs.ErrArgs.WrapMsg("area code or phone number is empty")
@@ -100,7 +100,7 @@ func (l *SendVerifyCodeLogic) SendVerifyCode(req *chat.SendVerifyCodeReq) (*chat
 		return nil, errs.ErrArgs.WrapMsg("unknown usedFor value")
 	}
 
-	// 3. 简单的发送频率限制：同一账号 1 分钟内只允许发送一条验证码
+	// 3. 򵥵ķƵƣͬһ˺ 1 ֻһ֤
 	now := time.Now()
 	if req.Email != "" {
 		if last, err := l.svcCtx.ChatDB.GetLastVerifyCodeByEmail(l.ctx, req.Email); err == nil && last != nil {
@@ -116,24 +116,24 @@ func (l *SendVerifyCodeLogic) SendVerifyCode(req *chat.SendVerifyCodeReq) (*chat
 		}
 	}
 
-	// 4. 生成验证码
+	// 4. ֤
 	code := l.genVerifyCode()
 
-	// 5. 保存验证码到数据库
+	// 5. ֤뵽ݿ
 	verifyCode := &database.VerifyCode{
 		PhoneNumber: req.PhoneNumber,
 		AreaCode:    req.AreaCode,
 		Email:       req.Email,
 		Code:        code,
 		CreateTime:  now,
-		ExpireTime:  now.Add(10 * time.Minute), // 10分钟过期
+		ExpireTime:  now.Add(10 * time.Minute), // 10ӹ
 	}
 	if err := l.svcCtx.ChatDB.AddVerifyCode(l.ctx, verifyCode); err != nil {
 		l.Errorf("AddVerifyCode failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to save verify code")
 	}
 
-	// 6. 发送验证码（当前实现：只记录日志，不实际发送短信/邮件）
+	// 6. ֤루ǰʵֻ֣¼־ʵʷͶ/ʼ
 	if req.Email != "" {
 		if l.svcCtx.Mailer != nil {
 			if err := l.svcCtx.Mailer.SendMail(l.ctx, req.Email, code); err != nil {

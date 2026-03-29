@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -28,7 +28,7 @@ func NewAddUserAccountLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ad
 	}
 }
 
-// genUserID 生成10位数字用户ID
+// genUserID 10λûID
 func (l *AddUserAccountLogic) genUserID() string {
 	const length = 10
 	data := make([]byte, length)
@@ -36,7 +36,7 @@ func (l *AddUserAccountLogic) genUserID() string {
 	chars := []byte("0123456789")
 	for i := 0; i < len(data); i++ {
 		if i == 0 {
-			data[i] = chars[1:][data[i]%9] // 第一位不能是0
+			data[i] = chars[1:][data[i]%9] // һλ0
 		} else {
 			data[i] = chars[data[i]%10]
 		}
@@ -45,17 +45,17 @@ func (l *AddUserAccountLogic) genUserID() string {
 }
 
 func (l *AddUserAccountLogic) AddUserAccount(req *chat.AddUserAccountReq) (*chat.AddUserAccountResp, error) {
-	// 1. 验证用户信息
+	// 1. ֤ûϢ
 	if req.User == nil {
 		return nil, errs.ErrArgs.WrapMsg("user info is required")
 	}
 
-	// 检查至少有一种登录方式
+	// һֵ¼ʽ
 	if req.User.Email == "" && req.User.PhoneNumber == "" && req.User.Account == "" {
 		return nil, errs.ErrArgs.WrapMsg("at least one account type is required")
 	}
 
-	// 2. 验证手机号格式
+	// 2. ֻ֤Ÿʽ
 	if req.User.PhoneNumber != "" {
 		if req.User.AreaCode == "" {
 			return nil, errs.ErrArgs.WrapMsg("area code is required for phone number")
@@ -71,7 +71,7 @@ func (l *AddUserAccountLogic) AddUserAccount(req *chat.AddUserAccountReq) (*chat
 		}
 	}
 
-	// 3. 检查用户是否已存在
+	// 3. ûǷѴ
 	if req.User.PhoneNumber != "" {
 		_, err := l.svcCtx.ChatDB.GetUserAccountByPhone(l.ctx, req.User.AreaCode, req.User.PhoneNumber)
 		if err == nil {
@@ -91,14 +91,14 @@ func (l *AddUserAccountLogic) AddUserAccount(req *chat.AddUserAccountReq) (*chat
 		}
 	}
 
-	// 4. 生成用户ID
+	// 4. ûID
 	userID := req.User.UserID
 	if userID == "" {
 		for i := 0; i < 20; i++ {
 			userID = l.genUserID()
 			_, err := l.svcCtx.ChatDB.GetUserAccountByUserID(l.ctx, userID)
 			if err != nil {
-				// 用户ID不存在，可以使用
+				// ûIDڣʹ
 				break
 			}
 			if i == 19 {
@@ -106,14 +106,14 @@ func (l *AddUserAccountLogic) AddUserAccount(req *chat.AddUserAccountReq) (*chat
 			}
 		}
 	} else {
-		// 检查指定的用户ID是否已存在
+		// ָûIDǷѴ
 		_, err := l.svcCtx.ChatDB.GetUserAccountByUserID(l.ctx, userID)
 		if err == nil {
 			return nil, errs.ErrArgs.WrapMsg("user ID already exists")
 		}
 	}
 
-	// 5. 创建用户账户
+	// 5. û˻
 	now := time.Now()
 	userAccount := &database.UserAccount{
 		UserID:      userID,
@@ -129,7 +129,7 @@ func (l *AddUserAccountLogic) AddUserAccount(req *chat.AddUserAccountReq) (*chat
 		return nil, errs.WrapMsg(err, "failed to create user account")
 	}
 
-	// 6. 创建用户信息
+	// 6. ûϢ
 	userInfo := &database.UserFullInfo{
 		UserID:           userID,
 		Account:          req.User.Account,

@@ -8,7 +8,7 @@ import (
 
 // msgDataJSON is a JSON-friendly representation of sdkws.MsgData
 // where Content ([]byte in protobuf) is serialized as a UTF-8 string
-// instead of base64, matching the official OpenIM client SDK expectation.
+// instead of base64, matching the official FDIM client SDK expectation.
 type offlinePushInfoJSON struct {
 	Title        string `json:"title,omitempty"`
 	Desc         string `json:"desc,omitempty"`

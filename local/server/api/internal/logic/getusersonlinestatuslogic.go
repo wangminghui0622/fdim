@@ -13,9 +13,9 @@ import (
 	"fdim/protocol/msggateway"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 type GetUsersOnlineStatusLogic struct {
@@ -40,7 +40,6 @@ func (l *GetUsersOnlineStatusLogic) GetUsersOnlineStatus(req *types.GetUsersOnli
 		UserIDs: req.UserIDs,
 	}
 
-	// 官方实现：open-im-server/internal/api/user.go GetUsersOnlineStatus
 	allResults, err := l.queryAllGatewayInstances(rpcReq)
 	if err != nil {
 		logx.Errorf("Failed to query all gateway instances: %v", err)

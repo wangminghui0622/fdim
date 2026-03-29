@@ -1,4 +1,4 @@
-﻿package database
+package database
 
 import (
 	"context"
@@ -9,34 +9,34 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// MsgDatabase 消息数据库接口
+// MsgDatabase Ϣݿӿ
 type MsgDatabase interface {
-	// BatchInsertChat2DB 批量插入消息到数据库
+	// BatchInsertChat2DB Ϣݿ
 	BatchInsertChat2DB(ctx context.Context, conversationID string, msgs []*model.MsgDoc, currentMaxSeq int64) error
-	// GetMessagesBySeq 根据序列号获取消息
+	// GetMessagesBySeq кŻȡϢ
 	GetMessagesBySeq(ctx context.Context, conversationID string, seqs []int64) ([]*model.MsgDoc, error)
-	// GetMaxSeq 获取最大序列号
+	// GetMaxSeq ȡк
 	GetMaxSeq(ctx context.Context, conversationID string) (int64, error)
-	// GetLastMessageSeqByTime 根据会话和时间获取该时间之前的最后一条消息的 seq
+	// GetLastMessageSeqByTime ݻỰʱȡʱ֮ǰһϢ seq
 	GetLastMessageSeqByTime(ctx context.Context, conversationID string, timestamp int64) (int64, error)
-	// DeleteMessagesBySeq 根据会话和 seq 列表删除消息
+	// DeleteMessagesBySeq ݻỰ seq бɾϢ
 	DeleteMessagesBySeq(ctx context.Context, conversationID string, seqs []int64) error
-	// DeleteMessagesByTimeBefore 删除某个时间戳之前的消息（用于物理清理）
+	// DeleteMessagesByTimeBefore ɾĳʱ֮ǰϢ
 	DeleteMessagesByTimeBefore(ctx context.Context, conversationIDs []string, timestamp int64) error
-	// RevokeMsg 撤回消息：更新 content_type 和 content
+	// RevokeMsg Ϣ content_type  content
 	RevokeMsg(ctx context.Context, conversationID string, seq int64, contentType int32, content []byte) error
 }
 
-// MsgDocDatabase 消息文档数据库实现
+// MsgDocDatabase Ϣĵݿʵ
 type MsgDocDatabase struct {
 	collection *mongo.Collection
 }
 
-// NewMsgDocDatabase 创建消息文档数据库
+// NewMsgDocDatabase Ϣĵݿ
 func NewMsgDocDatabase(db *MongoDB) *MsgDocDatabase {
 	coll := db.GetCollection("stream_msg")
 
-	// 创建索引
+	// 
 	indexes := []mongo.IndexModel{
 		{
 			Keys: bson.D{
@@ -63,7 +63,7 @@ func NewMsgDocDatabase(db *MongoDB) *MsgDocDatabase {
 	}
 }
 
-// BatchInsertChat2DB 批量插入消息到数据库
+// BatchInsertChat2DB Ϣݿ
 func (d *MsgDocDatabase) BatchInsertChat2DB(ctx context.Context, conversationID string, msgs []*model.MsgDoc, currentMaxSeq int64) error {
 	if len(msgs) == 0 {
 		return nil
@@ -78,7 +78,7 @@ func (d *MsgDocDatabase) BatchInsertChat2DB(ctx context.Context, conversationID 
 	return err
 }
 
-// GetMessagesBySeq 根据序列号获取消息
+// GetMessagesBySeq кŻȡϢ
 func (d *MsgDocDatabase) GetMessagesBySeq(ctx context.Context, conversationID string, seqs []int64) ([]*model.MsgDoc, error) {
 	filter := bson.M{
 		"conversation_id": conversationID,
@@ -98,7 +98,7 @@ func (d *MsgDocDatabase) GetMessagesBySeq(ctx context.Context, conversationID st
 	return msgs, nil
 }
 
-// GetMaxSeq 获取最大序列号
+// GetMaxSeq ȡк
 func (d *MsgDocDatabase) GetMaxSeq(ctx context.Context, conversationID string) (int64, error) {
 	filter := bson.M{"conversation_id": conversationID}
 	opts := options.FindOne().SetSort(bson.D{{Key: "seq", Value: -1}})
@@ -114,7 +114,7 @@ func (d *MsgDocDatabase) GetMaxSeq(ctx context.Context, conversationID string) (
 	return msg.Seq, nil
 }
 
-// GetLastMessageSeqByTime 根据会话和时间获取该时间之前的最后一条消息的 seq
+// GetLastMessageSeqByTime ݻỰʱȡʱ֮ǰһϢ seq
 func (d *MsgDocDatabase) GetLastMessageSeqByTime(ctx context.Context, conversationID string, timestamp int64) (int64, error) {
 	filter := bson.M{
 		"conversation_id": conversationID,
@@ -133,7 +133,7 @@ func (d *MsgDocDatabase) GetLastMessageSeqByTime(ctx context.Context, conversati
 	return msg.Seq, nil
 }
 
-// DeleteMessagesBySeq 根据会话和 seq 列表删除消息
+// DeleteMessagesBySeq ݻỰ seq бɾϢ
 func (d *MsgDocDatabase) DeleteMessagesBySeq(ctx context.Context, conversationID string, seqs []int64) error {
 	if len(seqs) == 0 {
 		return nil
@@ -146,7 +146,7 @@ func (d *MsgDocDatabase) DeleteMessagesBySeq(ctx context.Context, conversationID
 	return err
 }
 
-// DeleteMessagesByTimeBefore 删除某个时间戳之前的消息
+// DeleteMessagesByTimeBefore ɾĳʱ֮ǰϢ
 func (d *MsgDocDatabase) DeleteMessagesByTimeBefore(ctx context.Context, conversationIDs []string, timestamp int64) error {
 	if len(conversationIDs) == 0 {
 		return nil
@@ -159,7 +159,7 @@ func (d *MsgDocDatabase) DeleteMessagesByTimeBefore(ctx context.Context, convers
 	return err
 }
 
-// RevokeMsg 撤回消息：更新 content_type 和 content
+// RevokeMsg Ϣ content_type  content
 func (d *MsgDocDatabase) RevokeMsg(ctx context.Context, conversationID string, seq int64, contentType int32, content []byte) error {
 	filter := bson.M{
 		"conversation_id": conversationID,

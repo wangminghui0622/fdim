@@ -2,13 +2,13 @@ package constant
 
 // 用户级别常量
 const (
-	// IMOrdinaryUser 普通用户级别
+	// IMOrdinaryUser 普通用户级?
 	IMOrdinaryUser int32 = 1
-	// AppOrdinaryUsers 普通应用用户级别
+	// AppOrdinaryUsers 普通应用用户级?
 	AppOrdinaryUsers int32 = 1
-	// AppAdmin 应用管理员级别
+	// AppAdmin 应用管理员级?
 	AppAdmin int32 = 100
-	// AppNotificationAdmin 通知管理员级别
+	// AppNotificationAdmin 通知管理员级?
 	AppNotificationAdmin int32 = 80
 )
 
@@ -22,19 +22,19 @@ const (
 	GroupOrdinaryUsers int32 = 20
 )
 
-// 群组状态常量
+// 群组状态常?
 const (
-	// GroupStatusNormal 正常状态
+	// GroupStatusNormal 正常状?
 	GroupStatusNormal int32 = 0
-	// GroupStatusMuted 禁言状态
+	// GroupStatusMuted 禁言状?
 	GroupStatusMuted int32 = 1
-	// GroupStatusDismissed 已解散
+	// GroupStatusDismissed 已解?
 	GroupStatusDismissed int32 = 3
 )
 
 // 好友申请处理结果常量
 const (
-	// FriendRequestUnhandled 未处理
+	// FriendRequestUnhandled 未处?
 	FriendRequestUnhandled int32 = 0
 	// FriendRequestAgree 同意
 	FriendRequestAgree int32 = 1
@@ -44,7 +44,7 @@ const (
 
 // 群组申请处理结果常量
 const (
-	// GroupRequestUnhandled 未处理
+	// GroupRequestUnhandled 未处?
 	GroupRequestUnhandled int32 = 0
 	// GroupRequestAgree 同意
 	GroupRequestAgree int32 = 1
@@ -72,11 +72,11 @@ const (
 	SingleChatType int32 = 1
 	// WriteGroupChatType 可写群聊（暂未启用）
 	WriteGroupChatType int32 = 2
-	// ReadGroupChatType 只读群聊（超级群）
+	// ReadGroupChatType 只读群聊（超级群?
 	ReadGroupChatType int32 = 3
 	// NotificationChatType 通知会话
 	NotificationChatType int32 = 4
-	// SuperGroupChatType 超级群聊（等同于 ReadGroupChatType）
+	// SuperGroupChatType 超级群聊（等同于 ReadGroupChatType?
 	SuperGroupChatType int32 = 3
 )
 

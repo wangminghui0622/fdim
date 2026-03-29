@@ -35,7 +35,7 @@ func (l *SearchUserFullInfoLogic) SearchUserFullInfo(req *user.SearchUserFullInf
 		limit = req.Pagination.ShowNumber
 	}
 
-	// 使用数据库模糊搜索用户
+	// 使用数据库模糊搜索用
 	total, users, err := l.svcCtx.UserDB.SearchUsers(l.ctx, req.Keyword, offset, limit)
 	if err != nil {
 		return nil, err

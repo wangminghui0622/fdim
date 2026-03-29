@@ -26,7 +26,7 @@ func NewDeleteConversationsLogic(ctx context.Context, svcCtx *svc.ServiceContext
 func (l *DeleteConversationsLogic) DeleteConversations(req *conversation.DeleteConversationsReq) (*conversation.DeleteConversationsResp, error) {
 	resp := &conversation.DeleteConversationsResp{}
 
-	// 删除用户的会话
+	// 删除用户的会?
 	err := l.svcCtx.ConversationDB.DeleteUsersConversations(l.ctx, req.OwnerUserID, req.ConversationIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete conversations: %w", err)

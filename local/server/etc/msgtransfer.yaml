@@ -3,8 +3,8 @@ Mode: dev
 
 # MongoDB 配置
 MongoDB:
-  URI: mongodb://root:test625@127.0.0.1:27017/openim_v3?authSource=admin
-  Database: openim_v3
+  URI: mongodb://root:test625@127.0.0.1:27017/fdim?authSource=admin
+  Database: fdim
   Username: ""
   Password: ""
 
@@ -27,14 +27,14 @@ Nats:
   ToPushGroupID: push
   ToOfflinePushGroupID: offlinePush
 
-# Conversation RPC 配置（用于创建会话）
+# Conversation RPC 配置
 ConversationRpc:
   Etcd:
     Hosts:
       - 127.0.0.1:2379
     Key: conversation.rpc
 
-# 批处理配置
+# 批量配置
 Batch:
   Size: 500
   Interval: 100  # 毫秒

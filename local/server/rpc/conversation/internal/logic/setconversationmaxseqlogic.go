@@ -35,7 +35,7 @@ func (l *SetConversationMaxSeqLogic) SetConversationMaxSeq(req *conversation.Set
 		return nil, errs.ErrArgs.WrapMsg("conversationID is required")
 	}
 
-	// 1. 更新会话表中的 max_seq
+	// 1. 更新会话表中?max_seq
 	args := map[string]interface{}{
 		"max_seq": req.MaxSeq,
 	}

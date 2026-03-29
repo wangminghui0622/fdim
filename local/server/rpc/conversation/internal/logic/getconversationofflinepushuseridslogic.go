@@ -50,7 +50,7 @@ func (l *GetConversationOfflinePushUserIDsLogic) GetConversationOfflinePushUserI
 		notReceiveSet[userID] = true
 	}
 
-	// 从 req.UserIDs 中排除不接收消息的用户
+	// ?req.UserIDs 中排除不接收消息的用?
 	var resultUserIDs []string
 	for _, userID := range req.UserIDs {
 		if !notReceiveSet[userID] {

@@ -32,7 +32,7 @@ func (s *MsgServer) GetMaxSeqs(ctx context.Context, req *msg.GetMaxSeqsReq) (*ms
 	return l.GetMaxSeqs(req)
 }
 
-// GetHasReadSeqs 获取已读序列号
+// GetHasReadSeqs 获取已读序列?
 func (s *MsgServer) GetHasReadSeqs(ctx context.Context, req *msg.GetHasReadSeqsReq) (*msg.SeqsInfoResp, error) {
 	l := logic.NewGetHasReadSeqsLogic(ctx, s.svcCtx)
 	return l.GetHasReadSeqs(req)
@@ -50,13 +50,13 @@ func (s *MsgServer) GetConversationMaxSeq(ctx context.Context, req *msg.GetConve
 	return l.GetConversationMaxSeq(req)
 }
 
-// PullMessageBySeqs 根据序列号拉取消息
+// PullMessageBySeqs 根据序列号拉取消?
 func (s *MsgServer) PullMessageBySeqs(ctx context.Context, req *sdkws.PullMessageBySeqsReq) (*sdkws.PullMessageBySeqsResp, error) {
 	l := logic.NewPullMessageBySeqsLogic(ctx, s.svcCtx)
 	return l.PullMessageBySeqs(req)
 }
 
-// GetSeqMessage 获取序列号消息
+// GetSeqMessage 获取序列号消?
 func (s *MsgServer) GetSeqMessage(ctx context.Context, req *msg.GetSeqMessageReq) (*msg.GetSeqMessageResp, error) {
 	l := logic.NewGetSeqMessageLogic(ctx, s.svcCtx)
 	return l.GetSeqMessage(req)
@@ -68,13 +68,13 @@ func (s *MsgServer) SearchMessage(ctx context.Context, req *msg.SearchMessageReq
 	return l.SearchMessage(req)
 }
 
-// SendMsg 发送消息
+// SendMsg 发送消?
 func (s *MsgServer) SendMsg(ctx context.Context, req *msg.SendMsgReq) (*msg.SendMsgResp, error) {
 	l := logic.NewSendMsgLogic(ctx, s.svcCtx)
 	return l.SendMsg(req)
 }
 
-// SendSimpleMsg 发送简单消息
+// SendSimpleMsg 发送简单消?
 func (s *MsgServer) SendSimpleMsg(ctx context.Context, req *msg.SendSimpleMsgReq) (*msg.SendSimpleMsgResp, error) {
 	l := logic.NewSendSimpleMsgLogic(ctx, s.svcCtx)
 	return l.SendSimpleMsg(req)
@@ -92,7 +92,7 @@ func (s *MsgServer) ClearConversationsMsg(ctx context.Context, req *msg.ClearCon
 	return l.ClearConversationsMsg(req)
 }
 
-// UserClearAllMsg 用户清除所有消息
+// UserClearAllMsg 用户清除所有消?
 func (s *MsgServer) UserClearAllMsg(ctx context.Context, req *msg.UserClearAllMsgReq) (*msg.UserClearAllMsgResp, error) {
 	l := logic.NewUserClearAllMsgLogic(ctx, s.svcCtx)
 	return l.UserClearAllMsg(req)
@@ -104,7 +104,7 @@ func (s *MsgServer) DeleteMsgs(ctx context.Context, req *msg.DeleteMsgsReq) (*ms
 	return l.DeleteMsgs(req)
 }
 
-// DeleteMsgPhysicalBySeq 根据序列号物理删除消息
+// DeleteMsgPhysicalBySeq 根据序列号物理删除消?
 func (s *MsgServer) DeleteMsgPhysicalBySeq(ctx context.Context, req *msg.DeleteMsgPhysicalBySeqReq) (*msg.DeleteMsgPhysicalBySeqResp, error) {
 	l := logic.NewDeleteMsgPhysicalBySeqLogic(ctx, s.svcCtx)
 	return l.DeleteMsgPhysicalBySeq(req)
@@ -116,13 +116,13 @@ func (s *MsgServer) DeleteMsgPhysical(ctx context.Context, req *msg.DeleteMsgPhy
 	return l.DeleteMsgPhysical(req)
 }
 
-// SetSendMsgStatus 设置发送消息状态
+// SetSendMsgStatus 设置发送消息状?
 func (s *MsgServer) SetSendMsgStatus(ctx context.Context, req *msg.SetSendMsgStatusReq) (*msg.SetSendMsgStatusResp, error) {
 	l := logic.NewSetSendMsgStatusLogic(ctx, s.svcCtx)
 	return l.SetSendMsgStatus(req)
 }
 
-// GetSendMsgStatus 获取发送消息状态
+// GetSendMsgStatus 获取发送消息状?
 func (s *MsgServer) GetSendMsgStatus(ctx context.Context, req *msg.GetSendMsgStatusReq) (*msg.GetSendMsgStatusResp, error) {
 	l := logic.NewGetSendMsgStatusLogic(ctx, s.svcCtx)
 	return l.GetSendMsgStatus(req)
@@ -134,19 +134,19 @@ func (s *MsgServer) RevokeMsg(ctx context.Context, req *msg.RevokeMsgReq) (*msg.
 	return l.RevokeMsg(req)
 }
 
-// MarkMsgsAsRead 标记消息为已读
+// MarkMsgsAsRead 标记消息为已?
 func (s *MsgServer) MarkMsgsAsRead(ctx context.Context, req *msg.MarkMsgsAsReadReq) (*msg.MarkMsgsAsReadResp, error) {
 	l := logic.NewMarkMsgsAsReadLogic(ctx, s.svcCtx)
 	return l.MarkMsgsAsRead(req)
 }
 
-// MarkConversationAsRead 标记会话为已读
+// MarkConversationAsRead 标记会话为已?
 func (s *MsgServer) MarkConversationAsRead(ctx context.Context, req *msg.MarkConversationAsReadReq) (*msg.MarkConversationAsReadResp, error) {
 	l := logic.NewMarkConversationAsReadLogic(ctx, s.svcCtx)
 	return l.MarkConversationAsRead(req)
 }
 
-// SetConversationHasReadSeq 设置会话已读序列号
+// SetConversationHasReadSeq 设置会话已读序列?
 func (s *MsgServer) SetConversationHasReadSeq(ctx context.Context, req *msg.SetConversationHasReadSeqReq) (*msg.SetConversationHasReadSeqResp, error) {
 	l := logic.NewSetConversationHasReadSeqLogic(ctx, s.svcCtx)
 	return l.SetConversationHasReadSeq(req)
@@ -170,7 +170,7 @@ func (s *MsgServer) GetActiveGroup(ctx context.Context, req *msg.GetActiveGroupR
 	return l.GetActiveGroup(req)
 }
 
-// GetServerTime 获取服务器时间
+// GetServerTime 获取服务器时?
 func (s *MsgServer) GetServerTime(ctx context.Context, req *msg.GetServerTimeReq) (*msg.GetServerTimeResp, error) {
 	l := logic.NewGetServerTimeLogic(ctx, s.svcCtx)
 	return l.GetServerTime(req)
@@ -182,7 +182,7 @@ func (s *MsgServer) ClearMsg(ctx context.Context, req *msg.ClearMsgReq) (*msg.Cl
 	return l.ClearMsg(req)
 }
 
-// DestructMsgs 销毁消息
+// DestructMsgs 销毁消?
 func (s *MsgServer) DestructMsgs(ctx context.Context, req *msg.DestructMsgsReq) (*msg.DestructMsgsResp, error) {
 	l := logic.NewDestructMsgsLogic(ctx, s.svcCtx)
 	return l.DestructMsgs(req)
@@ -212,7 +212,7 @@ func (s *MsgServer) GetLastMessageSeqByTime(ctx context.Context, req *msg.GetLas
 	return l.GetLastMessageSeqByTime(req)
 }
 
-// GetLastMessage 获取最后消息
+// GetLastMessage 获取最后消?
 func (s *MsgServer) GetLastMessage(ctx context.Context, req *msg.GetLastMessageReq) (*msg.GetLastMessageResp, error) {
 	l := logic.NewGetLastMessageLogic(ctx, s.svcCtx)
 	return l.GetLastMessage(req)

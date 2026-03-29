@@ -26,21 +26,21 @@ Nats:
 # 推送配置
 Push:
   Enable: dummy  # fcm, jpush, getui, dummy
-  # FCM (Firebase Cloud Messaging) 配置 - 适用于海外用户
-  FcmServerKey: "你的_FCM_Server_Key"
-  # 极光推送 (JPush) 配置 - 适用于国内用户
-  JPushAppKey: "你的_JPush_AppKey"
-  JPushMasterSecret: "你的_JPush_MasterSecret"
-  # 说明：
-  # 1. Enable 设置为 dummy 表示不发送离线推送（开发测试用）
+  # FCM (Firebase Cloud Messaging) 配置
+  FcmServerKey: "_FCM_Server_Key"
+  # 极光推送(JPush) 配置
+  JPushAppKey: "_JPush_AppKey"
+  JPushMasterSecret: "_JPush_MasterSecret"
+  # 说明
+  # 1. Enable 设为 dummy 表示不启用推送
   # 2. 使用 FCM 需要配置 FcmServerKey
   # 3. 使用 JPush 需要配置 JPushAppKey 和 JPushMasterSecret
-  # 4. 客户端需要上报推送 token 到 Redis：
+  # 4. 客户端需要上报 token 到 Redis
   #    - FCM: fcm_token:{userID}:{platformID} -> token
   #    - JPush: jpush_token:{userID} -> registration_id
 
 
-# RPC 客户端配置
+# RPC 配置
 MessageGatewayRpc:
   Etcd:
     Hosts:

@@ -29,7 +29,7 @@ func TestName111111(t *testing.T) {
 		RedisMode: "cluster",
 		Password:  "passwd123",
 		//Address:  []string{"localhost:16379"},
-		//Password: "openIM123",
+		//Password: "FDIM123",
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1000)
 	defer cancel()

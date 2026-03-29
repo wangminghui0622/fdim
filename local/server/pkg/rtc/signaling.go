@@ -153,5 +153,5 @@ func (m *SignalMessage) ToJSON() ([]byte, error) {
 	return json.Marshal(m)
 }
 
-// DefaultSignalingServer 默认信令服务器实例
+// DefaultSignalingServer 默认信令服务器实
 var DefaultSignalingServer = NewSignalingServer()

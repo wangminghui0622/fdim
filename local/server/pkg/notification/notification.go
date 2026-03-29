@@ -1,13 +1,13 @@
-﻿package notification
+package notification
 
 import (
 	"fdim/pkg/constant"
 	protoconstant "fdim/protocol/constant"
 )
 
-// getSessionType 根据 contentType 获取 sessionType
+// getSessionType  contentType ȡ sessionType
 func getSessionType(contentType int32) int32 {
-	// 好友相关通知使用单聊
+	// ֪ͨʹõ
 	if contentType == protoconstant.FriendApplicationNotification ||
 		contentType == protoconstant.FriendApplicationApprovedNotification ||
 		contentType == protoconstant.FriendApplicationRejectedNotification ||
@@ -20,7 +20,7 @@ func getSessionType(contentType int32) int32 {
 		contentType == protoconstant.FriendsInfoUpdateNotification {
 		return constant.SingleChatType
 	}
-	// 群组相关通知使用群聊
+	// Ⱥ֪ͨʹȺ
 	if contentType == protoconstant.GroupCreatedNotification ||
 		contentType == protoconstant.GroupInfoSetNotification ||
 		contentType == protoconstant.GroupOwnerTransferredNotification ||
@@ -41,7 +41,7 @@ func getSessionType(contentType int32) int32 {
 		contentType == protoconstant.JoinGroupApplicationNotification {
 		return constant.SuperGroupChatType
 	}
-	// 用户相关通知使用单聊
+	// û֪ͨʹõ
 	if contentType == protoconstant.UserInfoUpdatedNotification ||
 		contentType == protoconstant.UserStatusChangeNotification ||
 		contentType == protoconstant.UserCommandAddNotification ||
@@ -49,7 +49,7 @@ func getSessionType(contentType int32) int32 {
 		contentType == protoconstant.UserCommandUpdateNotification {
 		return constant.SingleChatType
 	}
-	// 会话相关通知使用单聊（与官方一致）
+	// Ự֪ͨʹõģٷһ£
 	if contentType == protoconstant.ConversationChangeNotification ||
 		contentType == protoconstant.ConversationPrivateChatNotification ||
 		contentType == protoconstant.ConversationUnreadNotification ||
@@ -57,6 +57,6 @@ func getSessionType(contentType int32) int32 {
 		contentType == protoconstant.ConversationDeleteNotification {
 		return constant.SingleChatType
 	}
-	// 默认使用单聊
+	// Ĭʹõ
 	return constant.SingleChatType
 }

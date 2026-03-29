@@ -1,4 +1,4 @@
-﻿package cache
+package cache
 
 import (
 	"context"
@@ -14,14 +14,14 @@ func NewFriendCache(client *redis.Client) *FriendCache {
 	return &FriendCache{client: client}
 }
 
-// CacheFriendList 缓存好友列表
+// CacheFriendList б
 func (c *FriendCache) CacheFriendList(ctx context.Context, ownerUserID string, friendIDs []string) error {
-	// 实现逻辑
+	// ʵ߼
 	return nil
 }
 
-// GetFriendList 获取好友列表
+// GetFriendList ȡб
 func (c *FriendCache) GetFriendList(ctx context.Context, ownerUserID string) ([]string, error) {
-	// 实现逻辑
+	// ʵ߼
 	return []string{}, nil
 }

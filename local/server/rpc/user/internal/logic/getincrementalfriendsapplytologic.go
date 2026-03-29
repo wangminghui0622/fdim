@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,6 +24,6 @@ func NewGetIncrementalFriendsApplyToLogic(ctx context.Context, svcCtx *svc.Servi
 }
 
 func (l *GetIncrementalFriendsApplyToLogic) GetIncrementalFriendsApplyTo(req *user.GetIncrementalFriendsApplyToReq) (*user.GetIncrementalFriendsApplyToResp, error) {
-	// TODO: 实现获取增量好友申请（收到）的逻辑
+	// TODO: ʵֻȡ루յ߼
 	return nil, fmt.Errorf("GetIncrementalFriendsApplyTo not fully implemented yet")
 }

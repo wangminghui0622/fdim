@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -27,18 +27,18 @@ func NewSetFriendRemarkLogic(ctx context.Context, svcCtx *svc.ServiceContext) *S
 func (l *SetFriendRemarkLogic) SetFriendRemark(req *user.SetFriendRemarkReq) (*user.SetFriendRemarkResp, error) {
 	resp := &user.SetFriendRemarkResp{}
 
-	// Ȩ����֤
+	// ??????
 	if err := authverify.CheckAccess(l.ctx, req.OwnerUserID); err != nil {
 		return nil, err
 	}
 
-	// ����Ƿ�Ϊ����
+	// ???????????
 	_, err := l.svcCtx.FriendDB.FindFriendsWithError(l.ctx, req.OwnerUserID, []string{req.FriendUserID})
 	if err != nil {
 		return nil, err
 	}
 
-	// Webhook BeforeSetFriendRemark �ص�
+	// Webhook BeforeSetFriendRemark ???
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackBeforeSetFriendRemarkReq{
 			CallbackCommand: webhook.CallbackBeforeSetFriendRemarkCommand,
@@ -51,25 +51,25 @@ func (l *SetFriendRemarkLogic) SetFriendRemark(req *user.SetFriendRemarkReq) (*u
 			if err != webhook.ErrCallbackContinue {
 				return nil, err
 			}
-			// ErrCallbackContinue ��ʾ����ִ��
+			// ErrCallbackContinue ??????????
 		}
-		// ��� webhook �������޸ĺ�ı�ע��ʹ����
+		// ??? webhook ????????????????????
 		if cbResp.Remark != nil {
 			req.Remark = *cbResp.Remark
 		}
 	}
 
-	// ���±�ע
+	// ?????
 	if err := l.svcCtx.FriendDB.UpdateRemark(l.ctx, req.OwnerUserID, req.FriendUserID, req.Remark); err != nil {
 		return nil, err
 	}
 
-	// ���ͺ��ѱ�ע����֪ͨ
+	// ???????????????
 	if l.svcCtx.FriendNotification != nil {
 		l.svcCtx.FriendNotification.FriendRemarkSetNotification(l.ctx, req.OwnerUserID, req.FriendUserID)
 	}
 
-	// Webhook AfterSetFriendRemark �ص�
+	// Webhook AfterSetFriendRemark ???
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackAfterSetFriendRemarkReq{
 			CallbackCommand: webhook.CallbackAfterSetFriendRemarkCommand,

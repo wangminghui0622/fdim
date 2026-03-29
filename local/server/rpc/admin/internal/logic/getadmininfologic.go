@@ -25,20 +25,20 @@ func NewGetAdminInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetA
 }
 
 func (l *GetAdminInfoLogic) GetAdminInfo(req *admin.GetAdminInfoReq) (*admin.GetAdminInfoResp, error) {
-	// 1. 从 context 中获取 userID（通常由中间件从 token 中解析并放入 context）
+	// 1. ?context 中获?userID（通常由中间件?token 中解析并放入 context?
 	userID := mcontext.GetOpUserID(l.ctx)
 	if userID == "" {
 		return nil, errs.ErrArgs.WrapMsg("userID not found in context")
 	}
 
-	// 2. 从数据库获取管理员信息
+	// 2. 从数据库获取管理员信?
 	adminInfo, err := l.svcCtx.AdminDB.GetAdminUserID(l.ctx, userID)
 	if err != nil {
 		l.Errorf("GetAdminUserID failed: %v", err)
 		return nil, errs.ErrArgs.WrapMsg("admin not found")
 	}
 
-	// 3. 返回管理员信息
+	// 3. 返回管理员信?
 	return &admin.GetAdminInfoResp{
 		UserID:     adminInfo.UserID,
 		Account:    adminInfo.Account,

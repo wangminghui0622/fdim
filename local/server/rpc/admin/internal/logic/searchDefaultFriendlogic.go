@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,19 +24,19 @@ func NewSearchDefaultFriendLogic(ctx context.Context, svcCtx *svc.ServiceContext
 }
 
 func (l *SearchDefaultFriendLogic) SearchDefaultFriend(req *admin.SearchDefaultFriendReq) (*admin.SearchDefaultFriendResp, error) {
-	// 1. 验证分页参数
+	// 1. ֤ҳ
 	if req.Pagination == nil || req.Pagination.PageNumber <= 0 || req.Pagination.ShowNumber <= 0 {
 		return nil, errs.ErrArgs.WrapMsg("invalid pagination parameters")
 	}
 
-	// 2. 搜索默认好友
+	// 2. ĬϺ
 	total, defaultFriends, err := l.svcCtx.AdminDB.SearchDefaultFriend(l.ctx, req.Keyword, req.Pagination)
 	if err != nil {
 		l.Errorf("SearchDefaultFriend failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to search default friends")
 	}
 
-	// 3. 转换为响应格式
+	// 3. תΪӦʽ
 	attributes := make([]*admin.DefaultFriendAttribute, 0, len(defaultFriends))
 	for _, df := range defaultFriends {
 		attributes = append(attributes, &admin.DefaultFriendAttribute{

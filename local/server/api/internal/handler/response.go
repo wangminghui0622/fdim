@@ -8,7 +8,6 @@ import (
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
-// 统一响应格式（与官方 open-im-server 一致）
 type Response struct {
 	ErrCode int         `json:"errCode"`
 	ErrMsg  string      `json:"errMsg"`
@@ -26,7 +25,7 @@ func Success(w http.ResponseWriter, data interface{}) {
 	})
 }
 
-// ApiError 从 error 提取 CodeError 信息，返回与官方一致的错误响应
+// ApiError ?error 提取 CodeError 信息，返回与官方一致的错误响应
 func ApiError(w http.ResponseWriter, err error) {
 	var codeErr errs.CodeError
 	if errors.As(err, &codeErr) {
@@ -56,7 +55,7 @@ func ParamError(w http.ResponseWriter, err error) {
 	})
 }
 
-// ServerError 服务器错误（兼容旧调用，内部提取 CodeError）
+// ServerError 服务器错误（兼容旧调用，内部提取 CodeError
 func ServerError(w http.ResponseWriter, err error) {
 	ApiError(w, err)
 }

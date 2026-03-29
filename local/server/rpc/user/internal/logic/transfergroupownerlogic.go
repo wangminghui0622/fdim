@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -30,13 +30,13 @@ func NewTransferGroupOwnerLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 func (l *TransferGroupOwnerLogic) TransferGroupOwner(req *user.TransferGroupOwnerReq) (*user.TransferGroupOwnerResp, error) {
 	resp := &user.TransferGroupOwnerResp{}
 
-	// ���Ⱥ���Ƿ����
+	// ????????????
 	_, err := l.svcCtx.GroupDB.TakeGroup(l.ctx, req.GroupID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Ȩ����֤��ֻ��Ⱥ������ת��Ⱥ��
+	// ????????????????????????
 	opUserID := mcontext.GetOpUserID(l.ctx)
 	owner, err := l.svcCtx.GroupDB.TakeGroupOwner(l.ctx, req.GroupID)
 	if err != nil {
@@ -49,7 +49,7 @@ func (l *TransferGroupOwnerLogic) TransferGroupOwner(req *user.TransferGroupOwne
 		}
 	}
 
-	// ������֤
+	// ???????
 	if req.OldOwnerUserID == "" {
 		req.OldOwnerUserID = owner.UserID
 	}
@@ -60,13 +60,13 @@ func (l *TransferGroupOwnerLogic) TransferGroupOwner(req *user.TransferGroupOwne
 		return nil, fmt.Errorf("new owner cannot be same as old owner")
 	}
 
-	// �����Ⱥ���Ƿ���Ⱥ��Ա
+	// ?????????????????
 	_, err = l.svcCtx.GroupDB.TakeGroupMember(l.ctx, req.GroupID, req.NewOwnerUserID)
 	if err != nil {
 		return nil, fmt.Errorf("new owner not in group")
 	}
 
-	// ���¾�Ⱥ��Ϊ��ͨ��Ա
+	// ???????????????
 	oldOwnerData := map[string]interface{}{
 		"role_level": constant.GroupOrdinaryUsers,
 	}
@@ -74,7 +74,7 @@ func (l *TransferGroupOwnerLogic) TransferGroupOwner(req *user.TransferGroupOwne
 		return nil, err
 	}
 
-	// ������Ⱥ��ΪȺ��
+	// ?????????????
 	newOwnerData := map[string]interface{}{
 		"role_level": constant.GroupOwner,
 	}
@@ -82,12 +82,12 @@ func (l *TransferGroupOwnerLogic) TransferGroupOwner(req *user.TransferGroupOwne
 		return nil, err
 	}
 
-	// ����Ⱥ��ת��֪ͨ
+	// ????????????
 	if l.svcCtx.GroupNotification != nil {
 		l.svcCtx.GroupNotification.GroupOwnerTransferredNotification(l.ctx, req.GroupID, req.OldOwnerUserID, req.NewOwnerUserID)
 	}
 
-	// Webhook AfterTransferGroupOwner �ص�
+	// Webhook AfterTransferGroupOwner ???
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackAfterTransferGroupOwnerReq{
 			CallbackCommand: webhook.CallbackAfterTransferGroupOwnerCommand,

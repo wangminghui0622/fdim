@@ -23,7 +23,7 @@ func NewDeleteMsgPhysicalBySeqLogic(ctx context.Context, svcCtx *svc.ServiceCont
 	}
 }
 
-// DeleteMsgPhysicalBySeq 物理删除指定会话中指定 seq 的消息。
+// DeleteMsgPhysicalBySeq 物理删除指定会话中指?seq 的消息?
 func (l *DeleteMsgPhysicalBySeqLogic) DeleteMsgPhysicalBySeq(req *msg.DeleteMsgPhysicalBySeqReq) (*msg.DeleteMsgPhysicalBySeqResp, error) {
 	if req.ConversationID == "" || len(req.Seqs) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("conversationID and seqs are required")
@@ -32,13 +32,13 @@ func (l *DeleteMsgPhysicalBySeqLogic) DeleteMsgPhysicalBySeq(req *msg.DeleteMsgP
 		return nil, errs.ErrInternalServer.WrapMsg("message database not initialized")
 	}
 
-	// 从 Mongo 中删除
+	// ?Mongo 中删?
 	if err := l.svcCtx.MsgDB.DeleteMessagesBySeq(l.ctx, req.ConversationID, req.Seqs); err != nil {
 		l.Errorw("DeleteMessagesBySeq failed", logx.Field("conversationID", req.ConversationID), logx.Field("seqs", req.Seqs), logx.Field("error", err))
 		return nil, errs.WrapMsg(err, "failed to physically delete messages")
 	}
 
-	// 从 Redis 清理缓存（忽略错误）
+	// ?Redis 清理缓存（忽略错误）
 	if l.svcCtx.Redis != nil {
 		for _, seq := range req.Seqs {
 			key := l.svcCtx.MsgCacheKey(req.ConversationID, seq)

@@ -32,7 +32,7 @@ func (l *GetActiveUserLogic) GetActiveUser(req *msg.GetActiveUserReq) (*msg.GetA
 		req.End = time.Now().UnixMilli()
 	}
 	if req.Start == 0 || req.Start > req.End {
-		// 默认统计最近 7 天
+		// 默认统计最?7 ?
 		req.Start = req.End - int64(7*24*time.Hour/time.Millisecond)
 	}
 	if req.Pagination == nil || req.Pagination.ShowNumber <= 0 {
@@ -51,7 +51,7 @@ func (l *GetActiveUserLogic) GetActiveUser(req *msg.GetActiveUserReq) (*msg.GetA
 		"send_time": bson.M{"$gte": req.Start, "$lte": req.End},
 	}
 	if req.Group {
-		// 仅统计群聊消息
+		// 仅统计群聊消?
 		match["group_id"] = bson.M{"$ne": ""}
 	}
 
@@ -116,7 +116,7 @@ func (l *GetActiveUserLogic) GetActiveUser(req *msg.GetActiveUserReq) (*msg.GetA
 	}
 	cur.Close(l.ctx)
 
-	// 3. 按 user 聚合消息数量，做分页
+	// 3. ?user 聚合消息数量，做分页
 	offset := int64((req.Pagination.PageNumber - 1) * req.Pagination.ShowNumber)
 	limit := int64(req.Pagination.ShowNumber)
 	userAgg := mongo.Pipeline{
@@ -144,7 +144,7 @@ func (l *GetActiveUserLogic) GetActiveUser(req *msg.GetActiveUserReq) (*msg.GetA
 		return nil, errs.WrapMsg(err, "failed to decode active users")
 	}
 
-	// 4. 填充用户统计结果（简化：不调用 User RPC，仅填充 userID 和 count）
+	// 4. 填充用户统计结果（简化：不调?User RPC，仅填充 userID ?count?
 	activeUsers := make([]*msg.ActiveUser, 0, len(usersAgg))
 	for _, u := range usersAgg {
 		activeUsers = append(activeUsers, &msg.ActiveUser{

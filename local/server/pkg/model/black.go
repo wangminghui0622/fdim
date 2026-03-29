@@ -1,8 +1,8 @@
-﻿package model
+package model
 
 import "time"
 
-// Black 黑名单模�?
+// Black ģ??
 type Black struct {
 	OwnerUserID    string    `bson:"owner_user_id"`
 	BlockUserID    string    `bson:"block_user_id"`

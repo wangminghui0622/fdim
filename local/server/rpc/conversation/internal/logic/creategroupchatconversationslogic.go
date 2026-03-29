@@ -32,7 +32,7 @@ func (l *CreateGroupChatConversationsLogic) CreateGroupChatConversations(req *co
 	// 构建 conversationID（与 conversationutil.GenGroupConversationID 一致）
 	conversationID := "sg_" + req.GroupID
 
-	// 为每个用户创建群聊会话
+	// 为每个用户创建群聊会?
 	conversations := make([]*model.Conversation, 0, len(req.UserIDs))
 	for _, userID := range req.UserIDs {
 		conv := &model.Conversation{
@@ -50,7 +50,7 @@ func (l *CreateGroupChatConversationsLogic) CreateGroupChatConversations(req *co
 		return nil, fmt.Errorf("failed to create group chat conversations: %w", err)
 	}
 
-	// 初始化各用户该会话的 maxSeq（通常为 0），通知 Msg 模块
+	// 初始化各用户该会话的 maxSeq（通常?0），通知 Msg 模块
 	if l.svcCtx.MsgClient != nil && len(req.UserIDs) > 0 {
 		_, err = l.svcCtx.MsgClient.SetUserConversationMaxSeq(l.ctx, &msg.SetUserConversationMaxSeqReq{
 			ConversationID: conversationID,

@@ -81,7 +81,7 @@ type jpushRequest struct {
 	Options      *jpushOptions      `json:"options,omitempty"`
 }
 
-// Push 根据 userIDs 查找各自的极光推送 registration_id，并发送通知
+// Push 根据 userIDs 查找各自的极光推?registration_id，并发送通知
 func (p *JPushPusher) Push(ctx context.Context, userIDs []string, title, content string, opts *Options) error {
 	if len(userIDs) == 0 {
 		return nil
@@ -91,7 +91,7 @@ func (p *JPushPusher) Push(ctx context.Context, userIDs []string, title, content
 		return nil
 	}
 
-	// 1. 从 Redis 读取每个用户的极光推送 registration_id
+	// 1. ?Redis 读取每个用户的极光推?registration_id
 	registrationIDs := make([]string, 0)
 	for _, userID := range userIDs {
 		key := fmt.Sprintf("jpush_token:%s", userID)

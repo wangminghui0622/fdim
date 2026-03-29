@@ -1,6 +1,6 @@
-﻿package webhook
+package webhook
 
-// 回调命令常量
+// ص
 const (
 	CallbackBeforeUpdateUserInfoCommand    = "callbackBeforeUpdateUserInfoCommand"
 	CallbackAfterUpdateUserInfoCommand     = "callbackAfterUpdateUserInfoCommand"
@@ -35,7 +35,7 @@ const (
 	CallbackAfterJoinGroupCommand          = "callbackAfterJoinGroupCommand"
 )
 
-// CallbackBeforeUpdateUserInfoReq 更新用户信息前回调请�?
+// CallbackBeforeUpdateUserInfoReq ûϢǰص??
 type CallbackBeforeUpdateUserInfoReq struct {
 	CallbackCommand string  `json:"callbackCommand"`
 	UserID          string  `json:"userID"`
@@ -48,7 +48,7 @@ func (c *CallbackBeforeUpdateUserInfoReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackBeforeUpdateUserInfoResp 更新用户信息前回调响�?
+// CallbackBeforeUpdateUserInfoResp ûϢǰص??
 type CallbackBeforeUpdateUserInfoResp struct {
 	CommonCallbackResp
 	FaceURL  *string `json:"faceURL,omitempty"`
@@ -56,7 +56,7 @@ type CallbackBeforeUpdateUserInfoResp struct {
 	Ex       *string `json:"ex,omitempty"`
 }
 
-// CallbackAfterUpdateUserInfoReq 更新用户信息后回调请�?
+// CallbackAfterUpdateUserInfoReq ûϢص??
 type CallbackAfterUpdateUserInfoReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	UserID          string `json:"userID"`
@@ -69,12 +69,12 @@ func (c *CallbackAfterUpdateUserInfoReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterUpdateUserInfoResp 更新用户信息后回调响�?
+// CallbackAfterUpdateUserInfoResp ûϢص??
 type CallbackAfterUpdateUserInfoResp struct {
 	CommonCallbackResp
 }
 
-// CallbackBeforeUpdateUserInfoExReq 更新用户信息Ex前回调请�?
+// CallbackBeforeUpdateUserInfoExReq ûϢExǰص??
 type CallbackBeforeUpdateUserInfoExReq struct {
 	CallbackCommand string  `json:"callbackCommand"`
 	UserID          string  `json:"userID"`
@@ -87,7 +87,7 @@ func (c *CallbackBeforeUpdateUserInfoExReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackBeforeUpdateUserInfoExResp 更新用户信息Ex前回调响�?
+// CallbackBeforeUpdateUserInfoExResp ûϢExǰص??
 type CallbackBeforeUpdateUserInfoExResp struct {
 	CommonCallbackResp
 	FaceURL  *string `json:"faceURL,omitempty"`
@@ -95,7 +95,7 @@ type CallbackBeforeUpdateUserInfoExResp struct {
 	Ex       *string `json:"ex,omitempty"`
 }
 
-// CallbackAfterUpdateUserInfoExReq 更新用户信息Ex后回调请�?
+// CallbackAfterUpdateUserInfoExReq ûϢExص??
 type CallbackAfterUpdateUserInfoExReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	UserID          string `json:"userID"`
@@ -108,12 +108,12 @@ func (c *CallbackAfterUpdateUserInfoExReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterUpdateUserInfoExResp 更新用户信息Ex后回调响�?
+// CallbackAfterUpdateUserInfoExResp ûϢExص??
 type CallbackAfterUpdateUserInfoExResp struct {
 	CommonCallbackResp
 }
 
-// CallbackBeforeUserRegisterReq 用户注册前回调请�?
+// CallbackBeforeUserRegisterReq ûעǰص??
 type CallbackBeforeUserRegisterReq struct {
 	CallbackCommand string                   `json:"callbackCommand"`
 	Users           []map[string]interface{} `json:"users"`
@@ -123,13 +123,13 @@ func (c *CallbackBeforeUserRegisterReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackBeforeUserRegisterResp 用户注册前回调响�?
+// CallbackBeforeUserRegisterResp ûעǰص??
 type CallbackBeforeUserRegisterResp struct {
 	CommonCallbackResp
 	Users []map[string]interface{} `json:"users,omitempty"`
 }
 
-// CallbackAfterUserRegisterReq 用户注册后回调请�?
+// CallbackAfterUserRegisterReq ûעص??
 type CallbackAfterUserRegisterReq struct {
 	CallbackCommand string                   `json:"callbackCommand"`
 	Users           []map[string]interface{} `json:"users"`
@@ -139,12 +139,12 @@ func (c *CallbackAfterUserRegisterReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterUserRegisterResp 用户注册后回调响�?
+// CallbackAfterUserRegisterResp ûעص??
 type CallbackAfterUserRegisterResp struct {
 	CommonCallbackResp
 }
 
-// CallbackBeforeCreateGroupReq 创建群组前回调请�?
+// CallbackBeforeCreateGroupReq Ⱥǰص??
 type CallbackBeforeCreateGroupReq struct {
 	CallbackCommand string                   `json:"callbackCommand"`
 	GroupID         string                   `json:"groupID"`
@@ -160,7 +160,7 @@ func (c *CallbackBeforeCreateGroupReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackBeforeCreateGroupResp 创建群组前回调响�?
+// CallbackBeforeCreateGroupResp Ⱥǰص??
 type CallbackBeforeCreateGroupResp struct {
 	CommonCallbackResp
 	GroupName     *string   `json:"groupName,omitempty"`
@@ -171,7 +171,7 @@ type CallbackBeforeCreateGroupResp struct {
 	Ex            *string   `json:"ex,omitempty"`
 }
 
-// CallbackAfterCreateGroupReq 创建群组后回调请�?
+// CallbackAfterCreateGroupReq Ⱥص??
 type CallbackAfterCreateGroupReq struct {
 	CallbackCommand string                   `json:"callbackCommand"`
 	GroupID         string                   `json:"groupID"`
@@ -187,12 +187,12 @@ func (c *CallbackAfterCreateGroupReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterCreateGroupResp 创建群组后回调响�?
+// CallbackAfterCreateGroupResp Ⱥص??
 type CallbackAfterCreateGroupResp struct {
 	CommonCallbackResp
 }
 
-// CallbackBeforeMembersJoinGroupReq 成员加入群组前回调请�?
+// CallbackBeforeMembersJoinGroupReq ԱȺǰص??
 type CallbackBeforeMembersJoinGroupReq struct {
 	CallbackCommand string                   `json:"callbackCommand"`
 	GroupID         string                   `json:"groupID"`
@@ -205,13 +205,13 @@ func (c *CallbackBeforeMembersJoinGroupReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackBeforeMembersJoinGroupResp 成员加入群组前回调响�?
+// CallbackBeforeMembersJoinGroupResp ԱȺǰص??
 type CallbackBeforeMembersJoinGroupResp struct {
 	CommonCallbackResp
 	MemberUserIDs []string `json:"memberUserIDs,omitempty"`
 }
 
-// CallbackBeforeAddFriendReq 添加好友前回调请�?
+// CallbackBeforeAddFriendReq Ӻǰص??
 type CallbackBeforeAddFriendReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	FromUserID      string `json:"fromUserID"`
@@ -224,12 +224,12 @@ func (c *CallbackBeforeAddFriendReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackBeforeAddFriendResp 添加好友前回调响�?
+// CallbackBeforeAddFriendResp Ӻǰص??
 type CallbackBeforeAddFriendResp struct {
 	CommonCallbackResp
 }
 
-// CallbackAfterAddFriendReq 添加好友后回调请�?
+// CallbackAfterAddFriendReq ӺѺص??
 type CallbackAfterAddFriendReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	FromUserID      string `json:"fromUserID"`
@@ -241,12 +241,12 @@ func (c *CallbackAfterAddFriendReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterAddFriendResp 添加好友后回调响�?
+// CallbackAfterAddFriendResp ӺѺص??
 type CallbackAfterAddFriendResp struct {
 	CommonCallbackResp
 }
 
-// CallbackBeforeAddFriendAgreeReq 同意好友申请前回调请�?
+// CallbackBeforeAddFriendAgreeReq ͬǰص??
 type CallbackBeforeAddFriendAgreeReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	FromUserID      string `json:"fromUserID"`
@@ -259,12 +259,12 @@ func (c *CallbackBeforeAddFriendAgreeReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackBeforeAddFriendAgreeResp 同意好友申请前回调响�?
+// CallbackBeforeAddFriendAgreeResp ͬǰص??
 type CallbackBeforeAddFriendAgreeResp struct {
 	CommonCallbackResp
 }
 
-// CallbackAfterAddFriendAgreeReq 同意好友申请后回调请�?
+// CallbackAfterAddFriendAgreeReq ͬص??
 type CallbackAfterAddFriendAgreeReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	FromUserID      string `json:"fromUserID"`
@@ -276,12 +276,12 @@ func (c *CallbackAfterAddFriendAgreeReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterAddFriendAgreeResp 同意好友申请后回调响�?
+// CallbackAfterAddFriendAgreeResp ͬص??
 type CallbackAfterAddFriendAgreeResp struct {
 	CommonCallbackResp
 }
 
-// CallbackAfterDeleteFriendReq 删除好友后回调请�?
+// CallbackAfterDeleteFriendReq ɾѺص??
 type CallbackAfterDeleteFriendReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	OwnerUserID     string `json:"ownerUserID"`
@@ -292,12 +292,12 @@ func (c *CallbackAfterDeleteFriendReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterDeleteFriendResp 删除好友后回调响�?
+// CallbackAfterDeleteFriendResp ɾѺص??
 type CallbackAfterDeleteFriendResp struct {
 	CommonCallbackResp
 }
 
-// CallbackBeforeSetFriendRemarkReq 设置好友备注前回调请�?
+// CallbackBeforeSetFriendRemarkReq úѱעǰص??
 type CallbackBeforeSetFriendRemarkReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	OwnerUserID     string `json:"ownerUserID"`
@@ -309,13 +309,13 @@ func (c *CallbackBeforeSetFriendRemarkReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackBeforeSetFriendRemarkResp 设置好友备注前回调响�?
+// CallbackBeforeSetFriendRemarkResp úѱעǰص??
 type CallbackBeforeSetFriendRemarkResp struct {
 	CommonCallbackResp
 	Remark *string `json:"remark,omitempty"`
 }
 
-// CallbackAfterSetFriendRemarkReq 设置好友备注后回调请�?
+// CallbackAfterSetFriendRemarkReq úѱעص??
 type CallbackAfterSetFriendRemarkReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	OwnerUserID     string `json:"ownerUserID"`
@@ -327,12 +327,12 @@ func (c *CallbackAfterSetFriendRemarkReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterSetFriendRemarkResp 设置好友备注后回调响�?
+// CallbackAfterSetFriendRemarkResp úѱעص??
 type CallbackAfterSetFriendRemarkResp struct {
 	CommonCallbackResp
 }
 
-// CallbackBeforeAddBlackReq 添加黑名单前回调请求
+// CallbackBeforeAddBlackReq Ӻǰص
 type CallbackBeforeAddBlackReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	OwnerUserID     string `json:"ownerUserID"`
@@ -343,12 +343,12 @@ func (c *CallbackBeforeAddBlackReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackBeforeAddBlackResp 添加黑名单前回调响应
+// CallbackBeforeAddBlackResp ӺǰصӦ
 type CallbackBeforeAddBlackResp struct {
 	CommonCallbackResp
 }
 
-// CallbackAfterAddBlackReq 添加黑名单后回调请求
+// CallbackAfterAddBlackReq Ӻص
 type CallbackAfterAddBlackReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	OwnerUserID     string `json:"ownerUserID"`
@@ -359,12 +359,12 @@ func (c *CallbackAfterAddBlackReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterAddBlackResp 添加黑名单后回调响应
+// CallbackAfterAddBlackResp ӺصӦ
 type CallbackAfterAddBlackResp struct {
 	CommonCallbackResp
 }
 
-// CallbackAfterRemoveBlackReq 移除黑名单后回调请求
+// CallbackAfterRemoveBlackReq Ƴص
 type CallbackAfterRemoveBlackReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	OwnerUserID     string `json:"ownerUserID"`
@@ -375,12 +375,12 @@ func (c *CallbackAfterRemoveBlackReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterRemoveBlackResp 移除黑名单后回调响应
+// CallbackAfterRemoveBlackResp ƳصӦ
 type CallbackAfterRemoveBlackResp struct {
 	CommonCallbackResp
 }
 
-// CallbackBeforeImportFriendsReq 导入好友前回调请�?
+// CallbackBeforeImportFriendsReq ǰص??
 type CallbackBeforeImportFriendsReq struct {
 	CallbackCommand string   `json:"callbackCommand"`
 	OwnerUserID     string   `json:"ownerUserID"`
@@ -391,13 +391,13 @@ func (c *CallbackBeforeImportFriendsReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackBeforeImportFriendsResp 导入好友前回调响�?
+// CallbackBeforeImportFriendsResp ǰص??
 type CallbackBeforeImportFriendsResp struct {
 	CommonCallbackResp
 	FriendUserIDs []string `json:"friendUserIDs,omitempty"`
 }
 
-// CallbackAfterImportFriendsReq 导入好友后回调请�?
+// CallbackAfterImportFriendsReq Ѻص??
 type CallbackAfterImportFriendsReq struct {
 	CallbackCommand string   `json:"callbackCommand"`
 	OwnerUserID     string   `json:"ownerUserID"`
@@ -408,12 +408,12 @@ func (c *CallbackAfterImportFriendsReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterImportFriendsResp 导入好友后回调响�?
+// CallbackAfterImportFriendsResp Ѻص??
 type CallbackAfterImportFriendsResp struct {
 	CommonCallbackResp
 }
 
-// CallbackBeforeSetGroupInfoReq 设置群组信息前回调请�?
+// CallbackBeforeSetGroupInfoReq ȺϢǰص??
 type CallbackBeforeSetGroupInfoReq struct {
 	CallbackCommand string  `json:"callbackCommand"`
 	GroupID         string  `json:"groupID"`
@@ -427,7 +427,7 @@ func (c *CallbackBeforeSetGroupInfoReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackBeforeSetGroupInfoResp 设置群组信息前回调响�?
+// CallbackBeforeSetGroupInfoResp ȺϢǰص??
 type CallbackBeforeSetGroupInfoResp struct {
 	CommonCallbackResp
 	GroupName    *string `json:"groupName,omitempty"`
@@ -436,7 +436,7 @@ type CallbackBeforeSetGroupInfoResp struct {
 	Ex           *string `json:"ex,omitempty"`
 }
 
-// CallbackAfterSetGroupInfoReq 设置群组信息后回调请�?
+// CallbackAfterSetGroupInfoReq ȺϢص??
 type CallbackAfterSetGroupInfoReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	GroupID         string `json:"groupID"`
@@ -450,12 +450,12 @@ func (c *CallbackAfterSetGroupInfoReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterSetGroupInfoResp 设置群组信息后回调响�?
+// CallbackAfterSetGroupInfoResp ȺϢص??
 type CallbackAfterSetGroupInfoResp struct {
 	CommonCallbackResp
 }
 
-// CallbackBeforeSetGroupMemberInfoReq 设置群成员信息前回调请求
+// CallbackBeforeSetGroupMemberInfoReq ȺԱϢǰص
 type CallbackBeforeSetGroupMemberInfoReq struct {
 	CallbackCommand string  `json:"callbackCommand"`
 	GroupID         string  `json:"groupID"`
@@ -469,7 +469,7 @@ func (c *CallbackBeforeSetGroupMemberInfoReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackBeforeSetGroupMemberInfoResp 设置群成员信息前回调响应
+// CallbackBeforeSetGroupMemberInfoResp ȺԱϢǰصӦ
 type CallbackBeforeSetGroupMemberInfoResp struct {
 	CommonCallbackResp
 	Nickname *string `json:"nickname,omitempty"`
@@ -477,7 +477,7 @@ type CallbackBeforeSetGroupMemberInfoResp struct {
 	Ex       *string `json:"ex,omitempty"`
 }
 
-// CallbackAfterSetGroupMemberInfoReq 设置群成员信息后回调请求
+// CallbackAfterSetGroupMemberInfoReq ȺԱϢص
 type CallbackAfterSetGroupMemberInfoReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	GroupID         string `json:"groupID"`
@@ -491,12 +491,12 @@ func (c *CallbackAfterSetGroupMemberInfoReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterSetGroupMemberInfoResp 设置群成员信息后回调响应
+// CallbackAfterSetGroupMemberInfoResp ȺԱϢصӦ
 type CallbackAfterSetGroupMemberInfoResp struct {
 	CommonCallbackResp
 }
 
-// CallbackAfterQuitGroupReq 退出群组后回调请求
+// CallbackAfterQuitGroupReq ˳Ⱥص
 type CallbackAfterQuitGroupReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	GroupID         string `json:"groupID"`
@@ -507,12 +507,12 @@ func (c *CallbackAfterQuitGroupReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterQuitGroupResp 退出群组后回调响应
+// CallbackAfterQuitGroupResp ˳ȺصӦ
 type CallbackAfterQuitGroupResp struct {
 	CommonCallbackResp
 }
 
-// CallbackAfterKickGroupMemberReq 踢出群成员后回调请求
+// CallbackAfterKickGroupMemberReq ߳ȺԱص
 type CallbackAfterKickGroupMemberReq struct {
 	CallbackCommand string   `json:"callbackCommand"`
 	GroupID         string   `json:"groupID"`
@@ -524,12 +524,12 @@ func (c *CallbackAfterKickGroupMemberReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterKickGroupMemberResp 踢出群成员后回调响应
+// CallbackAfterKickGroupMemberResp ߳ȺԱصӦ
 type CallbackAfterKickGroupMemberResp struct {
 	CommonCallbackResp
 }
 
-// CallbackAfterDismissGroupReq 解散群组后回调请�?
+// CallbackAfterDismissGroupReq ɢȺص??
 type CallbackAfterDismissGroupReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	GroupID         string `json:"groupID"`
@@ -540,12 +540,12 @@ func (c *CallbackAfterDismissGroupReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterDismissGroupResp 解散群组后回调响�?
+// CallbackAfterDismissGroupResp ɢȺص??
 type CallbackAfterDismissGroupResp struct {
 	CommonCallbackResp
 }
 
-// CallbackAfterTransferGroupOwnerReq 转让群主后回调请�?
+// CallbackAfterTransferGroupOwnerReq תȺص??
 type CallbackAfterTransferGroupOwnerReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	GroupID         string `json:"groupID"`
@@ -557,12 +557,12 @@ func (c *CallbackAfterTransferGroupOwnerReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterTransferGroupOwnerResp 转让群主后回调响�?
+// CallbackAfterTransferGroupOwnerResp תȺص??
 type CallbackAfterTransferGroupOwnerResp struct {
 	CommonCallbackResp
 }
 
-// CallbackBeforeInviteJoinGroupReq 邀请加入群组前回调请求
+// CallbackBeforeInviteJoinGroupReq Ⱥǰص
 type CallbackBeforeInviteJoinGroupReq struct {
 	CallbackCommand string   `json:"callbackCommand"`
 	GroupID         string   `json:"groupID"`
@@ -574,13 +574,13 @@ func (c *CallbackBeforeInviteJoinGroupReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackBeforeInviteJoinGroupResp 邀请加入群组前回调响应
+// CallbackBeforeInviteJoinGroupResp ȺǰصӦ
 type CallbackBeforeInviteJoinGroupResp struct {
 	CommonCallbackResp
 	RefusedMembersAccount []string `json:"refusedMembersAccount,omitempty"`
 }
 
-// CallbackAfterJoinGroupReq 加入群组后回调请�?
+// CallbackAfterJoinGroupReq Ⱥص??
 type CallbackAfterJoinGroupReq struct {
 	CallbackCommand string `json:"callbackCommand"`
 	GroupID         string `json:"groupID"`
@@ -594,7 +594,7 @@ func (c *CallbackAfterJoinGroupReq) GetCallbackCommand() string {
 	return c.CallbackCommand
 }
 
-// CallbackAfterJoinGroupResp 加入群组后回调响�?
+// CallbackAfterJoinGroupResp Ⱥص??
 type CallbackAfterJoinGroupResp struct {
 	CommonCallbackResp
 }

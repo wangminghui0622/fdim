@@ -25,7 +25,7 @@ func NewCompleteMultipartUploadLogic(ctx context.Context, svcCtx *svc.ServiceCon
 }
 
 func (l *CompleteMultipartUploadLogic) CompleteMultipartUpload(req *third.CompleteMultipartUploadReq) (*third.CompleteMultipartUploadResp, error) {
-	// 简化版：不真正向对象存储服务发送 Complete 请求，而是基于配置拼出最终访问 URL
+	// 简化版：不真正向对象存储服务发?Complete 请求，而是基于配置拼出最终访?URL
 	if err := req.Check(); err != nil {
 		return nil, fmt.Errorf("invalid CompleteMultipartUploadReq: %w", err)
 	}

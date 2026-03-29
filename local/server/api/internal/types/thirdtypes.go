@@ -1,7 +1,6 @@
 package types
 
-// Third 相关请求和响应类型
-// 注意：这些类型需要与 open-im-server 的 API 接口保持一致
+// Third 相关请求和响应类?
 
 // FcmUpdateToken 相关类型
 type FcmUpdateTokenReq struct {
@@ -17,8 +16,8 @@ type FcmUpdateTokenResp struct {
 
 // SetAppBadge 相关类型
 type SetAppBadgeReq struct {
-	UserID string `json:"userID"`
-	AppUnreadCount int32 `json:"appUnreadCount"`
+	UserID         string `json:"userID"`
+	AppUnreadCount int32  `json:"appUnreadCount"`
 }
 
 type SetAppBadgeResp struct {
@@ -47,14 +46,14 @@ type DeleteLogsResp struct {
 type SearchLogsReq struct {
 	Keyword    string     `json:"keyword,optional"`
 	StartTime  int64      `json:"startTime,optional"`
-	EndTime     int64      `json:"endTime,optional"`
+	EndTime    int64      `json:"endTime,optional"`
 	Pagination Pagination `json:"pagination"`
 }
 
 type SearchLogsResp struct {
 	BaseResp
 	Logs  []interface{} `json:"logs"` // 使用 LogInfo
-	Total int64          `json:"total"`
+	Total int64         `json:"total"`
 }
 
 // PartLimit 相关类型
@@ -80,12 +79,12 @@ type PartSizeResp struct {
 
 // InitiateMultipartUpload 相关类型
 type InitiateMultipartUploadReq struct {
-	Hash        string `json:"hash"`
-	Size        int64  `json:"size"`
-	PartSize    int64  `json:"partSize"`
-	MaxParts    int32  `json:"maxParts"`
-	Cause       string `json:"cause,optional"`
-	UrlPrefix   string `json:"urlPrefix,optional"`
+	Hash      string `json:"hash"`
+	Size      int64  `json:"size"`
+	PartSize  int64  `json:"partSize"`
+	MaxParts  int32  `json:"maxParts"`
+	Cause     string `json:"cause,optional"`
+	UrlPrefix string `json:"urlPrefix,optional"`
 }
 
 type InitiateMultipartUploadResp struct {
@@ -96,7 +95,7 @@ type InitiateMultipartUploadResp struct {
 
 // AuthSign 相关类型
 type AuthSignReq struct {
-	UploadID   string  `json:"uploadID"`
+	UploadID    string  `json:"uploadID"`
 	PartNumbers []int32 `json:"partNumbers"`
 }
 
@@ -145,13 +144,13 @@ type InitiateFormDataReq struct {
 
 type InitiateFormDataResp struct {
 	BaseResp
-	Id          string            `json:"id"`
-	Url         string            `json:"url"`
-	File        string            `json:"file"`
-	Header      []interface{}     `json:"header,optional"` // 使用 KeyValues
-	FormData    map[string]string `json:"formData"`
-	Expires     int64             `json:"expires,optional"`
-	SuccessCodes []int32          `json:"successCodes,optional"`
+	Id           string            `json:"id"`
+	Url          string            `json:"url"`
+	File         string            `json:"file"`
+	Header       []interface{}     `json:"header,optional"` // 使用 KeyValues
+	FormData     map[string]string `json:"formData"`
+	Expires      int64             `json:"expires,optional"`
+	SuccessCodes []int32           `json:"successCodes,optional"`
 }
 
 // CompleteFormData 相关类型

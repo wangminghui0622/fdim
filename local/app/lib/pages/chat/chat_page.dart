@@ -89,7 +89,7 @@ class _ChatPageState extends State<ChatPage> {
 
     Get.find<IMController>().currentChatConversationID.value = conversationID;
     // 与官方 Go SDK 一致：告知 SDK 当前活跃会话，新消息不递增 unreadCount
-    OpenIM.iMManager.setActiveConversation(conversationID);
+    FDIM.iMManager.setActiveConversation(conversationID);
     _playedVoiceIds.addAll(LocalStore.getPlayedVoiceIds(conversationID));
     _loadMessages();
     _clearUnreadCount();
@@ -161,7 +161,7 @@ class _ChatPageState extends State<ChatPage> {
     // 与官方 ChatLogic.onClose 一致：离开时再次标记已读，确保最后收到的消息也被标记
     _markAsRead();
     // 清除活跃会话标记
-    OpenIM.iMManager.setActiveConversation(null);
+    FDIM.iMManager.setActiveConversation(null);
     final imCtrl = Get.find<IMController>();
     if (imCtrl.currentChatConversationID.value == conversationID) {
       imCtrl.currentChatConversationID.value = '';
@@ -306,13 +306,25 @@ class _ChatPageState extends State<ChatPage> {
     if (!mounted) return;
     try {
       for (var readInfo in list) {
+        // 策略1: hasReadSeq 水位线（服务端主要使用这种格式）
+        final peerReadSeq = readInfo.hasReadSeq ?? 0;
+        if (peerReadSeq > 0) {
+          for (var e in _messages) {
+            if (e.sendID == Config.userID &&
+                (e.seq ?? 0) > 0 &&
+                (e.seq ?? 0) <= peerReadSeq &&
+                e.isRead != true) {
+              e.isRead = true;
+              e.hasReadTime = DateTime.now().millisecondsSinceEpoch;
+            }
+          }
+        }
+        // 策略2: msgIDList 逐条标记
         if (readInfo.msgIDList != null && readInfo.msgIDList!.isNotEmpty) {
           for (var e in _messages) {
             if (readInfo.msgIDList!.contains(e.clientMsgID)) {
-              // 与官方 chat_logic.dart onRecvC2CReadReceipt 一致
               e.isRead = true;
               e.hasReadTime = DateTime.now().millisecondsSinceEpoch;
-              // 已读状态已由 IMManager._handlePushMsg 写入本地 DB
             }
           }
         }
@@ -347,7 +359,7 @@ class _ChatPageState extends State<ChatPage> {
     try {
       debugPrint('[Chat] Loading messages for conversationID: $conversationID, isFirstLoad: $_isFirstLoad');
 
-      final result = await OpenIM.iMManager.messageManager.getAdvancedHistoryMessageList(
+      final result = await FDIM.iMManager.messageManager.getAdvancedHistoryMessageList(
         conversationID: conversationID,
         count: _isFirstLoad ? _pageSize : _messages.length,
         startMsg: _isFirstLoad ? null : _messages.firstOrNull,
@@ -401,7 +413,7 @@ class _ChatPageState extends State<ChatPage> {
     if (_isLoadingMore || _isOlderEnd) return;
     setState(() => _isLoadingMore = true);
     try {
-      final result = await OpenIM.iMManager.messageManager.getAdvancedHistoryMessageList(
+      final result = await FDIM.iMManager.messageManager.getAdvancedHistoryMessageList(
         conversationID: conversationID,
         count: _pageSize,
         startMsg: _messages.firstOrNull,
@@ -441,7 +453,7 @@ class _ChatPageState extends State<ChatPage> {
   void _clearUnreadCount() {
     final conv = LocalStore.getConversation(conversationID);
     if (conv != null && conv.unreadCount > 0) {
-      OpenIM.iMManager.conversationManager.markConversationMessageAsRead(
+      FDIM.iMManager.conversationManager.markConversationMessageAsRead(
         conversationID: conversationID,
       );
     }
@@ -455,7 +467,7 @@ class _ChatPageState extends State<ChatPage> {
   Future<void> _loadGroupMemberCount() async {
     if (groupID.isEmpty) return;
     try {
-      final groups = await OpenIM.iMManager.groupManager.getGroupsInfo(
+      final groups = await FDIM.iMManager.groupManager.getGroupsInfo(
         groupIDList: [groupID],
       );
       if (groups.isNotEmpty && mounted) {
@@ -470,7 +482,7 @@ class _ChatPageState extends State<ChatPage> {
   Future<void> _checkOnlineStatus() async {
     if (userID.isEmpty) return;
     try {
-      final result = await OpenIM.iMManager.userManager.getUserStatus([userID]);
+      final result = await FDIM.iMManager.userManager.getUserStatus([userID]);
       if (result.isNotEmpty && mounted) {
         final old = _isOnline;
         _isOnline = result.first.isOnline;
@@ -545,7 +557,7 @@ class _ChatPageState extends State<ChatPage> {
   Future<void> _markAsRead() async {
     if (!mounted) return;
     try {
-      await OpenIM.iMManager.conversationManager.markConversationMessageAsRead(
+      await FDIM.iMManager.conversationManager.markConversationMessageAsRead(
         conversationID: conversationID,
       );
       final now = DateTime.now().millisecondsSinceEpoch;
@@ -577,7 +589,7 @@ class _ChatPageState extends State<ChatPage> {
 
     final now = DateTime.now().millisecondsSinceEpoch;
     try {
-      await OpenIM.iMManager.conversationManager.markConversationMessageAsRead(
+      await FDIM.iMManager.conversationManager.markConversationMessageAsRead(
         conversationID: conversationID,
       );
     } catch (e) {
@@ -615,7 +627,7 @@ class _ChatPageState extends State<ChatPage> {
     );
     if (file == null) return;
 
-    final tempMsg = await OpenIM.iMManager.messageManager
+    final tempMsg = await FDIM.iMManager.messageManager
         .createImageMessageFromFullPath(imagePath: file.path);
     tempMsg.sessionType = sessionType;
     tempMsg.recvID = sessionType == ConversationType.single ? userID : '';
@@ -637,7 +649,7 @@ class _ChatPageState extends State<ChatPage> {
         debugPrint('[Chat] image upload failed, sending with local path: $e');
       }
 
-      await OpenIM.iMManager.messageManager.sendMessage(
+      await FDIM.iMManager.messageManager.sendMessage(
         message: tempMsg,
         offlinePushInfo: OfflinePushInfo(),
         userID: sessionType == ConversationType.single ? userID : null,
@@ -661,7 +673,7 @@ class _ChatPageState extends State<ChatPage> {
     if (text.isEmpty) return;
     _inputController.clear();
 
-    final tempMsg = await OpenIM.iMManager.messageManager.createTextMessage(
+    final tempMsg = await FDIM.iMManager.messageManager.createTextMessage(
       text: text,
     );
     tempMsg.sessionType = sessionType;
@@ -673,7 +685,7 @@ class _ChatPageState extends State<ChatPage> {
     _scrollToBottom();
 
     try {
-      await OpenIM.iMManager.messageManager.sendMessage(
+      await FDIM.iMManager.messageManager.sendMessage(
         message: tempMsg,
         offlinePushInfo: OfflinePushInfo(),
         userID: sessionType == ConversationType.single ? userID : null,
@@ -808,7 +820,7 @@ class _ChatPageState extends State<ChatPage> {
         return;
       }
 
-      final tempMsg = await OpenIM.iMManager.messageManager
+      final tempMsg = await FDIM.iMManager.messageManager
           .createSoundMessageFromFullPath(
         soundPath: path,
         duration: duration,
@@ -833,7 +845,7 @@ class _ChatPageState extends State<ChatPage> {
           debugPrint('[Chat] voice upload failed, sending with local path: $e');
         }
 
-        await OpenIM.iMManager.messageManager.sendMessage(
+        await FDIM.iMManager.messageManager.sendMessage(
           message: tempMsg,
           offlinePushInfo: OfflinePushInfo(),
           userID: sessionType == ConversationType.single ? userID : null,
@@ -1181,6 +1193,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildReadTag(Message msg) {
     final isRead = msg.isRead == true;
+    debugPrint('[Chat] _buildReadTag: seq=${msg.seq}, clientMsgID=${msg.clientMsgID}, isRead=$isRead');
     return Padding(
       padding: const EdgeInsets.only(top: 2, bottom: 2),
       child: Text(
@@ -1275,7 +1288,7 @@ class _ChatPageState extends State<ChatPage> {
           'conversationID=$conversationID clientMsgID=${msg.clientMsgID} '
           'serverMsgID=${msg.serverMsgID} seq=${msg.seq}',
         );
-        await OpenIM.iMManager.messageManager.revokeMessage(
+        await FDIM.iMManager.messageManager.revokeMessage(
           conversationID: conversationID,
           seq: msg.seq!,
         );
@@ -1376,7 +1389,7 @@ class _ChatPageState extends State<ChatPage> {
     final photo = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
     if (photo == null) return;
 
-    final tempMsg = await OpenIM.iMManager.messageManager
+    final tempMsg = await FDIM.iMManager.messageManager
         .createImageMessageFromFullPath(imagePath: photo.path);
     tempMsg.sessionType = sessionType;
     tempMsg.recvID = sessionType == ConversationType.single ? userID : '';
@@ -1398,7 +1411,7 @@ class _ChatPageState extends State<ChatPage> {
         debugPrint('[Chat] camera image upload failed, sending with local path: $e');
       }
 
-      await OpenIM.iMManager.messageManager.sendMessage(
+      await FDIM.iMManager.messageManager.sendMessage(
         message: tempMsg,
         offlinePushInfo: OfflinePushInfo(),
         userID: sessionType == ConversationType.single ? userID : null,

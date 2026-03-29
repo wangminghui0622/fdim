@@ -1,4 +1,4 @@
-﻿package database
+package database
 
 import (
 	"context"
@@ -26,7 +26,7 @@ func NewGroupDatabase(db *MongoDB) *GroupDatabase {
 	}
 }
 
-// TakeGroup 获取群组
+// TakeGroup ȡȺ
 func (d *GroupDatabase) TakeGroup(ctx context.Context, groupID string) (*model.Group, error) {
 	var group model.Group
 	err := d.groupCollection.FindOne(ctx, bson.M{"group_id": groupID}).Decode(&group)
@@ -36,7 +36,7 @@ func (d *GroupDatabase) TakeGroup(ctx context.Context, groupID string) (*model.G
 	return &group, nil
 }
 
-// FindGroup 查找群组
+// FindGroup Ⱥ
 func (d *GroupDatabase) FindGroup(ctx context.Context, groupIDs []string) ([]*model.Group, error) {
 	filter := bson.M{"group_id": bson.M{"$in": groupIDs}}
 	cursor, err := d.groupCollection.Find(ctx, filter)
@@ -52,9 +52,9 @@ func (d *GroupDatabase) FindGroup(ctx context.Context, groupIDs []string) ([]*mo
 	return groups, nil
 }
 
-// CreateGroup 创建群组
+// CreateGroup Ⱥ
 func (d *GroupDatabase) CreateGroup(ctx context.Context, groups []*model.Group, members []*model.GroupMember) error {
-	// 创建群组
+	// Ⱥ
 	if len(groups) > 0 {
 		docs := make([]interface{}, len(groups))
 		for i, g := range groups {
@@ -65,7 +65,7 @@ func (d *GroupDatabase) CreateGroup(ctx context.Context, groups []*model.Group, 
 		}
 	}
 
-	// 创建群成�?
+	// Ⱥ??
 	if len(members) > 0 {
 		docs := make([]interface{}, len(members))
 		for i, m := range members {
@@ -79,7 +79,7 @@ func (d *GroupDatabase) CreateGroup(ctx context.Context, groups []*model.Group, 
 	return nil
 }
 
-// UpdateGroupMap 更新群组信息
+// UpdateGroupMap ȺϢ
 func (d *GroupDatabase) UpdateGroupMap(ctx context.Context, groupID string, data map[string]interface{}) error {
 	if len(data) == 0 {
 		return nil
@@ -90,7 +90,7 @@ func (d *GroupDatabase) UpdateGroupMap(ctx context.Context, groupID string, data
 	return err
 }
 
-// FindGroupMembers 查找群成�?
+// FindGroupMembers Ⱥ??
 func (d *GroupDatabase) FindGroupMembers(ctx context.Context, groupID string, userIDs []string) ([]*model.GroupMember, error) {
 	filter := bson.M{
 		"group_id": groupID,
@@ -109,7 +109,7 @@ func (d *GroupDatabase) FindGroupMembers(ctx context.Context, groupID string, us
 	return members, nil
 }
 
-// TakeGroupMember 获取单个群成�?
+// TakeGroupMember ȡȺ??
 func (d *GroupDatabase) TakeGroupMember(ctx context.Context, groupID, userID string) (*model.GroupMember, error) {
 	var member model.GroupMember
 	err := d.memberCollection.FindOne(ctx, bson.M{
@@ -122,7 +122,7 @@ func (d *GroupDatabase) TakeGroupMember(ctx context.Context, groupID, userID str
 	return &member, nil
 }
 
-// FindGroupMemberAll 查找所有群成员
+// FindGroupMemberAll ȺԱ
 func (d *GroupDatabase) FindGroupMemberAll(ctx context.Context, groupID string) ([]*model.GroupMember, error) {
 	filter := bson.M{"group_id": groupID}
 	cursor, err := d.memberCollection.Find(ctx, filter)
@@ -138,7 +138,7 @@ func (d *GroupDatabase) FindGroupMemberAll(ctx context.Context, groupID string) 
 	return members, nil
 }
 
-// DeleteGroupMember 删除群成�?
+// DeleteGroupMember ɾȺ??
 func (d *GroupDatabase) DeleteGroupMember(ctx context.Context, groupID string, userIDs []string) error {
 	filter := bson.M{
 		"group_id": groupID,
@@ -148,7 +148,7 @@ func (d *GroupDatabase) DeleteGroupMember(ctx context.Context, groupID string, u
 	return err
 }
 
-// UpdateGroupMemberMap 更新群成员信�?
+// UpdateGroupMemberMap ȺԱ??
 func (d *GroupDatabase) UpdateGroupMemberMap(ctx context.Context, groupID, userID string, data map[string]interface{}) error {
 	if len(data) == 0 {
 		return nil
@@ -162,7 +162,7 @@ func (d *GroupDatabase) UpdateGroupMemberMap(ctx context.Context, groupID, userI
 	return err
 }
 
-// TakeGroupOwner 获取群主
+// TakeGroupOwner ȡȺ
 func (d *GroupDatabase) TakeGroupOwner(ctx context.Context, groupID string) (*model.GroupMember, error) {
 	filter := bson.M{
 		"group_id":   groupID,
@@ -176,7 +176,7 @@ func (d *GroupDatabase) TakeGroupOwner(ctx context.Context, groupID string) (*mo
 	return &member, nil
 }
 
-// FindGroupsOwner 获取多个群组的群�?
+// FindGroupsOwner ȡȺȺ??
 func (d *GroupDatabase) FindGroupsOwner(ctx context.Context, groupIDs []string) ([]*model.GroupMember, error) {
 	if len(groupIDs) == 0 {
 		return nil, nil
@@ -198,7 +198,7 @@ func (d *GroupDatabase) FindGroupsOwner(ctx context.Context, groupIDs []string) 
 	return owners, nil
 }
 
-// CreateGroupRequest 创建群组申请
+// CreateGroupRequest Ⱥ
 func (d *GroupDatabase) CreateGroupRequest(ctx context.Context, requests []*model.GroupRequest) error {
 	if len(requests) == 0 {
 		return nil
@@ -211,7 +211,7 @@ func (d *GroupDatabase) CreateGroupRequest(ctx context.Context, requests []*mode
 	return err
 }
 
-// FindGroupRequests 查找群组申请
+// FindGroupRequests Ⱥ
 func (d *GroupDatabase) FindGroupRequests(ctx context.Context, groupID string, userIDs []string) ([]*model.GroupRequest, error) {
 	filter := bson.M{
 		"group_id": groupID,
@@ -230,7 +230,7 @@ func (d *GroupDatabase) FindGroupRequests(ctx context.Context, groupID string, u
 	return requests, nil
 }
 
-// PageGroupRequest 分页获取群组申请（用户视角）
+// PageGroupRequest ҳȡȺ루ûӽǣ
 func (d *GroupDatabase) PageGroupRequest(ctx context.Context, userID string, groupIDs []string, handleResults []int32, offset, limit int32) (int64, []*model.GroupRequest, error) {
 	filter := bson.M{"user_id": userID}
 	if len(groupIDs) > 0 {
@@ -240,13 +240,13 @@ func (d *GroupDatabase) PageGroupRequest(ctx context.Context, userID string, gro
 		filter["handle_result"] = bson.M{"$in": handleResults}
 	}
 
-	// 获取总数
+	// ȡ
 	total, err := d.requestCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().SetSkip(int64(offset)).SetLimit(int64(limit)).SetSort(bson.D{{Key: "req_time", Value: -1}})
 	cursor, err := d.requestCollection.Find(ctx, filter, opts)
 	if err != nil {
@@ -261,7 +261,7 @@ func (d *GroupDatabase) PageGroupRequest(ctx context.Context, userID string, gro
 	return total, requests, nil
 }
 
-// PageGroupRequestByGroup 分页获取群组申请（群组视角）
+// PageGroupRequestByGroup ҳȡȺ루Ⱥӽǣ
 func (d *GroupDatabase) PageGroupRequestByGroup(ctx context.Context, groupIDs []string, handleResults []int32, offset, limit int32) (int64, []*model.GroupRequest, error) {
 	if len(groupIDs) == 0 {
 		return 0, nil, nil
@@ -271,13 +271,13 @@ func (d *GroupDatabase) PageGroupRequestByGroup(ctx context.Context, groupIDs []
 		filter["handle_result"] = bson.M{"$in": handleResults}
 	}
 
-	// 获取总数
+	// ȡ
 	total, err := d.requestCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().SetSkip(int64(offset)).SetLimit(int64(limit)).SetSort(bson.D{{Key: "req_time", Value: -1}})
 	cursor, err := d.requestCollection.Find(ctx, filter, opts)
 	if err != nil {
@@ -292,14 +292,14 @@ func (d *GroupDatabase) PageGroupRequestByGroup(ctx context.Context, groupIDs []
 	return total, requests, nil
 }
 
-// GetUnhandledGroupRequestCount 获取未处理的群组申请数量
+// GetUnhandledGroupRequestCount ȡδȺ
 func (d *GroupDatabase) GetUnhandledGroupRequestCount(ctx context.Context, groupIDs []string, ts int64) (int64, error) {
 	if len(groupIDs) == 0 {
 		return 0, nil
 	}
 	filter := bson.M{
 		"group_id":      bson.M{"$in": groupIDs},
-		"handle_result": 0, // 未处�?
+		"handle_result": 0, // δ??
 	}
 	if ts != 0 {
 		filter["req_time"] = bson.M{"$gt": time.UnixMilli(ts)}
@@ -307,7 +307,7 @@ func (d *GroupDatabase) GetUnhandledGroupRequestCount(ctx context.Context, group
 	return d.requestCollection.CountDocuments(ctx, filter)
 }
 
-// FindGroupMemberByUserID 查找用户加入的所有群�?
+// FindGroupMemberByUserID ûȺ??
 func (d *GroupDatabase) FindGroupMemberByUserID(ctx context.Context, userID string) ([]*model.GroupMember, error) {
 	filter := bson.M{"user_id": userID}
 	cursor, err := d.memberCollection.Find(ctx, filter)
@@ -323,7 +323,7 @@ func (d *GroupDatabase) FindGroupMemberByUserID(ctx context.Context, userID stri
 	return members, nil
 }
 
-// FindGroupMemberNum 获取群组成员数量
+// FindGroupMemberNum ȡȺԱ
 func (d *GroupDatabase) FindGroupMemberNum(ctx context.Context, groupID string) (uint32, error) {
 	count, err := d.memberCollection.CountDocuments(ctx, bson.M{"group_id": groupID})
 	if err != nil {
@@ -332,7 +332,7 @@ func (d *GroupDatabase) FindGroupMemberNum(ctx context.Context, groupID string) 
 	return uint32(count), nil
 }
 
-// TakeGroupRequest 获取群组申请
+// TakeGroupRequest ȡȺ
 func (d *GroupDatabase) TakeGroupRequest(ctx context.Context, groupID, userID string) (*model.GroupRequest, error) {
 	var request model.GroupRequest
 	err := d.requestCollection.FindOne(ctx, bson.M{
@@ -345,7 +345,7 @@ func (d *GroupDatabase) TakeGroupRequest(ctx context.Context, groupID, userID st
 	return &request, nil
 }
 
-// UpdateGroupRequest 更新群组申请
+// UpdateGroupRequest Ⱥ
 func (d *GroupDatabase) UpdateGroupRequest(ctx context.Context, groupID, userID string, data map[string]interface{}) error {
 	if len(data) == 0 {
 		return nil
@@ -359,28 +359,28 @@ func (d *GroupDatabase) UpdateGroupRequest(ctx context.Context, groupID, userID 
 	return err
 }
 
-// HandlerGroupRequest 处理群组申请（更新申请状态，如果同意则创建成员）
+// HandlerGroupRequest Ⱥ루״̬ͬ򴴽Ա
 func (d *GroupDatabase) HandlerGroupRequest(ctx context.Context, groupID, userID, handledMsg string, handleResult int32, member *model.GroupMember) error {
-	// 更新申请状�?
+	// ״??
 	updateData := map[string]interface{}{
 		"handle_result":  handleResult,
 		"handled_msg":    handledMsg,
 		"handled_time":   time.Now(),
-		"handle_user_id": "", // TODO: 从context获取
+		"handle_user_id": "", // TODO: contextȡ
 	}
 	if err := d.UpdateGroupRequest(ctx, groupID, userID, updateData); err != nil {
 		return err
 	}
 
-	// 如果同意且成员不为空，创建群成员
+	// ͬҳԱΪգȺԱ
 	if handleResult == constant.GroupRequestAgree && member != nil {
-		// 检查是否已经是群成�?
+		// ǷѾȺ??
 		_, err := d.TakeGroupMember(ctx, groupID, userID)
 		if err == nil {
-			// 已经是成员，不需要再次创�?
+			// ѾǳԱҪٴδ??
 			return nil
 		}
-		// 创建群成�?
+		// Ⱥ??
 		if err := d.CreateGroup(ctx, nil, []*model.GroupMember{member}); err != nil {
 			return err
 		}
@@ -389,7 +389,7 @@ func (d *GroupDatabase) HandlerGroupRequest(ctx context.Context, groupID, userID
 	return nil
 }
 
-// MapGroupMemberNum 获取群组成员数量映射
+// MapGroupMemberNum ȡȺԱӳ
 func (d *GroupDatabase) MapGroupMemberNum(ctx context.Context, groupIDs []string) (map[string]uint32, error) {
 	pipeline := []bson.M{
 		{"$match": bson.M{"group_id": bson.M{"$in": groupIDs}}},
@@ -418,12 +418,12 @@ func (d *GroupDatabase) MapGroupMemberNum(ctx context.Context, groupIDs []string
 	return result, nil
 }
 
-// CountGroups 统计群组总数
+// CountGroups ͳȺ
 func (d *GroupDatabase) CountGroups(ctx context.Context) (int64, error) {
 	return d.groupCollection.CountDocuments(ctx, bson.M{})
 }
 
-// CountGroupsBeforeTime 统计指定时间之前的群组数
+// CountGroupsBeforeTime ͳָʱ֮ǰȺ
 func (d *GroupDatabase) CountGroupsBeforeTime(ctx context.Context, timestamp int64) (int64, error) {
 	filter := bson.M{
 		"create_time": bson.M{"$lt": time.UnixMilli(timestamp)},
@@ -431,7 +431,7 @@ func (d *GroupDatabase) CountGroupsBeforeTime(ctx context.Context, timestamp int
 	return d.groupCollection.CountDocuments(ctx, filter)
 }
 
-// FindGroupMemberRoleLevels 根据角色级别查找群成�?
+// FindGroupMemberRoleLevels ݽɫȺ??
 func (d *GroupDatabase) FindGroupMemberRoleLevels(ctx context.Context, groupID string, roleLevels []int32) ([]*model.GroupMember, error) {
 	if len(roleLevels) == 0 {
 		return nil, nil
@@ -453,7 +453,7 @@ func (d *GroupDatabase) FindGroupMemberRoleLevels(ctx context.Context, groupID s
 	return members, nil
 }
 
-// FindRoleLevelUserIDs 根据角色级别查找用户ID列表
+// FindRoleLevelUserIDs ݽɫûIDб
 func (d *GroupDatabase) FindRoleLevelUserIDs(ctx context.Context, groupID string, roleLevel int32) ([]string, error) {
 	filter := bson.M{
 		"group_id":   groupID,
@@ -479,7 +479,7 @@ func (d *GroupDatabase) FindRoleLevelUserIDs(ctx context.Context, groupID string
 	return userIDs, nil
 }
 
-// IsGroupAdmin 检查用户是否是群主或管理员
+// IsGroupAdmin ûǷȺԱ
 func (d *GroupDatabase) IsGroupAdmin(ctx context.Context, groupID, userID string) (bool, error) {
 	member, err := d.TakeGroupMember(ctx, groupID, userID)
 	if err != nil {

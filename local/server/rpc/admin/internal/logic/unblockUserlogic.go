@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,12 +24,12 @@ func NewUnblockUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Unblo
 }
 
 func (l *UnblockUserLogic) UnblockUser(req *admin.UnblockUserReq) (*admin.UnblockUserResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.UserIDs) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("userIDs cannot be empty")
 	}
 
-	// 2. 删除封禁记录
+	// 2. ɾ¼
 	if err := l.svcCtx.AdminDB.DelBlockUser(l.ctx, req.UserIDs); err != nil {
 		l.Errorf("DelBlockUser failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to unblock users")

@@ -32,7 +32,7 @@ func (l *DestructMsgsLogic) DestructMsgs(req *msg.DestructMsgsReq) (*msg.Destruc
 	}
 
 	// 简化实现：全局按时间清理，而不是分会话 + limit 精确控制
-	// 由于 MsgDatabase 当前没有列出所有 conversationID 的方法，这里直接用空会话列表留给后续扩展。
+	// 由于 MsgDatabase 当前没有列出所?conversationID 的方法，这里直接用空会话列表留给后续扩展?
 	if err := l.svcCtx.MsgDB.DeleteMessagesByTimeBefore(l.ctx, []string{}, req.Timestamp); err != nil {
 		l.Errorw("DeleteMessagesByTimeBefore failed", logx.Field("timestamp", req.Timestamp), logx.Field("error", err))
 		return nil, errs.WrapMsg(err, "failed to destruct messages")

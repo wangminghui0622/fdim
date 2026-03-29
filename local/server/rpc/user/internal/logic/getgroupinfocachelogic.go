@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,6 +24,6 @@ func NewGetGroupInfoCacheLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 }
 
 func (l *GetGroupInfoCacheLogic) GetGroupInfoCache(req *user.GetGroupInfoCacheReq) (*user.GetGroupInfoCacheResp, error) {
-	// TODO: 实现获取群组信息缓存的逻辑
+	// TODO: ʵֻȡȺϢ߼
 	return nil, fmt.Errorf("GetGroupInfoCache not fully implemented yet")
 }

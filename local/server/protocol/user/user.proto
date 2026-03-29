@@ -1,5 +1,5 @@
 syntax = "proto3";
-package openim.user;
+package fdim.user;
 
 import "conversation/conversation.proto";
 import "sdkws/sdkws.proto";
@@ -30,7 +30,7 @@ message GroupApplicationResponseResp {}
 
 // CMSGroup - CMS group info
 message CMSGroup {
-  openim.sdkws.GroupInfo groupInfo = 1;
+  fdim.sdkws.GroupInfo groupInfo = 1;
   string groupOwnerUserName = 2;
   string groupOwnerUserID = 3;
 }
@@ -84,7 +84,7 @@ message setGlobalRecvMessageOptReq {
 message setGlobalRecvMessageOptResp {}
 
 message setConversationReq {
-  openim.conversation.Conversation conversation = 1;
+  fdim.conversation.Conversation conversation = 1;
   int32 notificationType = 2;
   string operationID = 3;
 }
@@ -108,7 +108,7 @@ message getConversationReq {
 }
 
 message getConversationResp {
-  openim.conversation.Conversation conversation = 2;
+  fdim.conversation.Conversation conversation = 2;
 }
 
 message getConversationsReq {
@@ -118,7 +118,7 @@ message getConversationsReq {
 }
 
 message getConversationsResp {
-  repeated openim.conversation.Conversation conversations = 2;
+  repeated fdim.conversation.Conversation conversations = 2;
 }
 
 message getAllConversationsReq {
@@ -127,11 +127,11 @@ message getAllConversationsReq {
 }
 
 message getAllConversationsResp {
-  repeated openim.conversation.Conversation conversations = 2;
+  repeated fdim.conversation.Conversation conversations = 2;
 }
 
 message batchSetConversationsReq {
-  repeated openim.conversation.Conversation conversations = 1;
+  repeated fdim.conversation.Conversation conversations = 1;
   string OwnerUserID = 2;
   int32 notificationType = 3;
   string OperationID = 4;
@@ -237,8 +237,8 @@ message processUserCommandAddReq {
   string userID = 1;
   int32 type = 2;
   string uuid = 3;
-  openim.protobuf.StringValue value = 4;
-  openim.protobuf.StringValue ex = 5;
+  fdim.protobuf.StringValue value = 4;
+  fdim.protobuf.StringValue ex = 5;
 }
 
 message processUserCommandAddResp {}
@@ -255,8 +255,8 @@ message processUserCommandUpdateReq {
   string userID = 1;
   int32 type = 2;
   string uuid = 3;
-  openim.protobuf.StringValue value = 4;
-  openim.protobuf.StringValue ex = 5;
+  fdim.protobuf.StringValue value = 4;
+  fdim.protobuf.StringValue ex = 5;
 }
 
 message processUserCommandUpdateResp {}
@@ -403,49 +403,49 @@ message clientConfig {
 // ==================== Group Messages ====================
 message CreateGroupReq {
   repeated string memberUserIDs = 1;
-  openim.sdkws.GroupInfo groupInfo = 2;
+  fdim.sdkws.GroupInfo groupInfo = 2;
   repeated string adminUserIDs = 3;
   string ownerUserID = 4;
   optional bool sendMessage = 5;
 }
 message CreateGroupResp {
-  openim.sdkws.GroupInfo groupInfo = 1;
+  fdim.sdkws.GroupInfo groupInfo = 1;
 }
 
 message GetGroupsInfoReq {
   repeated string groupIDs = 1;
 }
 message GetGroupsInfoResp {
-  repeated openim.sdkws.GroupInfo groupInfos = 1;
+  repeated fdim.sdkws.GroupInfo groupInfos = 1;
 }
 
 message SetGroupInfoReq {
-  openim.sdkws.GroupInfoForSet groupInfoForSet = 1;
+  fdim.sdkws.GroupInfoForSet groupInfoForSet = 1;
 }
 message SetGroupInfoResp {}
 
 message SetGroupInfoExReq {
   string groupID = 1;
-  openim.protobuf.StringValue groupName = 2;
-  openim.protobuf.StringValue notification = 3;
-  openim.protobuf.StringValue introduction = 4;
-  openim.protobuf.StringValue faceURL = 5;
-  openim.protobuf.StringValue ex = 6;
-  openim.protobuf.Int32Value needVerification = 7;
-  openim.protobuf.Int32Value lookMemberInfo = 8;
-  openim.protobuf.Int32Value applyMemberFriend = 9;
+  fdim.protobuf.StringValue groupName = 2;
+  fdim.protobuf.StringValue notification = 3;
+  fdim.protobuf.StringValue introduction = 4;
+  fdim.protobuf.StringValue faceURL = 5;
+  fdim.protobuf.StringValue ex = 6;
+  fdim.protobuf.Int32Value needVerification = 7;
+  fdim.protobuf.Int32Value lookMemberInfo = 8;
+  fdim.protobuf.Int32Value applyMemberFriend = 9;
 }
 message SetGroupInfoExResp {}
 
 message GetGroupApplicationListReq {
-  openim.sdkws.RequestPagination pagination = 1;
+  fdim.sdkws.RequestPagination pagination = 1;
   string fromUserID = 2;
   repeated string groupIDs = 3;
   repeated int32 handleResults = 4;
 }
 message GetGroupApplicationListResp {
   uint32 total = 1;
-  repeated openim.sdkws.GroupRequest groupRequests = 2;
+  repeated fdim.sdkws.GroupRequest groupRequests = 2;
 }
 
 message GetGroupApplicationUnhandledCountReq {
@@ -457,14 +457,14 @@ message GetGroupApplicationUnhandledCountResp {
 }
 
 message GetUserReqApplicationListReq {
-  openim.sdkws.RequestPagination pagination = 1;
+  fdim.sdkws.RequestPagination pagination = 1;
   string userID = 2;
   repeated string groupIDs = 3;
   repeated int32 handleResults = 4;
 }
 message GetUserReqApplicationListResp {
   uint32 total = 1;
-  repeated openim.sdkws.GroupRequest groupRequests = 2;
+  repeated fdim.sdkws.GroupRequest groupRequests = 2;
 }
 
 message GetSpecifiedUserGroupRequestInfoReq {
@@ -473,7 +473,7 @@ message GetSpecifiedUserGroupRequestInfoReq {
 }
 message GetSpecifiedUserGroupRequestInfoResp {
   uint32 total = 1;
-  repeated openim.sdkws.GroupRequest groupRequests = 2;
+  repeated fdim.sdkws.GroupRequest groupRequests = 2;
 }
 
 message TransferGroupOwnerReq {
@@ -499,14 +499,14 @@ message QuitGroupReq {
 message QuitGroupResp {}
 
 message GetGroupMemberListReq {
-  openim.sdkws.RequestPagination pagination = 1;
+  fdim.sdkws.RequestPagination pagination = 1;
   string groupID = 2;
   int32 filter = 3;
   string keyword = 4;
 }
 message GetGroupMemberListResp {
   uint32 total = 1;
-  repeated openim.sdkws.GroupMemberFullInfo members = 2;
+  repeated fdim.sdkws.GroupMemberFullInfo members = 2;
 }
 
 message GetGroupMembersInfoReq {
@@ -514,7 +514,7 @@ message GetGroupMembersInfoReq {
   repeated string userIDs = 2;
 }
 message GetGroupMembersInfoResp {
-  repeated openim.sdkws.GroupMemberFullInfo members = 1;
+  repeated fdim.sdkws.GroupMemberFullInfo members = 1;
 }
 
 message KickGroupMemberReq {
@@ -526,12 +526,12 @@ message KickGroupMemberReq {
 message KickGroupMemberResp {}
 
 message GetJoinedGroupListReq {
-  openim.sdkws.RequestPagination pagination = 1;
+  fdim.sdkws.RequestPagination pagination = 1;
   string fromUserID = 2;
 }
 message GetJoinedGroupListResp {
   uint32 total = 1;
-  repeated openim.sdkws.GroupInfo groups = 2;
+  repeated fdim.sdkws.GroupInfo groups = 2;
 }
 
 message InviteUserToGroupReq {
@@ -543,15 +543,15 @@ message InviteUserToGroupReq {
 message InviteUserToGroupResp {}
 
 message GetGroupAllMemberReq {
-  openim.sdkws.RequestPagination pagination = 1;
+  fdim.sdkws.RequestPagination pagination = 1;
   string groupID = 2;
 }
 message GetGroupAllMemberResp {
-  repeated openim.sdkws.GroupMemberFullInfo members = 1;
+  repeated fdim.sdkws.GroupMemberFullInfo members = 1;
 }
 
 message GetGroupsReq {
-  openim.sdkws.RequestPagination pagination = 1;
+  fdim.sdkws.RequestPagination pagination = 1;
   string groupName = 2;
   string groupID = 3;
 }
@@ -565,13 +565,13 @@ message GetGroupMemberReq {
 }
 
 message GetGroupMembersCMSReq {
-  openim.sdkws.RequestPagination pagination = 1;
+  fdim.sdkws.RequestPagination pagination = 1;
   string groupID = 2;
   string userName = 3;
 }
 message GetGroupMembersCMSResp {
   uint32 total = 1;
-  repeated openim.sdkws.GroupMemberFullInfo members = 2;
+  repeated fdim.sdkws.GroupMemberFullInfo members = 2;
 }
 
 message DismissGroupReq {
@@ -607,10 +607,10 @@ message CancelMuteGroupResp {}
 message SetGroupMemberInfo {
   string groupID = 1;
   string userID = 2;
-  openim.protobuf.StringValue nickname = 3;
-  openim.protobuf.StringValue faceURL = 4;
-  openim.protobuf.Int32Value roleLevel = 5;
-  openim.protobuf.StringValue ex = 6;
+  fdim.protobuf.StringValue nickname = 3;
+  fdim.protobuf.StringValue faceURL = 4;
+  fdim.protobuf.Int32Value roleLevel = 5;
+  fdim.protobuf.StringValue ex = 6;
 }
 
 message SetGroupMemberInfoReq {
@@ -630,7 +630,7 @@ message GetUserInGroupMembersReq {
   repeated string groupIDs = 2;
 }
 message GetUserInGroupMembersResp {
-  repeated openim.sdkws.GroupMemberFullInfo members = 1;
+  repeated fdim.sdkws.GroupMemberFullInfo members = 1;
 }
 
 message GetGroupMemberUserIDsReq {
@@ -645,14 +645,14 @@ message GetGroupMemberRoleLevelReq {
   repeated int32 roleLevels = 2;
 }
 message GetGroupMemberRoleLevelResp {
-  repeated openim.sdkws.GroupMemberFullInfo members = 1;
+  repeated fdim.sdkws.GroupMemberFullInfo members = 1;
 }
 
 message GetGroupInfoCacheReq {
   string groupID = 1;
 }
 message GetGroupInfoCacheResp {
-  openim.sdkws.GroupInfo groupInfo = 1;
+  fdim.sdkws.GroupInfo groupInfo = 1;
 }
 
 message GetGroupMemberCacheReq {
@@ -660,7 +660,7 @@ message GetGroupMemberCacheReq {
   string groupMemberID = 2;
 }
 message GetGroupMemberCacheResp {
-  openim.sdkws.GroupMemberFullInfo member = 1;
+  fdim.sdkws.GroupMemberFullInfo member = 1;
 }
 
 message GroupCreateCountReq {
@@ -679,13 +679,13 @@ message GetGroupUsersReqApplicationListReq {
 }
 message GetGroupUsersReqApplicationListResp {
   int64 total = 1;
-  repeated openim.sdkws.GroupRequest groupRequests = 2;
+  repeated fdim.sdkws.GroupRequest groupRequests = 2;
 }
 
 message NotificationUserInfoUpdateReq {
   string userID = 1;
-  openim.sdkws.UserInfo oldUserInfo = 2;
-  openim.sdkws.UserInfo newUserInfo = 3;
+  fdim.sdkws.UserInfo oldUserInfo = 2;
+  fdim.sdkws.UserInfo newUserInfo = 3;
 }
 message NotificationUserInfoUpdateResp {}
 
@@ -699,9 +699,9 @@ message GetIncrementalGroupMemberResp {
   string versionID = 2;
   bool full = 3;
   repeated string delete = 4;
-  repeated openim.sdkws.GroupMemberFullInfo insert = 5;
-  repeated openim.sdkws.GroupMemberFullInfo update = 6;
-  openim.sdkws.GroupInfo group = 7;
+  repeated fdim.sdkws.GroupMemberFullInfo insert = 5;
+  repeated fdim.sdkws.GroupMemberFullInfo update = 6;
+  fdim.sdkws.GroupInfo group = 7;
   uint64 sortVersion = 8;
 }
 
@@ -715,8 +715,8 @@ message GetIncrementalJoinGroupResp {
   string versionID = 2;
   bool full = 3;
   repeated string delete = 4;
-  repeated openim.sdkws.GroupInfo insert = 5;
-  repeated openim.sdkws.GroupInfo update = 6;
+  repeated fdim.sdkws.GroupInfo insert = 5;
+  repeated fdim.sdkws.GroupInfo update = 6;
   uint64 sortVersion = 7;
 }
 
@@ -752,11 +752,11 @@ message BatchGetIncrementalGroupMemberResp {
 
 // ==================== Relation/Friend Messages ====================
 message GetPaginationFriendsReq {
-  openim.sdkws.RequestPagination pagination = 1;
+  fdim.sdkws.RequestPagination pagination = 1;
   string userID = 2;
 }
 message GetPaginationFriendsResp {
-  repeated openim.sdkws.FriendInfo friendsInfo = 1;
+  repeated fdim.sdkws.FriendInfo friendsInfo = 1;
   int32 total = 2;
 }
 
@@ -776,11 +776,11 @@ message ImportFriendResp {}
 
 message GetPaginationFriendsApplyToReq {
   string userID = 1;
-  openim.sdkws.RequestPagination pagination = 2;
+  fdim.sdkws.RequestPagination pagination = 2;
   repeated int32 handleResults = 3;
 }
 message GetPaginationFriendsApplyToResp {
-  repeated openim.sdkws.FriendRequest FriendRequests = 1;
+  repeated fdim.sdkws.FriendRequest FriendRequests = 1;
   int32 total = 2;
 }
 
@@ -789,7 +789,7 @@ message GetDesignatedFriendsApplyReq {
   string toUserID = 2;
 }
 message GetDesignatedFriendsApplyResp {
-  repeated openim.sdkws.FriendRequest friendRequests = 1;
+  repeated fdim.sdkws.FriendRequest friendRequests = 1;
 }
 
 message GetSelfUnhandledApplyCountReq {
@@ -810,7 +810,7 @@ message GetIncrementalFriendsApplyToResp {
   string versionID = 2;
   bool full = 3;
   repeated string deleteUserIds = 4;
-  repeated openim.sdkws.FriendRequest changes = 5;
+  repeated fdim.sdkws.FriendRequest changes = 5;
 }
 
 message GetIncrementalFriendsApplyFromReq {
@@ -823,7 +823,7 @@ message GetIncrementalFriendsApplyFromResp {
   string versionID = 2;
   bool full = 3;
   repeated string deleteUserIds = 4;
-  repeated openim.sdkws.FriendRequest changes = 5;
+  repeated fdim.sdkws.FriendRequest changes = 5;
 }
 
 message GetDesignatedFriendsReq {
@@ -831,7 +831,7 @@ message GetDesignatedFriendsReq {
   repeated string friendUserIDs = 2;
 }
 message GetDesignatedFriendsResp {
-  repeated openim.sdkws.FriendInfo friendsInfo = 1;
+  repeated fdim.sdkws.FriendInfo friendsInfo = 1;
 }
 
 message AddBlackReq {
@@ -849,10 +849,10 @@ message RemoveBlackResp {}
 
 message GetPaginationBlacksReq {
   string userID = 1;
-  openim.sdkws.RequestPagination pagination = 2;
+  fdim.sdkws.RequestPagination pagination = 2;
 }
 message GetPaginationBlacksResp {
-  repeated openim.sdkws.BlackInfo blacks = 1;
+  repeated fdim.sdkws.BlackInfo blacks = 1;
   int32 total = 2;
 }
 
@@ -891,9 +891,9 @@ message RespondFriendApplyResp {}
 message UpdateFriendsReq {
   string ownerUserID = 1;
   repeated string friendUserIDs = 2;
-  openim.protobuf.BoolValue isPinned = 3;
-  openim.protobuf.StringValue remark = 4;
-  openim.protobuf.StringValue ex = 5;
+  fdim.protobuf.BoolValue isPinned = 3;
+  fdim.protobuf.StringValue remark = 4;
+  fdim.protobuf.StringValue ex = 5;
 }
 message UpdateFriendsResp {}
 
@@ -906,11 +906,11 @@ message SetFriendRemarkResp {}
 
 message GetPaginationFriendsApplyFromReq {
   string userID = 1;
-  openim.sdkws.RequestPagination pagination = 2;
+  fdim.sdkws.RequestPagination pagination = 2;
   repeated int32 handleResults = 3;
 }
 message GetPaginationFriendsApplyFromResp {
-  repeated openim.sdkws.FriendRequest friendRequests = 1;
+  repeated fdim.sdkws.FriendRequest friendRequests = 1;
   int32 total = 2;
 }
 
@@ -927,9 +927,9 @@ message GetSpecifiedFriendsInfoReq {
 }
 
 message GetSpecifiedFriendsInfoInfo {
-  openim.sdkws.UserInfo userInfo = 1;
-  openim.sdkws.FriendInfo friendInfo = 2;
-  openim.sdkws.BlackInfo blackInfo = 3;
+  fdim.sdkws.UserInfo userInfo = 1;
+  fdim.sdkws.FriendInfo friendInfo = 2;
+  fdim.sdkws.BlackInfo blackInfo = 3;
 }
 
 message GetSpecifiedFriendsInfoResp {
@@ -946,8 +946,8 @@ message GetIncrementalFriendsResp {
   string versionID = 2;
   bool full = 3;
   repeated string delete = 4;
-  repeated openim.sdkws.FriendInfo insert = 5;
-  repeated openim.sdkws.FriendInfo update = 6;
+  repeated fdim.sdkws.FriendInfo insert = 5;
+  repeated fdim.sdkws.FriendInfo update = 6;
   uint64 sortVersion = 7;
 }
 
@@ -961,8 +961,8 @@ message GetIncrementalBlacksResp {
   string versionID = 2;
   bool full = 3;
   repeated string delete = 4;
-  repeated openim.sdkws.BlackInfo insert = 5;
-  repeated openim.sdkws.BlackInfo update = 6;
+  repeated fdim.sdkws.BlackInfo insert = 5;
+  repeated fdim.sdkws.BlackInfo update = 6;
 }
 
 message GetSpecifiedBlacksReq {
@@ -970,7 +970,7 @@ message GetSpecifiedBlacksReq {
   repeated string userIDList = 2;
 }
 message GetSpecifiedBlacksResp {
-  repeated openim.sdkws.BlackInfo blacks = 1;
+  repeated fdim.sdkws.BlackInfo blacks = 1;
   int32 total = 2;
 }
 
@@ -996,13 +996,13 @@ message GetFriendInfoResp {
 // SearchUserFullInfo - 搜索用户完整信息
 message SearchUserFullInfoReq {
   string keyword = 1;
-  openim.sdkws.RequestPagination pagination = 2;
+  fdim.sdkws.RequestPagination pagination = 2;
   int32 genders = 3;
   int32 normal = 4;
 }
 message SearchUserFullInfoResp {
   uint32 total = 1;
-  repeated openim.sdkws.UserInfo users = 2;
+  repeated fdim.sdkws.UserInfo users = 2;
 }
 
 service user {

@@ -23,13 +23,13 @@ type ServiceContext struct {
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	// 初始化 MongoDB
+	// 初始?MongoDB
 	mongoDB := database.NewMongoDB(c.Mongo.Host, c.Mongo.Database, c.Mongo.Username, c.Mongo.Password)
 
-	// 初始化 Redis
+	// 初始?Redis
 	redisClient := cache.NewRedisClient(c.Cache)
 
-	// 初始化 Token 签名器
+	// 初始?Token 签名?
 	tokenExpire := time.Duration(c.TokenPolicy.Expire) * 24 * time.Hour
 	if tokenExpire == 0 {
 		tokenExpire = 7 * 24 * time.Hour
@@ -39,17 +39,17 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		Secret:  c.Secret,
 	}
 
-	// 初始化 AuthDatabase
+	// 初始?AuthDatabase
 	authDB := database.NewAuthDatabase(redisClient, token, c.MultiLogin)
 
-	// 初始化 MsgGateway 客户端（可选）
+	// 初始?MsgGateway 客户端（可选）
 	var msgGatewayClient msggateway.MsgGatewayClient
 	if c.Rpc.MsgGateway.Etcd.Key != "" || c.Rpc.MsgGateway.Target != "" {
 		msgGatewayConn := zrpc.MustNewClient(c.Rpc.MsgGateway).Conn()
 		msgGatewayClient = msggateway.NewMsgGatewayClient(msgGatewayConn)
 	}
 
-	// 初始化 UserDatabase（用于验证用户是否存在）
+	// 初始?UserDatabase（用于验证用户是否存在）
 	userDB := database.NewUserDatabase(mongoDB)
 
 	return &ServiceContext{

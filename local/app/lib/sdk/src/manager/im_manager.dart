@@ -141,7 +141,7 @@ class IMManager {
     _wsMessageSub?.cancel();
   }
 
-  /// Handle incoming WebSocket messages (official OpenIM WsResp protocol)
+  /// Handle incoming WebSocket messages (official FDIM WsResp protocol)
   void _handleWsMessage(WsResp resp) {
     try {
       switch (resp.reqIdentifier) {

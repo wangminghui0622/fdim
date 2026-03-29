@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,12 +24,12 @@ func NewDelIPForbiddenLogic(ctx context.Context, svcCtx *svc.ServiceContext) *De
 }
 
 func (l *DelIPForbiddenLogic) DelIPForbidden(req *admin.DelIPForbiddenReq) (*admin.DelIPForbiddenResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.Ips) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("ips cannot be empty")
 	}
 
-	// 2. 删除IP禁止
+	// 2. ɾIPֹ
 	if err := l.svcCtx.AdminDB.DelIPForbidden(l.ctx, req.Ips); err != nil {
 		l.Errorf("DelIPForbidden failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to delete IP forbidden")

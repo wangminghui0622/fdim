@@ -228,20 +228,20 @@ func (l *PageApplicationVersionLogic) PageApplicationVersion(req *types.PageAppl
 	return &types.PageApplicationVersionResp{Total: rpcResp.Total, Versions: versions}, nil
 }
 
-// ========== OpenIMCallback ==========
+// ========== FDIMCallback ==========
 
-type OpenIMCallbackLogic struct {
+type FDIMCallbackLogic struct {
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 	logx.Logger
 }
 
-func NewOpenIMCallbackLogic(ctx context.Context, svcCtx *svc.ServiceContext) *OpenIMCallbackLogic {
-	return &OpenIMCallbackLogic{ctx: ctx, svcCtx: svcCtx, Logger: logx.WithContext(ctx)}
+func NewFDIMCallbackLogic(ctx context.Context, svcCtx *svc.ServiceContext) *FDIMCallbackLogic {
+	return &FDIMCallbackLogic{ctx: ctx, svcCtx: svcCtx, Logger: logx.WithContext(ctx)}
 }
 
-func (l *OpenIMCallbackLogic) OpenIMCallback(req *types.OpenIMCallbackReq) (*types.OpenIMCallbackResp, error) {
-	l.Infof("OpenIM callback: command=%s", req.Command)
-	// Process callback from OpenIM server (message hooks, user hooks, etc.)
-	return &types.OpenIMCallbackResp{}, nil
+func (l *FDIMCallbackLogic) FDIMCallback(req *types.FDIMCallbackReq) (*types.FDIMCallbackResp, error) {
+	l.Infof("FDIM callback: command=%s", req.Command)
+	// Process callback from FDIM server (message hooks, user hooks, etc.)
+	return &types.FDIMCallbackResp{}, nil
 }

@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,12 +24,12 @@ func NewDelAppletLogic(ctx context.Context, svcCtx *svc.ServiceContext) *DelAppl
 }
 
 func (l *DelAppletLogic) DelApplet(req *admin.DelAppletReq) (*admin.DelAppletResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.AppletIds) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("appletIds cannot be empty")
 	}
 
-	// 2. 删除小程序
+	// 2. ɾС
 	if err := l.svcCtx.AdminDB.DelApplet(l.ctx, req.AppletIds); err != nil {
 		l.Errorf("DelApplet failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to delete applets")

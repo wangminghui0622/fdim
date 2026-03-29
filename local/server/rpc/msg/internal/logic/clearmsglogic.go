@@ -36,7 +36,7 @@ func (l *ClearMsgLogic) ClearMsg(req *msg.ClearMsgReq) (*msg.ClearMsgResp, error
 			continue
 		}
 
-		// 获取当前最大 seq
+		// 获取当前最?seq
 		maxSeq, err := l.svcCtx.MsgDB.GetMaxSeq(l.ctx, conv.ConversationID)
 		if err != nil {
 			l.Errorw("GetMaxSeq failed", logx.Field("conversationID", conv.ConversationID), logx.Field("error", err))
@@ -46,7 +46,7 @@ func (l *ClearMsgLogic) ClearMsg(req *msg.ClearMsgReq) (*msg.ClearMsgResp, error
 			continue
 		}
 
-		// 删除该会话的所有消息
+		// 删除该会话的所有消?
 		seqs := make([]int64, 0, maxSeq)
 		for s := int64(1); s <= maxSeq; s++ {
 			seqs = append(seqs, s)

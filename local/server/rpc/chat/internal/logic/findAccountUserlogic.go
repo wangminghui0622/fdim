@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -25,12 +25,12 @@ func NewFindAccountUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *F
 }
 
 func (l *FindAccountUserLogic) FindAccountUser(req *chat.FindAccountUserReq) (*chat.FindAccountUserResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.Accounts) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("accounts cannot be empty")
 	}
 
-	// 2. 构建查询账户列表
+	// 2. ѯ˻б
 	accounts := make([]*database.UserAccount, 0, len(req.Accounts))
 	for _, account := range req.Accounts {
 		accounts = append(accounts, &database.UserAccount{
@@ -38,14 +38,14 @@ func (l *FindAccountUserLogic) FindAccountUser(req *chat.FindAccountUserReq) (*c
 		})
 	}
 
-	// 3. 查找用户账户
+	// 3. û˻
 	userAccounts, err := l.svcCtx.ChatDB.FindUserAccount(l.ctx, accounts)
 	if err != nil {
 		l.Errorf("FindUserAccount failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to find user accounts")
 	}
 
-	// 4. 构建账户到用户ID的映射
+	// 4. ˻ûIDӳ
 	accountUserMap := make(map[string]string)
 	for _, userAccount := range userAccounts {
 		if userAccount.Account != "" {

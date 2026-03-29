@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -25,19 +25,19 @@ func NewFindUserPublicInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 }
 
 func (l *FindUserPublicInfoLogic) FindUserPublicInfo(req *chat.FindUserPublicInfoReq) (*chat.FindUserPublicInfoResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.UserIDs) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("user IDs cannot be empty")
 	}
 
-	// 2. 查找用户公开信息
+	// 2. ûϢ
 	userInfos, err := l.svcCtx.ChatDB.FindUserPublicInfo(l.ctx, req.UserIDs)
 	if err != nil {
 		l.Errorf("FindUserPublicInfo failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to find user public info")
 	}
 
-	// 3. 转换为protobuf格式
+	// 3. תΪprotobufʽ
 	users := make([]*sdkws.ChatUserPublicInfo, 0, len(userInfos))
 	for _, info := range userInfos {
 		users = append(users, &sdkws.ChatUserPublicInfo{

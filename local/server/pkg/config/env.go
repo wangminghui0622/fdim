@@ -10,10 +10,10 @@ func init() {
 		FileName, NotificationFileName, ShareFileName, WebhooksConfigFileName,
 		NatsConfigFileName, RedisConfigFileName,
 		MongodbConfigFileName, MinioConfigFileName, LogConfigFileName,
-		OpenIMAPICfgFileName, OpenIMCronTaskCfgFileName, OpenIMMsgGatewayCfgFileName,
-		OpenIMMsgTransferCfgFileName, OpenIMPushCfgFileName, OpenIMRPCAuthCfgFileName,
-		OpenIMRPCConversationCfgFileName, OpenIMRPCFriendCfgFileName, OpenIMRPCGroupCfgFileName,
-		OpenIMRPCMsgCfgFileName, OpenIMRPCThirdCfgFileName, OpenIMRPCUserCfgFileName, DiscoveryConfigFilename,
+		FDIMAPICfgFileName, FDIMCronTaskCfgFileName, FDIMMsgGatewayCfgFileName,
+		FDIMMsgTransferCfgFileName, FDIMPushCfgFileName, FDIMRPCAuthCfgFileName,
+		FDIMRPCConversationCfgFileName, FDIMRPCFriendCfgFileName, FDIMRPCGroupCfgFileName,
+		FDIMRPCMsgCfgFileName, FDIMRPCThirdCfgFileName, FDIMRPCUserCfgFileName, DiscoveryConfigFilename,
 	}
 
 	for _, fileName := range fileNames {

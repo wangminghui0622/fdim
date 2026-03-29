@@ -8,7 +8,7 @@ Etcd:
 
 Mongo:
   Host: mongodb://127.0.0.1:27017
-  Database: openim_v3
+  Database: fdim
   Username: "root"
   Password: "test625"
 
@@ -26,7 +26,7 @@ Nats:
     ToPush: "toPush"
     ToOfflinePush: "toOfflinePush"
 
-# Conversation RPC 配置（用于获取会话信息）
+# Conversation RPC 配置
 ConversationRpc:
   Etcd:
     Hosts:
@@ -34,7 +34,7 @@ ConversationRpc:
     Key: conversation.rpc
   Timeout: 10000
 
-# Notification 配置（用于发送已读回执等通知）
+# Notification 配置
 Notification:
   IsSendMsg: true
   ReliabilityLevel: 1

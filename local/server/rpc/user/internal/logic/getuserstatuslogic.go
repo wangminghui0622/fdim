@@ -26,17 +26,17 @@ func NewGetUserStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Get
 func (l *GetUserStatusLogic) GetUserStatus(req *user.GetUserStatusReq) (*user.GetUserStatusResp, error) {
 	resp := &user.GetUserStatusResp{}
 
-	// ������֤
+	// ֤
 	if len(req.UserIDs) == 0 {
 		return nil, fmt.Errorf("userIDs is empty")
 	}
 
-	// �ӻ����ȡ�û�����״̬
+	// ӻȡû״?
 	statusList := make([]*user.OnlineStatus, 0, len(req.UserIDs))
 	for _, userID := range req.UserIDs {
 		platformIDs, err := l.svcCtx.UserCache.GetUserOnline(l.ctx, userID)
 		if err != nil {
-			// �����ȡʧ�ܣ���������״̬
+			// ȡʧܣ״?
 			statusList = append(statusList, &user.OnlineStatus{
 				UserID:      userID,
 				Status:      0, // Offline

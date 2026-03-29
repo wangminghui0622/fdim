@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -30,12 +30,12 @@ func NewGetGroupAllMemberLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 func (l *GetGroupAllMemberLogic) GetGroupAllMember(req *user.GetGroupAllMemberReq) (*user.GetGroupAllMemberResp, error) {
 	resp := &user.GetGroupAllMemberResp{}
 
-	// ������֤
+	// ???????
 	if req.GroupID == "" {
 		return nil, fmt.Errorf("groupID is empty")
 	}
 
-	// Ȩ�޼�飺��Ҫ��Ⱥ��Ա�����Ա
+	// ???????????????????
 	if !authverify.IsAdmin(l.ctx) {
 		opUserID := mcontext.GetOpUserID(l.ctx)
 		_, err := l.svcCtx.GroupDB.TakeGroupMember(l.ctx, req.GroupID, opUserID)
@@ -44,13 +44,13 @@ func (l *GetGroupAllMemberLogic) GetGroupAllMember(req *user.GetGroupAllMemberRe
 		}
 	}
 
-	// ��ȡ����Ⱥ��Ա
+	// ???????????
 	members, err := l.svcCtx.GroupDB.FindGroupMemberAll(l.ctx, req.GroupID)
 	if err != nil {
 		return nil, err
 	}
 
-	// 转换为 Protocol Buffer 格式
+	// תΪ Protocol Buffer ʽ
 	resp.Members = make([]*sdkws.GroupMemberFullInfo, 0, len(members))
 	for _, m := range members {
 		pbMember := convert.ModelGroupMemberDB2Pb(m)

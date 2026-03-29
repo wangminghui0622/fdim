@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -25,12 +25,12 @@ func NewAddDefaultGroupLogic(ctx context.Context, svcCtx *svc.ServiceContext) *A
 }
 
 func (l *AddDefaultGroupLogic) AddDefaultGroup(req *admin.AddDefaultGroupReq) (*admin.AddDefaultGroupResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.GroupIDs) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("groupIDs cannot be empty")
 	}
 
-	// 2. 检查是否已存在
+	// 2. ǷѴ
 	exists, err := l.svcCtx.AdminDB.FindDefaultGroup(l.ctx, req.GroupIDs)
 	if err != nil {
 		l.Errorf("FindDefaultGroup failed: %v", err)
@@ -40,7 +40,7 @@ func (l *AddDefaultGroupLogic) AddDefaultGroup(req *admin.AddDefaultGroupReq) (*
 		return nil, fmt.Errorf("some groupIDs already exist as default groups: %v", exists)
 	}
 
-	// 3. 添加默认群组
+	// 3. ĬȺ
 	if err := l.svcCtx.AdminDB.AddDefaultGroup(l.ctx, req.GroupIDs); err != nil {
 		l.Errorf("AddDefaultGroup failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to add default groups")

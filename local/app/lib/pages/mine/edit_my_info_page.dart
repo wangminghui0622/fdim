@@ -108,7 +108,7 @@ class _EditMyInfoPageState extends State<EditMyInfoPage> {
     }
     EasyLoading.show();
     try {
-      await OpenIM.iMManager.userManager.setSelfInfo(
+      await FDIM.iMManager.userManager.setSelfInfo(
         nickname: nickname,
         faceURL: _faceUrlCtrl.text.trim(),
         gender: _gender,

@@ -41,7 +41,7 @@ func (l *GetSortedConversationListLogic) GetSortedConversationList(req *conversa
 		if err != nil {
 			return nil, fmt.Errorf("failed to find conversation IDs: %w", err)
 		}
-		// 过滤掉通知会话（n_ 前缀），这些不应该显示在会话列表中
+		// 过滤掉通知会话（n_ 前缀），这些不应该显示在会话列表?
 		conversationIDs = make([]string, 0, len(allConvIDs))
 		for _, convID := range allConvIDs {
 			if !strings.HasPrefix(convID, "n_") {
@@ -97,7 +97,7 @@ func (l *GetSortedConversationListLogic) GetSortedConversationList(req *conversa
 		}
 	}
 
-	// 4. 获取每个会话的最新消息
+	// 4. 获取每个会话的最新消?
 	chatLogs := make(map[string]*sdkws.MsgData)
 	if l.svcCtx.MsgClient != nil && len(maxSeqs) > 0 {
 		l.Infof("Calling GetMsgByConversationIDs with %d conversations, maxSeqs: %v", len(convIDs), maxSeqs)
@@ -122,13 +122,13 @@ func (l *GetSortedConversationListLogic) GetSortedConversationList(req *conversa
 		}
 	}
 
-	// 5. 获取会话消息信息（用户头像、昵称等）
+	// 5. 获取会话消息信息（用户头像、昵称等?
 	conversationMsg, err := l.getConversationInfo(l.ctx, chatLogs, req.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get conversation info: %w", err)
 	}
 
-	// 6. 获取已读序列号
+	// 6. 获取已读序列?
 	hasReadSeqs := make(map[string]int64)
 	if l.svcCtx.MsgClient != nil && len(convIDs) > 0 {
 		hasReadResp, err := l.svcCtx.MsgClient.GetHasReadSeqs(l.ctx, &msg.GetHasReadSeqsReq{
@@ -142,7 +142,7 @@ func (l *GetSortedConversationListLogic) GetSortedConversationList(req *conversa
 		}
 	}
 
-	// 7. 计算未读数
+	// 7. 计算未读?
 	var unreadTotal int64
 	conversationUnreadCount := make(map[string]int64)
 	for conversationID, maxSeq := range maxSeqs {
@@ -158,7 +158,7 @@ func (l *GetSortedConversationListLogic) GetSortedConversationList(req *conversa
 	conversationIsPinTime := make(map[int64]string)
 	conversationNotPinTime := make(map[int64]string)
 
-	// 收集没有消息的会话的对方 userID，用于查询用户信息
+	// 收集没有消息的会话的对方 userID，用于查询用户信?
 	noMsgConversations := make(map[string]string) // conversationID -> otherUserID
 	for _, v := range conversations {
 		if _, ok := conversationMsg[v.ConversationID]; !ok {
@@ -212,7 +212,7 @@ func (l *GetSortedConversationListLogic) GetSortedConversationList(req *conversa
 			if msgInfo.MsgInfo != nil {
 				time = msgInfo.MsgInfo.LatestMsgRecvTime
 			} else {
-				// 没有消息，使用会话创建时间
+				// 没有消息，使用会话创建时?
 				time = v.CreateTime.UnixMilli()
 			}
 		} else {
@@ -254,7 +254,7 @@ func (l *GetSortedConversationListLogic) GetSortedConversationList(req *conversa
 	return resp, nil
 }
 
-// conversationSort 对会话进行排序（按时间倒序）
+// conversationSort 对会话进行排序（按时间倒序?
 func (l *GetSortedConversationListLogic) conversationSort(
 	conversations map[int64]string,
 	resp *conversation.GetSortedConversationListResp,
@@ -281,7 +281,7 @@ func (l *GetSortedConversationListLogic) conversationSort(
 	resp.ConversationElems = append(resp.ConversationElems, cons...)
 }
 
-// getConversationInfo 获取会话信息（用户头像、昵称、群组信息等）
+// getConversationInfo 获取会话信息（用户头像、昵称、群组信息等?
 func (l *GetSortedConversationListLogic) getConversationInfo(
 	ctx context.Context,
 	chatLogs map[string]*sdkws.MsgData,
@@ -360,7 +360,7 @@ func (l *GetSortedConversationListLogic) getConversationInfo(
 		msgInfo.RecvID = chatLog.RecvID
 		msgInfo.GroupID = chatLog.GroupID
 		msgInfo.ContentType = chatLog.ContentType
-		msgInfo.Content = string(chatLog.Content) // Content 是 []byte，需要转换为 string
+		msgInfo.Content = string(chatLog.Content) // Content ?[]byte，需要转换为 string
 		msgInfo.Ex = chatLog.Ex
 		msgInfo.LatestMsgRecvTime = chatLog.SendTime
 		msgInfo.MsgFrom = chatLog.MsgFrom
@@ -390,7 +390,7 @@ func (l *GetSortedConversationListLogic) getConversationInfo(
 				l.Errorf("Sender info not found in sendMap: sendID=%s", chatLog.SendID)
 			}
 		case constant.WriteGroupChatType, constant.ReadGroupChatType:
-			// 群聊：显示群组信息和发送者昵称
+			// 群聊：显示群组信息和发送者昵?
 			msgInfo.GroupID = chatLog.GroupID
 			if group, ok := groupMap[chatLog.GroupID]; ok {
 				msgInfo.GroupName = group.GroupName

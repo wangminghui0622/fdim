@@ -35,13 +35,13 @@ type Config struct {
 		ToOfflinePushGroupID string `yaml:"ToOfflinePushGroupID"`
 	} `yaml:"Nats"`
 	
-	// RPC 客户端配置
+	// RPC 客户端配?
 	ConversationRpc zrpc.RpcClientConf `yaml:"ConversationRpc" json:",optional"`
 	
-	// 批处理配置
+	// 批处理配?
 	Batch struct {
-		Size     int `yaml:"Size"`     // 批处理大小
-		Interval int `yaml:"Interval"` // 批处理间隔（毫秒）
-		Workers  int `yaml:"Workers"`  // 工作协程数
+		Size     int `yaml:"Size"`     // 批处理大?
+		Interval int `yaml:"Interval"` // 批处理间隔（毫秒?
+		Workers  int `yaml:"Workers"`  // 工作协程?
 	} `yaml:"Batch"`
 }

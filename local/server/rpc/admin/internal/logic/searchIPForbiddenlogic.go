@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,19 +24,19 @@ func NewSearchIPForbiddenLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 }
 
 func (l *SearchIPForbiddenLogic) SearchIPForbidden(req *admin.SearchIPForbiddenReq) (*admin.SearchIPForbiddenResp, error) {
-	// 1. 验证分页参数
+	// 1. ֤ҳ
 	if req.Pagination == nil || req.Pagination.PageNumber <= 0 || req.Pagination.ShowNumber <= 0 {
 		return nil, errs.ErrArgs.WrapMsg("invalid pagination parameters")
 	}
 
-	// 2. 搜索IP禁止
+	// 2. IPֹ
 	total, forbiddens, err := l.svcCtx.AdminDB.SearchIPForbidden(l.ctx, req.Keyword, req.Status, req.Pagination)
 	if err != nil {
 		l.Errorf("SearchIPForbidden failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to search IP forbidden")
 	}
 
-	// 3. 转换为响应格式
+	// 3. תΪӦʽ
 	results := make([]*admin.IPForbidden, 0, len(forbiddens))
 	for _, fb := range forbiddens {
 		results = append(results, &admin.IPForbidden{

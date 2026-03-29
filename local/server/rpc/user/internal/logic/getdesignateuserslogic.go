@@ -27,18 +27,18 @@ func NewGetDesignateUsersLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 func (l *GetDesignateUsersLogic) GetDesignateUsers(req *user.GetDesignateUsersReq) (*user.GetDesignateUsersResp, error) {
 	resp := &user.GetDesignateUsersResp{}
 
-	// ������֤
+	// ֤
 	if len(req.UserIDs) == 0 {
 		return nil, fmt.Errorf("userIDs is empty")
 	}
 
-	// ��ѯ�û���Ϣ
+	// ѯûϢ
 	users, err := l.svcCtx.UserDB.Find(l.ctx, req.UserIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	// 转换为 Protocol Buffer 格式
+	// 转换?Protocol Buffer 格式
 	resp.UsersInfo = convert.ModelUsersDB2Pb(users)
 	return resp, nil
 }

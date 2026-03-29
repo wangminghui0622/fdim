@@ -22,11 +22,11 @@ func main() {
 	var c config.Config
 	conf.MustLoad(*configFile, &c)
 
-	// 创建上下文
+	// 创建上下?
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// 创建 cron 处理器
+	// 创建 cron 处理?
 	cronHandler, err := handler.NewCronHandler(ctx, &c)
 	if err != nil {
 		logx.Errorf("Failed to create cron handler: %v", err)

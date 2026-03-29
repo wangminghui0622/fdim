@@ -26,19 +26,19 @@ func NewGetAllOnlineUsersLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 func (l *GetAllOnlineUsersLogic) GetAllOnlineUsers(req *user.GetAllOnlineUsersReq) (*user.GetAllOnlineUsersResp, error) {
 	resp := &user.GetAllOnlineUsersResp{}
 
-	// �� uint64 cursor ת��Ϊ string
+	//  uint64 cursor תΪ string
 	cursorStr := ""
 	if req.Cursor > 0 {
 		cursorStr = strconv.FormatUint(req.Cursor, 10)
 	}
 
-	// �� Redis ��ȡ���������û�
+	//  Redis ȡû
 	userMap, nextCursorStr, err := l.svcCtx.UserCache.GetAllOnlineUsers(l.ctx, cursorStr)
 	if err != nil {
 		return nil, err
 	}
 
-	// ת��Ϊ OnlineStatus �б�
+	// תΪ OnlineStatus б
 	statusList := make([]*user.OnlineStatus, 0, len(userMap))
 	for userID, platformIDs := range userMap {
 		status := int32(0) // Offline
@@ -54,7 +54,7 @@ func (l *GetAllOnlineUsersLogic) GetAllOnlineUsers(req *user.GetAllOnlineUsersRe
 	}
 
 	resp.StatusList = statusList
-	// �� string cursor ת��Ϊ uint64
+	//  string cursor תΪ uint64
 	if nextCursorStr != "" {
 		nextCursor, err := strconv.ParseUint(nextCursorStr, 10, 64)
 		if err == nil {

@@ -26,11 +26,11 @@ func NewKickUserOfflineLogic(ctx context.Context, svcCtx *svc.ServiceContext) *K
 func (l *KickUserOfflineLogic) KickUserOffline(req *msggateway.KickUserOfflineReq) (*msggateway.KickUserOfflineResp, error) {
 	l.Infof("[Kick User Offline] Request received - platformID=%d, userCount=%d", req.PlatformID, len(req.KickUserIDList))
 	
-	// 从 WebSocket 服务器踢用户下线
+	// ?WebSocket 服务器踢用户下线
 	for _, userID := range req.KickUserIDList {
-		// 如果指定了 platformID，只踢指定平台的连接
+		// 如果指定?platformID，只踢指定平台的连接
 		if req.PlatformID != 0 {
-			// 修复：正确转换 platformID 为字符串
+			// 修复：正确转?platformID 为字符串
 			platformIDStr := strconv.Itoa(int(req.PlatformID))
 			l.Infof("[Kick User Offline] Kicking user from specific platform - userID=%s, platformID=%s", userID, platformIDStr)
 			if err := l.svcCtx.WsServer.KickUserOffline(userID, platformIDStr); err != nil {

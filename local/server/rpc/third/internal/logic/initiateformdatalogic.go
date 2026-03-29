@@ -32,14 +32,14 @@ func (l *InitiateFormDataLogic) InitiateFormData(req *third.InitiateFormDataReq)
 
 	// 检查对象存储是否已配置
 	if l.svcCtx.ObjectStorage != nil {
-		// 使用真实的 MinIO FormData 接口
+		// 使用真实?MinIO FormData 接口
 		formData, err := l.svcCtx.ObjectStorage.FormData(l.ctx, req.Name, req.Size, req.ContentType, 10*time.Minute)
 		if err != nil {
 			l.Logger.Errorf("FormData failed: %v", err)
 			return nil, fmt.Errorf("failed to get form data: %w", err)
 		}
 
-		// 把对象名编码进 uploadID，CompleteFormData 用它来构造访问 URL
+		// 把对象名编码?uploadID，CompleteFormData 用它来构造访?URL
 		uploadID := fmt.Sprintf("form:%s", req.Name)
 		successCodes := make([]int32, len(formData.SuccessCodes))
 		for i, code := range formData.SuccessCodes {

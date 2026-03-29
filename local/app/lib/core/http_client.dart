@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'config.dart';
 
-/// 统一 API 响应结构（与官方OpenIM保持一致）
+/// 统一 API 响应结构（与官方FDIM保持一致）
 class ApiResp {
   final int errCode;
   final String errMsg;

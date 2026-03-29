@@ -76,7 +76,7 @@ func (l *SetConversationsLogic) SetConversations(req *conversation.SetConversati
 
 	// 为每个用户更新或创建会话
 	for _, userID := range req.UserIDs {
-		// 检查会话是否存在
+		// 检查会话是否存?
 		existing, err := l.svcCtx.ConversationDB.Find(l.ctx, userID, []string{req.Conversation.ConversationID})
 		if err != nil {
 			l.Errorf("failed to find conversation: %v", err)
@@ -92,7 +92,7 @@ func (l *SetConversationsLogic) SetConversations(req *conversation.SetConversati
 				}
 			}
 		} else {
-			// 创建新会话
+			// 创建新会?
 			conv := &model.Conversation{
 				ConversationID:   req.Conversation.ConversationID,
 				ConversationType: req.Conversation.ConversationType,
@@ -101,7 +101,7 @@ func (l *SetConversationsLogic) SetConversations(req *conversation.SetConversati
 				OwnerUserID:      userID,
 				CreateTime:       time.Now(),
 			}
-			// 设置可选字段
+			// 设置可选字?
 			if req.Conversation.RecvMsgOpt != nil {
 				conv.RecvMsgOpt = req.Conversation.RecvMsgOpt.Value
 			}

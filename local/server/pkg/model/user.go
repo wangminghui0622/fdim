@@ -1,8 +1,8 @@
-﻿package model
+package model
 
 import "time"
 
-// User 用户模型
+// User ûģ
 type User struct {
 	UserID           string    `bson:"user_id"`
 	Nickname         string    `bson:"nickname"`

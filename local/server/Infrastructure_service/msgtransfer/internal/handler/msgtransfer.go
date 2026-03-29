@@ -14,7 +14,7 @@ import (
 	"github.com/zeromicro/go-zero/zrpc"
 )
 
-// MsgTransferHandler 消息传输处理器
+// MsgTransferHandler 消息传输处理?
 type MsgTransferHandler struct {
 	config             *config.Config
 	mongoDB            *database.MongoDB
@@ -28,9 +28,9 @@ type MsgTransferHandler struct {
 	toPushProducer     mq.Producer
 }
 
-// NewMsgTransferHandler 创建消息传输处理器
+// NewMsgTransferHandler 创建消息传输处理?
 func NewMsgTransferHandler(ctx context.Context, cfg *config.Config) (*MsgTransferHandler, error) {
-	// 初始化 MongoDB
+	// 初始?MongoDB
 	var mongoDB *database.MongoDB
 	if cfg.MongoDB.URI != "" {
 		mongoDB = database.NewMongoDB(
@@ -41,7 +41,7 @@ func NewMsgTransferHandler(ctx context.Context, cfg *config.Config) (*MsgTransfe
 		)
 	}
 
-	// 初始化 Redis
+	// 初始?Redis
 	var redisClient *redis.Client
 	if len(cfg.Cache) > 0 {
 		logx.Infof("Initializing Redis client: Host=%s, Pass=%s", cfg.Cache[0].Host, cfg.Cache[0].Pass)
@@ -64,13 +64,13 @@ func NewMsgTransferHandler(ctx context.Context, cfg *config.Config) (*MsgTransfe
 		msgDB = database.NewMsgDocDatabase(mongoDB)
 	}
 
-	// 初始化消息缓存（需要 msgDB 作为参数）
+	// 初始化消息缓存（需?msgDB 作为参数?
 	var msgCache *cache.RedisMsgCache
 	if redisClient != nil && msgDB != nil {
 		msgCache = cache.NewRedisMsgCache(redisClient, msgDB)
 	}
 
-	// 初始化 NATS Consumer 和 Producer
+	// 初始?NATS Consumer ?Producer
 	toRedisConsumer, err := mq.NewNatsConsumer(cfg.Nats.Brokers, cfg.Nats.ToRedisGroupID, cfg.Nats.ToRedisTopic)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create toRedis consumer: %w", err)
@@ -91,12 +91,12 @@ func NewMsgTransferHandler(ctx context.Context, cfg *config.Config) (*MsgTransfe
 		return nil, fmt.Errorf("failed to create toPush producer: %w", err)
 	}
 
-	// 初始化 Conversation RPC 客户端（用于创建会话）
+	// 初始?Conversation RPC 客户端（用于创建会话?
 	var conversationClient conversation.ConversationClient
 	if len(cfg.ConversationRpc.Etcd.Hosts) > 0 || cfg.ConversationRpc.Target != "" {
 		// 设置超时时间
 		if cfg.ConversationRpc.Timeout == 0 {
-			cfg.ConversationRpc.Timeout = 10000 // 10秒
+			cfg.ConversationRpc.Timeout = 10000 // 10?
 		}
 		
 		convConn, err := zrpc.NewClient(cfg.ConversationRpc)
@@ -126,17 +126,17 @@ func NewMsgTransferHandler(ctx context.Context, cfg *config.Config) (*MsgTransfe
 
 // Start 启动消息传输处理
 func (h *MsgTransferHandler) Start(ctx context.Context) error {
-	// 启动在线消息处理（消费 toRedis topic → 分发到 Redis/Mongo/Push）
+	// 启动在线消息处理（消?toRedis topic ?分发?Redis/Mongo/Push?
 	go h.handleOnlineMsg(ctx)
 
-	// 启动 toMongo 消费者
+	// 启动 toMongo 消费?
 	go h.handleToMongo(ctx)
 
 	logx.Info("MsgTransfer handler started")
 	return nil
 }
 
-// handleOnlineMsg 处理在线消息（消费 toRedis topic → 分发到 Redis 缓存、MongoDB 持久化、Push 推送）
+// handleOnlineMsg 处理在线消息（消?toRedis topic ?分发?Redis 缓存、MongoDB 持久化、Push 推送）
 func (h *MsgTransferHandler) handleOnlineMsg(ctx context.Context) {
 	onlineMsgHandler := NewOnlineMsgHandler(h.msgCache, h.conversationClient, h.toMongoProducer, h.toPushProducer)
 
@@ -147,19 +147,19 @@ func (h *MsgTransferHandler) handleOnlineMsg(ctx context.Context) {
 		})
 		if err != nil {
 			logx.Errorf("Failed to subscribe to toRedis: %v", err)
-			// 如果是 context 取消，退出循环
+			// 如果?context 取消，退出循?
 			select {
 			case <-ctx.Done():
 				return
 			default:
-				// 其他错误，继续尝试
+				// 其他错误，继续尝?
 				continue
 			}
 		}
 	}
 }
 
-// handleToMongo 处理发送到 MongoDB 的消息
+// handleToMongo 处理发送到 MongoDB 的消?
 func (h *MsgTransferHandler) handleToMongo(ctx context.Context) {
 	// 创建 ToMongoHandler
 	toMongoHandler := NewToMongoHandler(h.msgDB)
@@ -172,12 +172,12 @@ func (h *MsgTransferHandler) handleToMongo(ctx context.Context) {
 		})
 		if err != nil {
 			logx.Errorf("Failed to subscribe to toMongo: %v", err)
-			// 如果是 context 取消，退出循环
+			// 如果?context 取消，退出循?
 			select {
 			case <-ctx.Done():
 				return
 			default:
-				// 其他错误，继续尝试
+				// 其他错误，继续尝?
 				continue
 			}
 		}
@@ -208,7 +208,7 @@ func (h *MsgTransferHandler) Stop(ctx context.Context) error {
 		}
 	}
 
-	// 2. 关闭 NATS 生产者
+	// 2. 关闭 NATS 生产?
 	if h.toMongoProducer != nil {
 		if err := h.toMongoProducer.Close(); err != nil {
 			logx.Errorf("Failed to close toMongo producer: %v", err)

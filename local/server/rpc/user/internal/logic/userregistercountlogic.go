@@ -26,18 +26,18 @@ func NewUserRegisterCountLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 func (l *UserRegisterCountLogic) UserRegisterCount(req *user.UserRegisterCountReq) (*user.UserRegisterCountResp, error) {
 	resp := &user.UserRegisterCountResp{}
 
-	// Ȩ����֤����Ҫ����ԱȨ��
+	// Ȩ֤ҪԱȨ
 	if err := authverify.CheckAdmin(l.ctx); err != nil {
 		return nil, err
 	}
 
-	// ͳ�����û���
+	// ͳû
 	total, err := l.svcCtx.UserDB.CountUsers(l.ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// ͳ��ָ��ʱ�䷶Χ֮ǰ���û���
+	// ͳָʱ䷶Χ֮ǰû
 	var before int64
 	if req.Start > 0 {
 		before, err = l.svcCtx.UserDB.CountUsersBeforeTime(l.ctx, req.Start)

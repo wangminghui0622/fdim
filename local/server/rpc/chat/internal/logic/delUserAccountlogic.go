@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,18 +24,18 @@ func NewDelUserAccountLogic(ctx context.Context, svcCtx *svc.ServiceContext) *De
 }
 
 func (l *DelUserAccountLogic) DelUserAccount(req *chat.DelUserAccountReq) (*chat.DelUserAccountResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.UserIDs) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("user IDs cannot be empty")
 	}
 
-	// 2. 删除用户账户
+	// 2. ɾû˻
 	if err := l.svcCtx.ChatDB.DelUserAccount(l.ctx, req.UserIDs); err != nil {
 		l.Errorf("DelUserAccount failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to delete user accounts")
 	}
 
-	// 3. 删除用户信息（通过更新标记为已删除，或直接删除）
+	// 3. ɾûϢͨ±Ϊɾֱɾ
 	for _, userID := range req.UserIDs {
 		if err := l.svcCtx.ChatDB.UpdateUserInfo(l.ctx, userID, map[string]interface{}{
 			"deleted": true,

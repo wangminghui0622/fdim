@@ -16,24 +16,19 @@ docker run -d \
 
 ## 2. 参数说明
 
-- **9000** — S3 API 端口（应用上传/下载用）
-- **9090** — Web 管理控制台端口（浏览器访问）
-- **MINIO_ROOT_USER** — 管理员用户名（对应 third.yaml 中的 AccessKeyID）
-- **MINIO_ROOT_PASSWORD** — 管理员密码（对应 third.yaml 中的 SecretAccessKey）
-- **/data/minio** — 宿主机数据持久化目录
+- **9000** �?S3 API 端口（应用上�?下载用）
+- **9090** �?Web 管理控制台端口（浏览器访问）
+- **MINIO_ROOT_USER** �?管理员用户名（对�?third.yaml 中的 AccessKeyID�?- **MINIO_ROOT_PASSWORD** �?管理员密码（对应 third.yaml 中的 SecretAccessKey�?- **/data/minio** �?宿主机数据持久化目录
 
 ## 3. 验证是否启动成功
 
 ```bash
-# 检查容器状态
-docker ps | grep minio
+# 检查容器状�?docker ps | grep minio
 
-# 健康检查
-curl http://127.0.0.1:9000/minio/health/live
+# 健康检�?curl http://127.0.0.1:9000/minio/health/live
 ```
 
-## 4. 访问管理控制台
-
+## 4. 访问管理控制�?
 浏览器打开：http://服务器IP:9090
 
 用户名：minioadmin
@@ -47,14 +42,13 @@ curl http://127.0.0.1:9000/minio/health/live
 ObjectStorage:
   Type: minio
   Endpoint: http://127.0.0.1:9000
-  Bucket: openim
+  Bucket: fdim
   AccessKeyID: minioadmin
   SecretAccessKey: minioadmin
 ```
 
-Bucket `openim` 会在首次使用时自动创建。
-
-## 6. 安装后重启 third 服务
+Bucket `fdim` 会在首次使用时自动创建�?
+## 6. 安装后重�?third 服务
 
 ```bash
 # 重新编译

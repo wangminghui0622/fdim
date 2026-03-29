@@ -28,8 +28,8 @@ func NewClearConversationsMsgLogic(ctx context.Context, svcCtx *svc.ServiceConte
 	}
 }
 
-// ClearConversationsMsg 清除指定会话消息：将 minSeq 设为 maxSeq+1，
-// 然后发送 ClearConversationNotification (1703) 通知客户端。
+// ClearConversationsMsg 清除指定会话消息：将 minSeq 设为 maxSeq+1?
+// 然后发?ClearConversationNotification (1703) 通知客户端?
 func (l *ClearConversationsMsgLogic) ClearConversationsMsg(req *msg.ClearConversationsMsgReq) (*msg.ClearConversationsMsgResp, error) {
 	if len(req.ConversationIDs) == 0 || req.UserID == "" {
 		return nil, errs.ErrArgs.WrapMsg("conversationIDs and userID are required")
@@ -38,7 +38,7 @@ func (l *ClearConversationsMsgLogic) ClearConversationsMsg(req *msg.ClearConvers
 		return nil, errs.ErrInternalServer.WrapMsg("message cache not initialized")
 	}
 
-	// 对每个会话，将 minSeq 设为 maxSeq+1（逻辑清除）
+	// 对每个会话，?minSeq 设为 maxSeq+1（逻辑清除?
 	for _, convID := range req.ConversationIDs {
 		maxSeq, err := l.svcCtx.MsgCache.GetMaxSeq(l.ctx, convID)
 		if err != nil {
@@ -50,7 +50,7 @@ func (l *ClearConversationsMsgLogic) ClearConversationsMsg(req *msg.ClearConvers
 		}
 	}
 
-	// 发送 ClearConversationNotification (1703) 通知（与官方一致）
+	// 发?ClearConversationNotification (1703) 通知（与官方一致）
 	if l.svcCtx.SendMsgFunc != nil {
 		go l.sendClearConversationNotification(req.UserID, req.ConversationIDs)
 	}

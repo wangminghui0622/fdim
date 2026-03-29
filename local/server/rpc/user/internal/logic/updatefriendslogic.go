@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -28,28 +28,28 @@ func NewUpdateFriendsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Upd
 func (l *UpdateFriendsLogic) UpdateFriends(req *user.UpdateFriendsReq) (*user.UpdateFriendsResp, error) {
 	resp := &user.UpdateFriendsResp{}
 
-	// ������֤
+	// ???????
 	if len(req.FriendUserIDs) == 0 {
 		return nil, fmt.Errorf("friendIDList is empty")
 	}
 
-	// ��� friendUserIDs �Ƿ��ظ�
+	// ??? friendUserIDs ??????
 	if util.HasDuplicate(req.FriendUserIDs) {
 		return nil, fmt.Errorf("friendIDList repeated")
 	}
 
-	// Ȩ����֤
+	// ??????
 	if err := authverify.CheckAccess(l.ctx, req.OwnerUserID); err != nil {
 		return nil, err
 	}
 
-	// ����Ƿ�Ϊ����
+	// ???????????
 	_, err := l.svcCtx.FriendDB.FindFriendsWithError(l.ctx, req.OwnerUserID, req.FriendUserIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	// ������������
+	// ????????????
 	data := make(map[string]interface{})
 	if req.IsPinned != nil {
 		data["is_pinned"] = req.IsPinned.Value
@@ -67,7 +67,7 @@ func (l *UpdateFriendsLogic) UpdateFriends(req *user.UpdateFriendsReq) (*user.Up
 		}
 	}
 
-	// ���ͺ�����Ϣ����֪ͨ
+	// ????????????????
 	if l.svcCtx.FriendNotification != nil {
 		l.svcCtx.FriendNotification.FriendsInfoUpdateNotification(l.ctx, req.OwnerUserID, req.FriendUserIDs)
 	}

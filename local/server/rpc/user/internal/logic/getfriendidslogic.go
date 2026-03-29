@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -26,7 +26,7 @@ func NewGetFriendIDsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetF
 func (l *GetFriendIDsLogic) GetFriendIDs(req *user.GetFriendIDsReq) (*user.GetFriendIDsResp, error) {
 	resp := &user.GetFriendIDsResp{}
 
-	// Ȩ����֤
+	// ??????
 	if err := authverify.CheckAccess(l.ctx, req.UserID); err != nil {
 		return nil, err
 	}

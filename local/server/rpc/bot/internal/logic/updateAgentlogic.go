@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,12 +24,12 @@ func NewUpdateAgentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Updat
 }
 
 func (l *UpdateAgentLogic) UpdateAgent(req *bot.UpdateAgentReq) (*bot.UpdateAgentResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if req.UserID == "" {
 		return nil, errs.ErrArgs.WrapMsg("user ID cannot be empty")
 	}
 
-	// 2. 构建更新字段
+	// 2. ֶ
 	update := make(map[string]interface{})
 	if req.Nickname != nil && *req.Nickname != "" {
 		update["nickname"] = *req.Nickname
@@ -57,7 +57,7 @@ func (l *UpdateAgentLogic) UpdateAgent(req *bot.UpdateAgentReq) (*bot.UpdateAgen
 		return nil, errs.ErrArgs.WrapMsg("no update fields provided")
 	}
 
-	// 3. 更新Agent
+	// 3. Agent
 	if err := l.svcCtx.BotDB.UpdateAgent(l.ctx, req.UserID, update); err != nil {
 		l.Errorf("UpdateAgent failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to update agent")

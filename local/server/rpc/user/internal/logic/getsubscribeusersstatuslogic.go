@@ -24,6 +24,6 @@ func NewGetSubscribeUsersStatusLogic(ctx context.Context, svcCtx *svc.ServiceCon
 
 func (l *GetSubscribeUsersStatusLogic) GetSubscribeUsersStatus(req *user.GetSubscribeUsersStatusReq) (*user.GetSubscribeUsersStatusResp, error) {
 	// TODO: 实现获取订阅用户状态的逻辑
-	// 当前返回空实现，待后续完善
+	// 当前返回空实现，待后续完?
 	return &user.GetSubscribeUsersStatusResp{}, nil
 }

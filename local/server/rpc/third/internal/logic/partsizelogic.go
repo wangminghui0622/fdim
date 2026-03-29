@@ -23,7 +23,7 @@ func NewPartSizeLogic(ctx context.Context, svcCtx *svc.ServiceContext) *PartSize
 }
 
 func (l *PartSizeLogic) PartSize(req *third.PartSizeReq) (*third.PartSizeResp, error) {
-	// 根据文件总大小，选择一个合适的分片 size，尽量让分片数量在 1 ~ 10000 之间
+	// 根据文件总大小，选择一个合适的分片 size，尽量让分片数量?1 ~ 10000 之间
 	const (
 		minPartSize = int64(5 * 1024 * 1024)   // 5MB
 		maxPartSize = int64(100 * 1024 * 1024) // 100MB
@@ -36,7 +36,7 @@ func (l *PartSizeLogic) PartSize(req *third.PartSizeReq) (*third.PartSizeResp, e
 		return &third.PartSizeResp{Size: minPartSize}, nil
 	}
 
-	// 目标：partSize = ceil(size / maxNumSize)，并限制在 [minPartSize, maxPartSize] 范围内
+	// 目标：partSize = ceil(size / maxNumSize)，并限制?[minPartSize, maxPartSize] 范围?
 	partSize := size / maxNumSize
 	if size%maxNumSize != 0 {
 		partSize++

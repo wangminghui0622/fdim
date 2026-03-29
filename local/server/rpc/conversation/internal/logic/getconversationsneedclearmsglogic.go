@@ -32,7 +32,7 @@ func (l *GetConversationsNeedClearMsgLogic) GetConversationsNeedClearMsg(req *co
 		return nil, fmt.Errorf("failed to get conversations need clear msg: %w", err)
 	}
 
-	// 转换为 protobuf 格式
+	// 转换?protobuf 格式
 	resp.Conversations = make([]*conversation.Conversation, 0, len(conversations))
 	for _, conv := range conversations {
 		resp.Conversations = append(resp.Conversations, &conversation.Conversation{

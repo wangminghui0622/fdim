@@ -56,4 +56,4 @@ export 'src/logger.dart';
 export 'src/utils.dart';
 
 // Entry point
-export 'src/openim.dart';
+export 'src/fdim.dart';

@@ -1,7 +1,6 @@
 package types
 
-// Msg 相关请求和响应类型
-// 注意：这些类型需要与 open-im-server 的 API 接口保持一致
+// Msg 相关请求和响应类?
 
 // GetSeq (newest_seq) 相关类型
 type GetSeqReq struct {
@@ -33,7 +32,7 @@ type SearchMsgResp struct {
 // SendMsg 相关类型
 type SendMsgReq struct {
 	RecvID       string   `json:"recvID"`
-	SendMsg      *MsgData `json:"sendMsg"`      // 使用 MsgData 结构
+	SendMsg      *MsgData `json:"sendMsg"`               // 使用 MsgData 结构
 	IsOnlineOnly bool     `json:"isOnlineOnly,optional"` // 仅在线推送，不落库（信令消息用）
 }
 
@@ -116,9 +115,9 @@ type RevokeMsgResp struct {
 
 // MarkMsgsAsRead 相关类型
 type MarkMsgsAsReadReq struct {
-	ConversationID string   `json:"conversationID"`
-	Seqs           []int64  `json:"seqs"`
-	UserID         string   `json:"userID"`
+	ConversationID string  `json:"conversationID"`
+	Seqs           []int64 `json:"seqs"`
+	UserID         string  `json:"userID"`
 }
 
 type MarkMsgsAsReadResp struct {
@@ -127,9 +126,9 @@ type MarkMsgsAsReadResp struct {
 
 // MarkConversationAsRead 相关类型
 type MarkConversationAsReadReq struct {
-	ConversationID string `json:"conversationID"`
-	UserID         string `json:"userID"`
-	HasReadSeq     int64  `json:"hasReadSeq,optional"`
+	ConversationID string  `json:"conversationID"`
+	UserID         string  `json:"userID"`
+	HasReadSeq     int64   `json:"hasReadSeq,optional"`
 	Seqs           []int64 `json:"seqs,optional"`
 }
 
@@ -180,9 +179,9 @@ type UserClearAllMsgResp struct {
 
 // DeleteMsgs 相关类型
 type DeleteMsgsReq struct {
-	ConversationID string   `json:"conversationID"`
-	Seqs           []int64  `json:"seqs"`
-	UserID         string   `json:"userID"`
+	ConversationID string  `json:"conversationID"`
+	Seqs           []int64 `json:"seqs"`
+	UserID         string  `json:"userID"`
 }
 
 type DeleteMsgsResp struct {
@@ -217,16 +216,16 @@ type BatchSendMsgReq struct {
 
 type BatchSendMsgResp struct {
 	BaseResp
-	Results  []interface{} `json:"results"`
-	FailedIDs []string       `json:"failedIDs"`
+	Results   []interface{} `json:"results"`
+	FailedIDs []string      `json:"failedIDs"`
 }
 
 // SendSimpleMsg 相关类型
 type SendSimpleMsgReq struct {
-	SendID         string `json:"sendID"`
-	Content        string `json:"content"`
+	SendID          string      `json:"sendID"`
+	Content         string      `json:"content"`
 	OfflinePushInfo interface{} `json:"offlinePushInfo,optional"`
-	Ex             string `json:"ex,optional"`
+	Ex              string      `json:"ex,optional"`
 }
 
 type SendSimpleMsgResp struct {

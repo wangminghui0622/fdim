@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,19 +24,19 @@ func NewLatestApplicationVersionLogic(ctx context.Context, svcCtx *svc.ServiceCo
 }
 
 func (l *LatestApplicationVersionLogic) LatestApplicationVersion(req *admin.LatestApplicationVersionReq) (*admin.LatestApplicationVersionResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if req.Platform == "" {
 		return nil, errs.ErrArgs.WrapMsg("platform cannot be empty")
 	}
 
-	// 2. 获取最新版本
+	// 2. ȡ°汾
 	version, err := l.svcCtx.AdminDB.LatestVersion(l.ctx, req.Platform)
 	if err != nil {
 		l.Errorf("LatestVersion failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to get latest version")
 	}
 
-	// 3. 转换为响应格式
+	// 3. תΪӦʽ
 	return &admin.LatestApplicationVersionResp{
 		Version: &admin.ApplicationVersion{
 			Id:         version.ID,

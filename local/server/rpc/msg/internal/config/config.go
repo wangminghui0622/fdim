@@ -24,7 +24,7 @@ type Config struct {
 			ToOfflinePush string
 		}
 	}
-	// RPC 客户端配置
+	// RPC 客户端配
 	ConversationRpc zrpc.RpcClientConf `yaml:"ConversationRpc" json:",optional"`
 	// 通知配置（与官方一致）
 	NotificationConfig config.Notification `yaml:"Notification" json:",optional"`

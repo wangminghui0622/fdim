@@ -20,13 +20,13 @@ type ServiceContext struct {
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	// 初始化 MongoDB
+	// 初始?MongoDB
 	mongoDB := database.NewMongoDB(c.Mongo.Host, c.Mongo.Database, c.Mongo.Username, c.Mongo.Password)
 
-	// 初始化 Redis
+	// 初始?Redis
 	redisClient := cache.NewRedisClient(c.Cache)
 
-	// 初始化 MinIO 对象存储
+	// 初始?MinIO 对象存储
 	var objectStorage s3.Interface
 	if c.ObjectStorage.Type == "minio" {
 		minioCache := minio.NewRedisCache(redisClient)
@@ -41,7 +41,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		m, err := minio.NewMinio(context.Background(), minioCache, minioConfig)
 		if err != nil {
 			logx.Errorf("Failed to initialize MinIO: %v", err)
-			// 不赋值给 objectStorage，保持 nil interface，避免 nil pointer panic
+			// 不赋值给 objectStorage，保?nil interface，避?nil pointer panic
 		} else {
 			objectStorage = m
 			logx.Info("MinIO object storage initialized successfully")

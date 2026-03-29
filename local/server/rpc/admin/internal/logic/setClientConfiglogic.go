@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,12 +24,12 @@ func NewSetClientConfigLogic(ctx context.Context, svcCtx *svc.ServiceContext) *S
 }
 
 func (l *SetClientConfigLogic) SetClientConfig(req *admin.SetClientConfigReq) (*admin.SetClientConfigResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.Config) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("config cannot be empty")
 	}
 
-	// 2. 设置配置
+	// 2. 
 	if err := l.svcCtx.AdminDB.SetConfig(l.ctx, req.Config); err != nil {
 		l.Errorf("SetConfig failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to set client config")

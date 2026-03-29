@@ -1,5 +1,5 @@
 syntax = "proto3";
-package openim.push;
+package fdim.push;
 
 import "sdkws/sdkws.proto";
 

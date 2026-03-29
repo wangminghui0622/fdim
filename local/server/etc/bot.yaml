@@ -1,15 +1,15 @@
 Name: bot.rpc
 ListenOn: 10.0.4.12:8086
 Mode: dev
-# Etcd 配置（开发模式下可以注释掉，如果不需要服务发现）
+# Etcd 配置
 Etcd:
   Hosts:
   - 127.0.0.1:2379
   Key: bot.rpc
 
 Mongo:
-  Url: "mongodb://root:test625@127.0.0.1:27017/openim_v3?authSource=admin"
-  Db: openim_v3
+  Url: "mongodb://root:test625@127.0.0.1:27017/fdim?authSource=admin"
+  Db: fdim
 
 Cache:
   - Host: 127.0.0.1:6379

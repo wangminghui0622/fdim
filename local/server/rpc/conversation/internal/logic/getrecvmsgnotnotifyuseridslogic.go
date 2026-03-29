@@ -30,7 +30,7 @@ func (l *GetRecvMsgNotNotifyUserIDsLogic) GetRecvMsgNotNotifyUserIDs(req *conver
 	// conversationID 格式: "group_" + groupID
 	conversationID := "group_" + req.GroupID
 
-	// 获取不接收消息通知的用户ID列表（recv_msg_opt == 1，ReceiveNotNotifyMessage）
+	// 获取不接收消息通知的用户ID列表（recv_msg_opt == 1，ReceiveNotNotifyMessage?
 	userIDs, err := l.svcCtx.ConversationDB.FindRecvMsgUserIDs(l.ctx, conversationID, []int32{1}) // 1 = ReceiveNotNotifyMessage
 	if err != nil {
 		return nil, fmt.Errorf("failed to get recv msg not notify user IDs: %w", err)

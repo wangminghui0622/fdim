@@ -28,13 +28,13 @@ func (l *ParseTokenLogic) ParseToken(req *auth.ParseTokenReq) (*auth.ParseTokenR
 		return nil, fmt.Errorf("token verifier not initialized")
 	}
 
-	// 1. 解析 Token，获取 userID 和 userType
+	// 1. 解析 Token，获?userID ?userType
 	userID, _, err := l.svcCtx.Token.GetToken(req.Token)
 	if err != nil {
 		return nil, err
 	}
 
-	// 当前 tokenverify.Token 不包含 platformID 和到期时间的解析能力（简化版），这里按 proto 返回 0。
+	// 当前 tokenverify.Token 不包?platformID 和到期时间的解析能力（简化版），这里?proto 返回 0?
 	return &auth.ParseTokenResp{
 		UserID:            userID,
 		PlatformID:        0,

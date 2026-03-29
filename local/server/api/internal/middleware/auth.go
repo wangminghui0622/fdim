@@ -40,7 +40,7 @@ func isWhitelisted(path string) bool {
 	return false
 }
 
-// AuthMiddleware 认证中间件，从 token 中提取用户信息并设置到 context
+// AuthMiddleware 认证中间件，?token 中提取用户信息并设置?context
 func AuthMiddleware(secret string) rest.Middleware {
 	fmt.Printf("[AuthMiddleware] Initialized with secret length: %d\n", len(secret))
 	return func(next http.HandlerFunc) http.HandlerFunc {

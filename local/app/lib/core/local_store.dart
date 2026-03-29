@@ -5,7 +5,7 @@ import 'package:hive/hive.dart';
 import '../sdk/fdim_sdk.dart';
 import 'config.dart';
 
-/// LocalStore - 模拟官方 openim-sdk-core 中的 SQLite 本地数据库。
+/// LocalStore - 模拟官方 fdim-sdk-core 中的 SQLite 本地数据库。
 ///
 /// 官方 Go SDK 在本地维护三类持久化数据：
 /// 1. conversations   — 会话列表（含 unreadCount、latestMsg 等）
@@ -309,6 +309,8 @@ class LocalStore {
   static void applyHasReadSeq(
       String conversationID, List<Message> msgs, String myUserID) {
     final readSeq = getHasReadSeq(conversationID);
+    final peerSeq = getPeerReadSeq(conversationID);
+    debugPrint('[LocalStore] applyHasReadSeq: conv=$conversationID, readSeq=$readSeq, peerSeq=$peerSeq, msgCount=${msgs.length}');
     for (final msg in msgs) {
       // 对方发的消息：如果 seq <= hasReadSeq，标记已读
       if (msg.sendID != myUserID && (msg.seq ?? 0) > 0 && (msg.seq ?? 0) <= readSeq) {
@@ -318,8 +320,8 @@ class LocalStore {
       // 自己发的消息：多策略恢复已读状态
       if (msg.sendID == myUserID) {
         // 策略 A: peerReadSeq 水位线（最可靠，不依赖单条消息匹配）
-        final peerSeq = getPeerReadSeq(conversationID);
         if (peerSeq > 0 && (msg.seq ?? 0) > 0 && (msg.seq ?? 0) <= peerSeq) {
+          debugPrint('[LocalStore] applyHasReadSeq: marking msg seq=${msg.seq} as read (peerSeq=$peerSeq)');
           msg.isRead = true;
           msg.hasReadTime ??= DateTime.now().millisecondsSinceEpoch;
           continue;

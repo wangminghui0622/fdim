@@ -69,7 +69,7 @@ func (l *PullMessageBySeqsLogic) PullMessageBySeqs(req *sdkws.PullMessageBySeqsR
 			continue
 		}
 
-		// 转换为 sdkws.MsgData
+		// 转换?sdkws.MsgData
 		pullMsgs := &sdkws.PullMsgs{Msgs: make([]*sdkws.MsgData, 0, len(msgDocs))}
 		var lastSeq int64
 		for _, doc := range msgDocs {
@@ -82,7 +82,7 @@ func (l *PullMessageBySeqsLogic) PullMessageBySeqs(req *sdkws.PullMessageBySeqsR
 		pullMsgs.IsEnd = true
 		pullMsgs.EndSeq = lastSeq
 
-		// 与官方一致：n_ 前缀的会话放入 NotificationMsgs，其他放入 Msgs
+		// 与官方一致：n_ 前缀的会话放?NotificationMsgs，其他放?Msgs
 		if msgprocessor.IsNotification(rng.ConversationID) {
 			resp.NotificationMsgs[rng.ConversationID] = pullMsgs
 		} else {
@@ -93,7 +93,7 @@ func (l *PullMessageBySeqsLogic) PullMessageBySeqs(req *sdkws.PullMessageBySeqsR
 	return resp, nil
 }
 
-// docToMsgData 将数据库文档转换为 sdkws.MsgData
+// docToMsgData 将数据库文档转换?sdkws.MsgData
 func docToMsgData(doc *model.MsgDoc) *sdkws.MsgData {
 	if doc == nil {
 		return nil
@@ -113,13 +113,13 @@ func docToMsgData(doc *model.MsgDoc) *sdkws.MsgData {
 		Content:          doc.Content,
 		Seq:              doc.Seq,
 		SendTime:         doc.SendTime,
-		CreateTime:       doc.CreateTime,  // 已经是 int64 时间戳
+		CreateTime:       doc.CreateTime,  // 已经?int64 时间?
 		Status:           doc.Status,
-		IsRead:           doc.IsRead,      // 【修复】返回已读状态
+		IsRead:           doc.IsRead,      // 【修复】返回已读状?
 		Options:          doc.Options,
 		AtUserIDList:     doc.AtUserIDs,
 		AttachedInfo:     doc.AttachedInfo,
 		Ex:               doc.Ex,
-		// OfflinePushInfo 暂不反填，客户端通常不依赖该字段拉历史
+		// OfflinePushInfo 暂不反填，客户端通常不依赖该字段拉历?
 	}
 }

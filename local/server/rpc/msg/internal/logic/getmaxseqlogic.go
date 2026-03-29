@@ -35,7 +35,7 @@ func (l *GetMaxSeqLogic) GetMaxSeq(req *sdkws.GetMaxSeqReq) (*sdkws.GetMaxSeqRes
 		MinSeqs: make(map[string]int64),
 	}
 
-	// 1. 获取用户所有会话 ID
+	// 1. 获取用户所有会?ID
 	var conversationIDs []string
 	if l.svcCtx.ConversationClient != nil {
 		convResp, err := l.svcCtx.ConversationClient.GetConversationIDs(l.ctx, &conversation.GetConversationIDsReq{
@@ -48,9 +48,9 @@ func (l *GetMaxSeqLogic) GetMaxSeq(req *sdkws.GetMaxSeqReq) (*sdkws.GetMaxSeqRes
 		}
 	}
 
-	// 2. 为每个会话获取 maxSeq 和 minSeq（包括对应的通知会话）
+	// 2. 为每个会话获?maxSeq ?minSeq（包括对应的通知会话?
 	for _, convID := range conversationIDs {
-		// 普通会话 maxSeq
+		// 普通会?maxSeq
 		maxSeq, err := l.svcCtx.MsgCache.GetMaxSeq(l.ctx, convID)
 		if err != nil {
 			l.Errorw("GetMaxSeq failed", logx.Field("conversationID", convID), logx.Field("error", err))
@@ -60,7 +60,7 @@ func (l *GetMaxSeqLogic) GetMaxSeq(req *sdkws.GetMaxSeqReq) (*sdkws.GetMaxSeqRes
 			resp.MaxSeqs[convID] = maxSeq
 		}
 
-		// 普通会话 minSeq
+		// 普通会?minSeq
 		minSeq, err := l.svcCtx.MsgCache.GetMinSeq(l.ctx, convID)
 		if err != nil {
 			l.Errorw("GetMinSeq failed", logx.Field("conversationID", convID), logx.Field("error", err))
@@ -69,7 +69,7 @@ func (l *GetMaxSeqLogic) GetMaxSeq(req *sdkws.GetMaxSeqReq) (*sdkws.GetMaxSeqRes
 			resp.MinSeqs[convID] = minSeq
 		}
 
-		// 通知会话 maxSeq（n_ 前缀）
+		// 通知会话 maxSeq（n_ 前缀?
 		notifConvID := conversationutil.GetNotificationConversationIDByConversationID(convID)
 		if notifConvID != "" {
 			nMaxSeq, err := l.svcCtx.MsgCache.GetMaxSeq(l.ctx, notifConvID)

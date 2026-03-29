@@ -1,8 +1,8 @@
-﻿package model
+package model
 
 import "time"
 
-// Group 群组模型
+// Group Ⱥģ
 type Group struct {
 	GroupID                string    `bson:"group_id"`
 	GroupName              string    `bson:"group_name"`
@@ -21,7 +21,7 @@ type Group struct {
 	NotificationUserID     string    `bson:"notification_user_id"`
 }
 
-// GroupMember 群成员模�?
+// GroupMember ȺԱģ??
 type GroupMember struct {
 	GroupID        string    `bson:"group_id"`
 	UserID         string    `bson:"user_id"`
@@ -36,7 +36,7 @@ type GroupMember struct {
 	Ex             string    `bson:"ex"`
 }
 
-// GroupRequest 群组申请模型
+// GroupRequest Ⱥģ
 type GroupRequest struct {
 	UserID        string    `bson:"user_id"`
 	GroupID       string    `bson:"group_id"`

@@ -477,6 +477,11 @@ class MessageManager {
     final n = count ?? 40;
     debugPrint('[SDK] getAdvancedHistoryMessageList: conversationID=$conversationID, count=$n');
 
+    // 0. 先获取 peerReadSeq（对方已读到的最大 seq），用于后续标记自己发送的消息为已读
+    if (conversationID != null && conversationID.isNotEmpty) {
+      await getHasReadAndMaxSeq(conversationID);
+    }
+
     // 1. Determine the upper bound seq
     int endSeq;
     if (startMsg != null && (startMsg.seq ?? 0) > 0) {
@@ -549,9 +554,11 @@ class MessageManager {
     // Sort by seq ascending
     messages.sort((a, b) => (a.seq ?? 0).compareTo(b.seq ?? 0));
 
-    // 服务端不返回 status 字段（这是客户端概念），但能从服务端拉到的消息一定是发送成功的
+    // 服务端返回 status=0（这是客户端概念），但能从服务端拉到的消息一定是发送成功的
     for (final msg in messages) {
-      msg.status ??= MessageStatus.succeeded;
+      if (msg.status == null || msg.status == 0) {
+        msg.status = MessageStatus.succeeded;
+      }
     }
 
     } // end if (endSeq > 0)
@@ -590,6 +597,7 @@ class MessageManager {
   }
 
   /// 获取会话的 hasReadSeq 和 maxSeq（与官方一致）
+  /// 返回: maxSeq, hasReadSeq, peerReadSeq（对方已读到的最大 seq）
   Future<Map<String, int>> getHasReadAndMaxSeq(String conversationID) async {
     final data = await HttpClient.post(
       '/msg/get_conversations_has_read_and_max_seq',
@@ -601,17 +609,20 @@ class MessageManager {
     );
     int maxSeq = 0;
     int hasReadSeq = 0;
-    debugPrint('[SDK] getHasReadAndMaxSeq raw response: $data');
+    int peerReadSeq = 0;
     if (data != null && data is Map && data['seqs'] is Map) {
       final seqInfo = data['seqs'][conversationID];
-      debugPrint('[SDK] getHasReadAndMaxSeq seqInfo for $conversationID: $seqInfo');
       if (seqInfo is Map) {
         maxSeq = (seqInfo['maxSeq'] ?? seqInfo['MaxSeq'] ?? 0) as int;
         hasReadSeq = (seqInfo['hasReadSeq'] ?? seqInfo['HasReadSeq'] ?? 0) as int;
+        peerReadSeq = (seqInfo['peerReadSeq'] ?? seqInfo['PeerReadSeq'] ?? 0) as int;
       }
     }
-    debugPrint('[SDK] getHasReadAndMaxSeq: conv=$conversationID maxSeq=$maxSeq hasReadSeq=$hasReadSeq');
-    return {'maxSeq': maxSeq, 'hasReadSeq': hasReadSeq};
+    // 同步 peerReadSeq 到本地存储
+    if (peerReadSeq > 0) {
+      await LocalStore.setPeerReadSeq(conversationID, peerReadSeq);
+    }
+    return {'maxSeq': maxSeq, 'hasReadSeq': hasReadSeq, 'peerReadSeq': peerReadSeq};
   }
 
   /// 按 seq 范围拉取消息 [fromSeq..toSeq]，返回按 seq 升序
@@ -654,7 +665,9 @@ class MessageManager {
 
     messages.sort((a, b) => (a.seq ?? 0).compareTo(b.seq ?? 0));
     for (final msg in messages) {
-      msg.status ??= MessageStatus.succeeded;
+      if (msg.status == null || msg.status == 0) {
+        msg.status = MessageStatus.succeeded;
+      }
     }
 
     // 恢复本地已读状态并缓存

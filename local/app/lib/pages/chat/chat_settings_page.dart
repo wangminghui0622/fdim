@@ -39,7 +39,7 @@ class _ChatSettingsPageState extends State<ChatSettingsPage> {
 
   Future<void> _loadSettings() async {
     try {
-      final conv = await OpenIM.iMManager.conversationManager
+      final conv = await FDIM.iMManager.conversationManager
           .getOneConversation(sessionType: _sessionType, sourceID: _groupID.isNotEmpty ? _groupID : _userID);
       if (mounted) {
         setState(() {
@@ -65,7 +65,7 @@ class _ChatSettingsPageState extends State<ChatSettingsPage> {
 
   Future<void> _togglePin(bool v) async {
     try {
-      await OpenIM.iMManager.conversationManager.pinConversation(
+      await FDIM.iMManager.conversationManager.pinConversation(
         conversationID: _conversationID,
         isPinned: v,
       );
@@ -77,7 +77,7 @@ class _ChatSettingsPageState extends State<ChatSettingsPage> {
 
   Future<void> _setRecvMsgOpt(int opt) async {
     try {
-      await OpenIM.iMManager.conversationManager.setConversation(
+      await FDIM.iMManager.conversationManager.setConversation(
         _conversationID,
         ConversationReq(recvMsgOpt: opt),
       );
@@ -98,7 +98,7 @@ class _ChatSettingsPageState extends State<ChatSettingsPage> {
     ));
     if (confirm != true) return;
     try {
-      await OpenIM.iMManager.conversationManager.clearConversationAndDeleteAllMsg(
+      await FDIM.iMManager.conversationManager.clearConversationAndDeleteAllMsg(
         conversationID: _conversationID,
       );
       EasyLoading.showToast('已清空');

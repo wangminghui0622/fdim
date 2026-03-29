@@ -1,5 +1,5 @@
 syntax = "proto3";
-package openim.msggateway;
+package fdim.msggateway;
 
 import "sdkws/sdkws.proto";
 

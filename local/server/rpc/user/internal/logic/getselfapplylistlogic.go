@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -29,22 +29,22 @@ func NewGetSelfApplyListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 func (l *GetSelfApplyListLogic) GetSelfApplyList(req *user.GetPaginationFriendsApplyFromReq) (*user.GetPaginationFriendsApplyFromResp, error) {
 	resp := &user.GetPaginationFriendsApplyFromResp{}
 
-	// Ȩ����֤
+	// ??????
 	if err := authverify.CheckAccess(l.ctx, req.UserID); err != nil {
 		return nil, err
 	}
 
-	// ת�� handleResults
+	// ??? handleResults
 	var handleResults []int32
 	if len(req.HandleResults) > 0 {
 		handleResults = req.HandleResults
 	}
 
-	// �����ҳ����
+	// ??????????
 	offset := util.CalculateOffset(req.Pagination.PageNumber, req.Pagination.ShowNumber)
 	limit := util.CalculateLimit(req.Pagination.ShowNumber)
 
-	// ��ҳ��ѯ�Լ����͵ĺ�������
+	// ?????????????????????
 	total, requests, err := l.svcCtx.FriendDB.PageFriendRequestFromMe(
 		l.ctx,
 		req.UserID,
@@ -56,11 +56,11 @@ func (l *GetSelfApplyListLogic) GetSelfApplyList(req *user.GetPaginationFriendsA
 		return nil, err
 	}
 
-	// 转换为 Protocol Buffer 格式
+	// תΪ Protocol Buffer ʽ
 	resp.Total = int32(total)
 	resp.FriendRequests = convert.ModelFriendRequestsDB2Pb(requests)
 
-	// ����û���Ϣ
+	// ?????????
 	if len(requests) > 0 {
 		userIDs := make([]string, 0)
 		for _, req := range requests {
@@ -72,13 +72,13 @@ func (l *GetSelfApplyListLogic) GetSelfApplyList(req *user.GetPaginationFriendsA
 			return nil, err
 		}
 
-		// �����û�ӳ��
+		// ??????????
 		userMap := make(map[string]*model.User)
 		for _, u := range users {
 			userMap[u.UserID] = u
 		}
 
-		// ������������û���Ϣ
+		// ?????????????????
 		for i, friendRequest := range resp.FriendRequests {
 			if i < len(requests) {
 				req := requests[i]

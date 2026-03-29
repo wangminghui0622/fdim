@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,12 +24,12 @@ func NewDelDefaultGroupLogic(ctx context.Context, svcCtx *svc.ServiceContext) *D
 }
 
 func (l *DelDefaultGroupLogic) DelDefaultGroup(req *admin.DelDefaultGroupReq) (*admin.DelDefaultGroupResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.GroupIDs) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("groupIDs cannot be empty")
 	}
 
-	// 2. 检查是否存在
+	// 2. Ƿ
 	exists, err := l.svcCtx.AdminDB.FindDefaultGroup(l.ctx, req.GroupIDs)
 	if err != nil {
 		l.Errorf("FindDefaultGroup failed: %v", err)
@@ -39,7 +39,7 @@ func (l *DelDefaultGroupLogic) DelDefaultGroup(req *admin.DelDefaultGroupReq) (*
 		return nil, errs.ErrRecordNotFound.WrapMsg("no default groups found for the given groupIDs")
 	}
 
-	// 3. 删除默认群组
+	// 3. ɾĬȺ
 	if err := l.svcCtx.AdminDB.DelDefaultGroup(l.ctx, req.GroupIDs); err != nil {
 		l.Errorf("DelDefaultGroup failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to delete default groups")

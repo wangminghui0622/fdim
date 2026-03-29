@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -31,7 +31,7 @@ func NewSetGroupInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SetG
 func (l *SetGroupInfoLogic) SetGroupInfo(req *user.SetGroupInfoReq) (*user.SetGroupInfoResp, error) {
 	resp := &user.SetGroupInfoResp{}
 
-	// ������֤
+	// ???????
 	if req.GroupInfoForSet == nil {
 		return nil, fmt.Errorf("groupInfoForSet is empty")
 	}
@@ -39,7 +39,7 @@ func (l *SetGroupInfoLogic) SetGroupInfo(req *user.SetGroupInfoReq) (*user.SetGr
 		return nil, fmt.Errorf("groupID is empty")
 	}
 
-	// Ȩ����֤����Ҫ��Ⱥ�������Ա
+	// ??????????????????????
 	opUserID := mcontext.GetOpUserID(l.ctx)
 	if !authverify.IsAdmin(l.ctx) {
 		member, err := l.svcCtx.GroupDB.TakeGroupMember(l.ctx, req.GroupInfoForSet.GroupID, opUserID)
@@ -51,13 +51,13 @@ func (l *SetGroupInfoLogic) SetGroupInfo(req *user.SetGroupInfoReq) (*user.SetGr
 		}
 	}
 
-	// ���Ⱥ���Ƿ����
+	// ????????????
 	_, err := l.svcCtx.GroupDB.TakeGroup(l.ctx, req.GroupInfoForSet.GroupID)
 	if err != nil {
 		return nil, err
 	}
 
-	// ׼�� Webhook �ص�����
+	// ??? Webhook ???????
 	var groupName, introduction, faceURL, ex *string
 	if req.GroupInfoForSet.GroupName != "" {
 		groupName = &req.GroupInfoForSet.GroupName
@@ -72,7 +72,7 @@ func (l *SetGroupInfoLogic) SetGroupInfo(req *user.SetGroupInfoReq) (*user.SetGr
 		ex = &req.GroupInfoForSet.Ex.Value
 	}
 
-	// Webhook BeforeSetGroupInfo �ص�
+	// Webhook BeforeSetGroupInfo ???
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackBeforeSetGroupInfoReq{
 			CallbackCommand: webhook.CallbackBeforeSetGroupInfoCommand,
@@ -87,9 +87,9 @@ func (l *SetGroupInfoLogic) SetGroupInfo(req *user.SetGroupInfoReq) (*user.SetGr
 			if err != webhook.ErrCallbackContinue {
 				return nil, err
 			}
-			// ErrCallbackContinue ��ʾ����ִ��
+			// ErrCallbackContinue ??????????
 		}
-		// ��� webhook �������޸ĺ��ֵ��ʹ����
+		// ??? webhook ???????????????????
 		if cbResp.GroupName != nil {
 			req.GroupInfoForSet.GroupName = *cbResp.GroupName
 		}
@@ -104,7 +104,7 @@ func (l *SetGroupInfoLogic) SetGroupInfo(req *user.SetGroupInfoReq) (*user.SetGr
 		}
 	}
 
-	// ������������
+	// ????????????
 	data := make(map[string]interface{})
 	if req.GroupInfoForSet.GroupName != "" {
 		data["group_name"] = req.GroupInfoForSet.GroupName
@@ -139,12 +139,12 @@ func (l *SetGroupInfoLogic) SetGroupInfo(req *user.SetGroupInfoReq) (*user.SetGr
 		}
 	}
 
-	// ����Ⱥ����Ϣ����֪ͨ
+	// ????????????????
 	if l.svcCtx.GroupNotification != nil {
 		l.svcCtx.GroupNotification.GroupInfoSetNotification(l.ctx, req.GroupInfoForSet.GroupID, opUserID)
 	}
 
-	// Webhook AfterSetGroupInfo �ص�
+	// Webhook AfterSetGroupInfo ???
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackAfterSetGroupInfoReq{
 			CallbackCommand: webhook.CallbackAfterSetGroupInfoCommand,

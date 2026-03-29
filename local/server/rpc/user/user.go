@@ -1,4 +1,4 @@
-﻿package main
+package main
 
 import (
 	"context"
@@ -27,11 +27,11 @@ func main() {
 	conf.MustLoad(*configFile, &c)
 	svcCtx := svc.NewServiceContext(c)
 
-	// 创建组合拦截器：先从metadata提取用户信息，再注入管理员ID
+	// ȴmetadataȡûϢעԱID
 	combinedInterceptor := func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		// 1. 从gRPC metadata中提取用户信息到context
+		// 1. gRPC metadataȡûϢcontext
 		ctx = grpcinterceptor.ExtractContextFromMetadata(ctx)
-		// 2. 注入管理员用户ID
+		// 2. עԱûID
 		ctx = authverify.WithIMAdminUserIDs(ctx, c.AdminUserIDs)
 		return handler(ctx, req)
 	}
@@ -46,7 +46,7 @@ func main() {
 		}
 	})
 
-	// 添加服务端拦截器
+	// ӷ
 	s.AddUnaryInterceptors(combinedInterceptor)
 
 	defer s.Stop()

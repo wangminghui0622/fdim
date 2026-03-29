@@ -29,11 +29,11 @@ func NewRevokeMsgLogic(ctx context.Context, svcCtx *svc.ServiceContext) *RevokeM
 	}
 }
 
-// RevokeMsg 处理消息撤回：
+// RevokeMsg 处理消息撤回?
 // 1. 校验权限
 // 2. 从简化存储层（MsgCache/MsgDB）查找原消息
-// 3. 更新 MongoDB 中的消息（标记为已撤回）并清除 Redis 缓存
-// 4. 发送 MsgRevokeNotification 给会话另一端/群
+// 3. 更新 MongoDB 中的消息（标记为已撤回）并清?Redis 缓存
+// 4. 发?MsgRevokeNotification 给会话另一??
 func (l *RevokeMsgLogic) RevokeMsg(req *msg.RevokeMsgReq) (*msg.RevokeMsgResp, error) {
 	l.Infof("[Revoke][Server] request: userID=%s conversationID=%s seq=%d", req.UserID, req.ConversationID, req.Seq)
 	if req.UserID == "" {
@@ -49,14 +49,14 @@ func (l *RevokeMsgLogic) RevokeMsg(req *msg.RevokeMsgReq) (*msg.RevokeMsgResp, e
 		return nil, err
 	}
 
-	// 从简化存储层查找原消息（MsgCache → 简化 Redis 缓存 + MongoDB stream_msg）
+	// 从简化存储层查找原消息（MsgCache ?简?Redis 缓存 + MongoDB stream_msg?
 	msgDocs, err := l.svcCtx.MsgCache.GetMessagesBySeq(l.ctx, req.ConversationID, []int64{req.Seq})
 	if err != nil {
 		l.Errorf("[Revoke][Server] MsgCache.GetMessagesBySeq failed: %v", err)
 		return nil, err
 	}
 	if len(msgDocs) == 0 || msgDocs[0] == nil {
-		// 缓存未命中，尝试从 MongoDB 查找
+		// 缓存未命中，尝试?MongoDB 查找
 		if l.svcCtx.MsgDB != nil {
 			msgDocs, err = l.svcCtx.MsgDB.GetMessagesBySeq(l.ctx, req.ConversationID, []int64{req.Seq})
 			if err != nil {
@@ -121,8 +121,8 @@ func (l *RevokeMsgLogic) RevokeMsg(req *msg.RevokeMsgReq) (*msg.RevokeMsgResp, e
 	l.Infof("[Revoke][Server] revoke stored: conversationID=%s seq=%d", req.ConversationID, req.Seq)
 
 	// 发送撤回通知
-	// 注意：官方架构中 Go SDK 会将 RevokeMsgTips 转换为 MessageRevokedContent 再回调给 Flutter 层
-	// 本地架构无 Go SDK 中间层，所以直接发送 MessageRevokedContent，字段名与客户端 RevokedInfo 一致
+	// 注意：官方架构中 Go SDK 会将 RevokeMsgTips 转换?MessageRevokedContent 再回调给 Flutter ?
+	// 本地架构?Go SDK 中间层，所以直接发?MessageRevokedContent，字段名与客户端 RevokedInfo 一?
 	if l.svcCtx.NotificationSender != nil {
 		var recvID string
 		if origMsg.SessionType == constant.ReadGroupChatType {

@@ -29,7 +29,7 @@ func (l *UserClearAllMsgLogic) UserClearAllMsg(req *msg.UserClearAllMsgReq) (*ms
 		return nil, errs.ErrInternalServer.WrapMsg("message cache not initialized")
 	}
 
-	// 获取用户所有会话
+	// 获取用户所有会?
 	var conversationIDs []string
 	if l.svcCtx.ConversationClient != nil {
 		convResp, err := l.svcCtx.ConversationClient.GetConversationIDs(l.ctx, &conversation.GetConversationIDsReq{
@@ -42,7 +42,7 @@ func (l *UserClearAllMsgLogic) UserClearAllMsg(req *msg.UserClearAllMsgReq) (*ms
 		}
 	}
 
-	// 对每个会话设置 minSeq = maxSeq + 1（等同于清除所有消息）
+	// 对每个会话设?minSeq = maxSeq + 1（等同于清除所有消息）
 	for _, convID := range conversationIDs {
 		maxSeq, err := l.svcCtx.MsgCache.GetMaxSeq(l.ctx, convID)
 		if err != nil {

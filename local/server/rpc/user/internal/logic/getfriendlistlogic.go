@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -26,19 +26,19 @@ func NewGetFriendListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Get
 func (l *GetFriendListLogic) GetFriendList(req *user.GetFriendIDsReq) (*user.GetFriendIDsResp, error) {
 	resp := &user.GetFriendIDsResp{}
 
-	// Ȩ����֤
+	// ??????
 	if err := authverify.CheckAccess(l.ctx, req.UserID); err != nil {
 		return nil, err
 	}
 
-	// ��ȡ����ID�б�
+	// ???????ID??
 	friendIDs, err := l.svcCtx.FriendDB.FindFriendUserIDs(l.ctx, req.UserID)
 	if err != nil {
 		return nil, err
 	}
 
-	// GetFriendList ֻ���غ���ID�б����������ϸ��Ϣ
-	// ��ϸ��Ϣ����ͨ�� GetSpecifiedFriends �� GetPaginationFriends ��ȡ
+	// GetFriendList ????????ID???????????????
+	// ????????????? GetSpecifiedFriends ?? GetPaginationFriends ???
 	resp.FriendIDs = friendIDs
 	return resp, nil
 }

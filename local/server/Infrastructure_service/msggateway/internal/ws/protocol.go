@@ -2,9 +2,9 @@ package ws
 
 import "encoding/json"
 
-// WebSocket protocol constants matching official OpenIM v3
+// WebSocket protocol constants matching official FDIM v3
 
-// Client → Server request identifiers
+// Client ?Server request identifiers
 const (
 	WSGetNewestSeq        = 1001
 	WSSendMsg             = 1002
@@ -14,14 +14,14 @@ const (
 	WSSetBackgroundStatus = 1006
 )
 
-// Server → Client push identifiers
+// Server ?Client push identifiers
 const (
 	WSPushMsg       = 2001
 	WSKickOnlineMsg = 2002
 	WsLogoutMsg     = 2003
 )
 
-// WsReq is the WebSocket request frame (client → server)
+// WsReq is the WebSocket request frame (client ?server)
 type WsReq struct {
 	ReqIdentifier int32            `json:"reqIdentifier"`
 	Token         string           `json:"token"`
@@ -31,7 +31,7 @@ type WsReq struct {
 	Data          json.RawMessage  `json:"data,omitempty"`
 }
 
-// WsResp is the WebSocket response frame (server → client)
+// WsResp is the WebSocket response frame (server ?client)
 type WsResp struct {
 	ReqIdentifier int32            `json:"reqIdentifier"`
 	ErrCode       int32            `json:"errCode"`

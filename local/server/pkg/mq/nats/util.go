@@ -3,9 +3,9 @@ package nats
 import (
 	"context"
 
+	"fdim/pkg/constant"
 	"fdim/pkg/mcontext"
 	"github.com/nats-io/nats.go"
-	"github.com/openimsdk/protocol/constant"
 )
 
 // GetMQHeaderWithContext extracts message queue headers from the context.

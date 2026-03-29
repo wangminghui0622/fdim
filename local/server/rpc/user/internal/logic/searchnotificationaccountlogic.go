@@ -31,6 +31,6 @@ func (l *SearchNotificationAccountLogic) SearchNotificationAccount(req *user.Sea
 	}
 
 	// TODO: 实现搜索通知账户的逻辑
-	// 需要实现 FindByNickname, FindNotification, FindSystemAccount 等方法
+	// 需要实?FindByNickname, FindNotification, FindSystemAccount 等方?
 	return nil, fmt.Errorf("SearchNotificationAccount not fully implemented yet")
 }

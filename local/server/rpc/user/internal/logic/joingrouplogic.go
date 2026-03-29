@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -32,18 +32,18 @@ func NewJoinGroupLogic(ctx context.Context, svcCtx *svc.ServiceContext) *JoinGro
 func (l *JoinGroupLogic) JoinGroup(req *user.JoinGroupReq) (*user.JoinGroupResp, error) {
 	resp := &user.JoinGroupResp{}
 
-	// ���Ⱥ���Ƿ����
+	// ????????????
 	groupInfo, err := l.svcCtx.GroupDB.TakeGroup(l.ctx, req.GroupID)
 	if err != nil {
 		return nil, err
 	}
 
-	// ���Ⱥ��״̬
+	// ????????
 	if groupInfo.Status == constant.GroupStatusDismissed {
 		return nil, fmt.Errorf("group is dismissed")
 	}
 
-	// ������֤
+	// ???????
 	opUserID := mcontext.GetOpUserID(l.ctx)
 	userID := req.InviterUserID
 	if userID == "" {
@@ -53,19 +53,19 @@ func (l *JoinGroupLogic) JoinGroup(req *user.JoinGroupReq) (*user.JoinGroupResp,
 		userID = opUserID
 	}
 
-	// ����Ƿ��Ѿ���Ⱥ��Ա
+	// ???????????????
 	_, err = l.svcCtx.GroupDB.TakeGroupMember(l.ctx, req.GroupID, userID)
 	if err == nil {
 		return nil, fmt.Errorf("user already in group")
 	}
 
-	// ����Ⱥ����֤Ҫ�������ֱ�Ӽ��뻹�Ǵ�������
-	// NeedVerification: 0=ֱ�Ӽ���, 1=��Ҫ��֤
+	// ?????????????????????????????????
+	// NeedVerification: 0=??????, 1=??????
 	const Directly = 0
 	const AllNeedVerification = 1
 
 	if groupInfo.NeedVerification == Directly {
-		// ֱ�Ӽ���
+		// ??????
 		if opUserID == "" {
 			opUserID = userID
 		}
@@ -81,7 +81,7 @@ func (l *JoinGroupLogic) JoinGroup(req *user.JoinGroupReq) (*user.JoinGroupResp,
 			MuteEndTime:    time.UnixMilli(0),
 		}
 
-		// Webhook BeforeMembersJoinGroup �ص�
+		// Webhook BeforeMembersJoinGroup ???
 		if l.svcCtx.WebhookClient != nil {
 			cbReq := &webhook.CallbackBeforeMembersJoinGroupReq{
 				CallbackCommand: webhook.CallbackBeforeMembersJoinGroupCommand,
@@ -95,11 +95,11 @@ func (l *JoinGroupLogic) JoinGroup(req *user.JoinGroupReq) (*user.JoinGroupResp,
 				if err != webhook.ErrCallbackContinue {
 					return nil, err
 				}
-				// ErrCallbackContinue ��ʾ����ִ��
+				// ErrCallbackContinue ??????????
 			}
-			// ��� webhook �������޸ĺ�ĳ�Ա�б����Ҫ���¹��� groupMember
+			// ??? webhook ??????????????????????1??? groupMember
 			if len(cbResp.MemberUserIDs) > 0 {
-				// ����򻯴����ʵ��Ӧ�ø��ݷ��صĳ�Ա�б����¹���
+				// ??????????????????????????????1???
 			}
 		}
 
@@ -107,7 +107,7 @@ func (l *JoinGroupLogic) JoinGroup(req *user.JoinGroupReq) (*user.JoinGroupResp,
 			return nil, err
 		}
 
-		// 为新成员创建群聊会话（与官方一致）
+		// Ϊ³ԱȺĻỰٷһ£
 		if l.svcCtx.ConversationClient != nil {
 			go func() {
 				ctx2, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -127,7 +127,7 @@ func (l *JoinGroupLogic) JoinGroup(req *user.JoinGroupReq) (*user.JoinGroupResp,
 			l.svcCtx.GroupNotification.MemberEnterNotification(l.ctx, req.GroupID, req.InviterUserID, []string{userID})
 		}
 
-		// Webhook AfterJoinGroup �ص�
+		// Webhook AfterJoinGroup ???
 		if l.svcCtx.WebhookClient != nil {
 			cbReq := &webhook.CallbackAfterJoinGroupReq{
 				CallbackCommand: webhook.CallbackAfterJoinGroupCommand,
@@ -141,7 +141,7 @@ func (l *JoinGroupLogic) JoinGroup(req *user.JoinGroupReq) (*user.JoinGroupResp,
 			l.svcCtx.WebhookClient.AsyncPost(l.ctx, cbReq.GetCallbackCommand(), cbReq, cbResp, 30)
 		}
 	} else {
-		// ��������
+		// ????????
 		groupRequest := &model.GroupRequest{
 			UserID:        userID,
 			GroupID:       req.GroupID,
@@ -151,14 +151,14 @@ func (l *JoinGroupLogic) JoinGroup(req *user.JoinGroupReq) (*user.JoinGroupResp,
 			ReqTime:       time.Now(),
 			HandledTime:   time.Unix(0, 0),
 			Ex:            req.Ex,
-			HandleResult:  constant.GroupRequestUnhandled, // δ����
+			HandleResult:  constant.GroupRequestUnhandled, // ????
 		}
 
 		if err := l.svcCtx.GroupDB.CreateGroupRequest(l.ctx, []*model.GroupRequest{groupRequest}); err != nil {
 			return nil, err
 		}
 
-		// ���ͼ���Ⱥ������֪ͨ
+		// ????????????????
 		if l.svcCtx.GroupNotification != nil {
 			l.svcCtx.GroupNotification.JoinGroupApplicationNotification(l.ctx, req.GroupID, userID)
 		}

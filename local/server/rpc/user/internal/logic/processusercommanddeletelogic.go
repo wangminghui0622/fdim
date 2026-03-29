@@ -30,6 +30,6 @@ func (l *ProcessUserCommandDeleteLogic) ProcessUserCommandDelete(req *user.Proce
 		return nil, err
 	}
 
-	// TODO: 实现 DeleteUserCommand 数据库方法
+	// TODO: 实现 DeleteUserCommand 数据库方?
 	return nil, fmt.Errorf("ProcessUserCommandDelete not fully implemented yet: DeleteUserCommand database method needed")
 }

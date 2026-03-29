@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -27,7 +27,7 @@ func NewGetFullJoinGroupIDsLogic(ctx context.Context, svcCtx *svc.ServiceContext
 func (l *GetFullJoinGroupIDsLogic) GetFullJoinGroupIDs(req *user.GetFullJoinGroupIDsReq) (*user.GetFullJoinGroupIDsResp, error) {
 	resp := &user.GetFullJoinGroupIDsResp{}
 
-	// Ȩ����֤
+	// ??????
 	opUserID := mcontext.GetOpUserID(l.ctx)
 	if req.UserID == "" {
 		req.UserID = opUserID
@@ -37,13 +37,13 @@ func (l *GetFullJoinGroupIDsLogic) GetFullJoinGroupIDs(req *user.GetFullJoinGrou
 		}
 	}
 
-	// ��ѯ�û����������Ⱥ���Ա��¼
+	// ???????????????????????
 	members, err := l.svcCtx.GroupDB.FindGroupMemberByUserID(l.ctx, req.UserID)
 	if err != nil {
 		return nil, err
 	}
 
-	// ��ȡȺ��ID�б�
+	// ??????ID??
 	groupIDs := make([]string, 0, len(members))
 	for _, m := range members {
 		groupIDs = append(groupIDs, m.GroupID)

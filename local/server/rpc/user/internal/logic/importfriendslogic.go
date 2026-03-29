@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -29,24 +29,24 @@ func NewImportFriendsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Imp
 func (l *ImportFriendsLogic) ImportFriends(req *user.ImportFriendReq) (*user.ImportFriendResp, error) {
 	resp := &user.ImportFriendResp{}
 
-	// Ȩ����֤����Ҫ����ԱȨ��
+	// ???????????????????
 	if err := authverify.CheckAdmin(l.ctx); err != nil {
 		return nil, err
 	}
 
-	// ������֤
+	// ???????
 	if len(req.FriendUserIDs) == 0 {
 		return nil, fmt.Errorf("friendUserIDs is empty")
 	}
 
-	// ����Ƿ�����Լ�
+	// ????????????
 	for _, userID := range req.FriendUserIDs {
 		if userID == req.OwnerUserID {
 			return nil, fmt.Errorf("can not add yourself")
 		}
 	}
 
-	// ��� friendUserIDs �Ƿ��ظ�
+	// ??? friendUserIDs ??????
 	userIDMap := make(map[string]bool)
 	for _, userID := range req.FriendUserIDs {
 		if userIDMap[userID] {
@@ -55,20 +55,20 @@ func (l *ImportFriendsLogic) ImportFriends(req *user.ImportFriendReq) (*user.Imp
 		userIDMap[userID] = true
 	}
 
-	// ����û��Ƿ����
+	// ????????????
 	allUserIDs := append([]string{req.OwnerUserID}, req.FriendUserIDs...)
 	_, err := l.svcCtx.UserDB.FindWithError(l.ctx, allUserIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	// ����Ƿ��Ѿ��Ǻ��ѣ�����Ѿ��Ǻ��ѣ�������
+	// ?????????????????????????????????
 	existingFriends, err := l.svcCtx.FriendDB.FindFriends(l.ctx, req.OwnerUserID, req.FriendUserIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	// ���˵��Ѿ��Ǻ��ѵ��û�
+	// ?????????????????
 	existingFriendMap := make(map[string]bool)
 	for _, friend := range existingFriends {
 		existingFriendMap[friend.FriendUserID] = true
@@ -82,11 +82,11 @@ func (l *ImportFriendsLogic) ImportFriends(req *user.ImportFriendReq) (*user.Imp
 	}
 
 	if len(newFriendUserIDs) == 0 {
-		// �����û����Ѿ��Ǻ��ѣ�ֱ�ӷ���
+		// ????????????????????????
 		return resp, nil
 	}
 
-	// Webhook BeforeImportFriends �ص�
+	// Webhook BeforeImportFriends ???
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackBeforeImportFriendsReq{
 			CallbackCommand: webhook.CallbackBeforeImportFriendsCommand,
@@ -98,20 +98,20 @@ func (l *ImportFriendsLogic) ImportFriends(req *user.ImportFriendReq) (*user.Imp
 			if err != webhook.ErrCallbackContinue {
 				return nil, err
 			}
-			// ErrCallbackContinue ��ʾ����ִ��
+			// ErrCallbackContinue ??????????
 		}
-		// ��� webhook �������޸ĺ�ĺ����б��ʹ����
+		// ??? webhook ??????????????????????
 		if len(cbResp.FriendUserIDs) > 0 {
 			newFriendUserIDs = cbResp.FriendUserIDs
 		}
 	}
 
-	// ������ѹ�ϵ
+	// ?????????
 	if err := l.svcCtx.FriendDB.BecomeFriends(l.ctx, req.OwnerUserID, newFriendUserIDs, constant.BecomeFriendByImport); err != nil {
 		return nil, err
 	}
 
-	// ���ͺ�������ͬ��֪ͨ����������൱���Զ�ͬ�⣩
+	// ???????????????????????????????????
 	if l.svcCtx.FriendNotification != nil {
 		for _, friendUserID := range newFriendUserIDs {
 			l.svcCtx.FriendNotification.FriendAddedNotification(l.ctx, req.OwnerUserID, friendUserID)
@@ -119,7 +119,7 @@ func (l *ImportFriendsLogic) ImportFriends(req *user.ImportFriendReq) (*user.Imp
 		}
 	}
 
-	// Webhook AfterImportFriends �ص�
+	// Webhook AfterImportFriends ???
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackAfterImportFriendsReq{
 			CallbackCommand: webhook.CallbackAfterImportFriendsCommand,

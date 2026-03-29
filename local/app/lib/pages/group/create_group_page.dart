@@ -72,7 +72,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
           latestMsgSendTime: DateTime.now().millisecondsSinceEpoch,
         );
         await LocalStore.putConversation(conv);
-        OpenIM.iMManager.conversationManager.listener.conversationChanged([conv]);
+        FDIM.iMManager.conversationManager.listener.conversationChanged([conv]);
 
         // 创建成功后直接进入群聊（与微信/官方一致）
         Get.back(result: true);

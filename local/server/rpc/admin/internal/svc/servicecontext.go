@@ -19,16 +19,16 @@ type ServiceContext struct {
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	// 初始化 MongoDB
+	// 初始?MongoDB
 	mongoDB := database.NewMongoDB(c.Mongo.Url, c.Mongo.Db, "", "")
 
-	// 初始化 Redis
+	// 初始?Redis
 	redisClient := cache.NewRedisClient(c.Cache)
 
-	// 初始化 AdminDatabase
+	// 初始?AdminDatabase
 	adminDB := database.NewAdminDatabase(mongoDB, redisClient)
 
-	// 初始化 Token
+	// 初始?Token
 	tokenExpire := time.Duration(c.TokenPolicy.Expire) * 24 * time.Hour
 	token := &tokenverify.Token{
 		Expires: tokenExpire,

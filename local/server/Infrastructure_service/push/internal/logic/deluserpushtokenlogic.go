@@ -30,8 +30,8 @@ func (l *DelUserPushTokenLogic) DelUserPushToken(req *push.DelUserPushTokenReq) 
 		return nil, fmt.Errorf("userID is empty")
 	}
 
-	// 2. 从 Redis 中删除用户的推送Token
-	// FCM Token 的 key 格式: fcm_token:{userID}:{platformID}
+	// 2. ?Redis 中删除用户的推送Token
+	// FCM Token ?key 格式: fcm_token:{userID}:{platformID}
 	redisClient := cache.NewRedisClient(l.svcCtx.Config.Cache)
 	key := fmt.Sprintf("fcm_token:%s:%d", req.UserID, req.PlatformID)
 

@@ -23,8 +23,6 @@ func NewPartLimitLogic(ctx context.Context, svcCtx *svc.ServiceContext) *PartLim
 }
 
 func (l *PartLimitLogic) PartLimit(req *third.PartLimitReq) (*third.PartLimitResp, error) {
-	// 分片限制这里直接采用与 open-im-server 接近的一组默认值，便于客户端统一处理
-	// 一般 S3 兼容存储：最小分片 5MB，最大分片 100MB，最大分片数 10000
 	const (
 		minPartSize = int64(5 * 1024 * 1024)   // 5MB
 		maxPartSize = int64(100 * 1024 * 1024) // 100MB

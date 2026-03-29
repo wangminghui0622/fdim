@@ -18,16 +18,16 @@ type ServiceContext struct {
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	// 初始化 MongoDB
+	// 初始?MongoDB
 	mongoDB := database.NewMongoDB(c.Mongo.Url, c.Mongo.Db, "", "")
 
-	// 初始化 Redis
+	// 初始?Redis
 	redisClient := cache.NewRedisClient(c.Cache)
 
-	// 初始化 BotDatabase
+	// 初始?BotDatabase
 	botDB := database.NewBotDatabase(mongoDB)
 
-	// 初始化 Msg RPC 客户端
+	// 初始?Msg RPC 客户?
 	var msgRpc msg.MsgClient
 	if c.MsgRpc.Etcd.Hosts != nil && len(c.MsgRpc.Etcd.Hosts) > 0 {
 		msgRpc = msg.NewMsgClient(zrpc.MustNewClient(c.MsgRpc).Conn())

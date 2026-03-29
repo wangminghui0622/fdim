@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,6 +24,6 @@ func NewGetGroupAbstractInfoLogic(ctx context.Context, svcCtx *svc.ServiceContex
 }
 
 func (l *GetGroupAbstractInfoLogic) GetGroupAbstractInfo(req *user.GetGroupAbstractInfoReq) (*user.GetGroupAbstractInfoResp, error) {
-	// TODO: 实现获取群组抽象信息的逻辑
+	// TODO: ʵֻȡȺϢ߼
 	return nil, fmt.Errorf("GetGroupAbstractInfo not fully implemented yet")
 }

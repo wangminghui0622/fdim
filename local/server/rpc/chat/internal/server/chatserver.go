@@ -102,9 +102,9 @@ func (s *ChatServer) FindAccountUser(ctx context.Context, req *chat.FindAccountU
 	return l.FindAccountUser(req)
 }
 
-func (s *ChatServer) OpenIMCallback(ctx context.Context, req *chat.OpenIMCallbackReq) (*chat.OpenIMCallbackResp, error) {
-	l := logic.NewOpenIMCallbackLogic(ctx, s.svcCtx)
-	return l.OpenIMCallback(req)
+func (s *ChatServer) FDIMCallback(ctx context.Context, req *chat.FDIMCallbackReq) (*chat.FDIMCallbackResp, error) {
+	l := logic.NewFDIMCallbackLogic(ctx, s.svcCtx)
+	return l.FDIMCallback(req)
 }
 
 // Statistics

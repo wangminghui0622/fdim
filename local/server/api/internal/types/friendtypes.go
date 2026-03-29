@@ -1,7 +1,6 @@
 package types
 
-// Friend 相关请求和响应类型
-// 注意：这些类型需要与 open-im-server 的 API 接口保持一致
+// Friend 相关请求和响应类?
 
 // ApplyToAddFriend 相关类型
 type ApplyToAddFriendReq struct {
@@ -17,10 +16,10 @@ type ApplyToAddFriendResp struct {
 
 // RespondFriendApply 相关类型
 type RespondFriendApplyReq struct {
-	FromUserID  string `json:"fromUserID"`
-	ToUserID    string `json:"toUserID"`
+	FromUserID   string `json:"fromUserID"`
+	ToUserID     string `json:"toUserID"`
 	HandleResult int32  `json:"handleResult"` // 0: 拒绝, 1: 同意
-	HandleMsg   string `json:"handleMsg,optional"`
+	HandleMsg    string `json:"handleMsg,optional"`
 }
 
 type RespondFriendApplyResp struct {
@@ -29,7 +28,7 @@ type RespondFriendApplyResp struct {
 
 // DeleteFriend 相关类型
 type DeleteFriendReq struct {
-	OwnerUserID string `json:"ownerUserID"`
+	OwnerUserID  string `json:"ownerUserID"`
 	FriendUserID string `json:"friendUserID"`
 }
 
@@ -44,14 +43,14 @@ type GetFriendApplyListReq struct {
 }
 
 type FriendRequest struct {
-	FromUserID    string `json:"fromUserID"`
-	ToUserID      string `json:"toUserID"`
-	HandleResult  int32  `json:"handleResult"`
-	ReqMsg        string `json:"reqMsg,optional"`
-	HandleMsg     string `json:"handleMsg,optional"`
-	CreateTime    int64  `json:"createTime"`
-	HandleTime    int64  `json:"handleTime"`
-	Ex            string `json:"ex,optional"`
+	FromUserID   string `json:"fromUserID"`
+	ToUserID     string `json:"toUserID"`
+	HandleResult int32  `json:"handleResult"`
+	ReqMsg       string `json:"reqMsg,optional"`
+	HandleMsg    string `json:"handleMsg,optional"`
+	CreateTime   int64  `json:"createTime"`
+	HandleTime   int64  `json:"handleTime"`
+	Ex           string `json:"ex,optional"`
 }
 
 type GetFriendApplyListResp struct {
@@ -104,12 +103,12 @@ type FriendInfo struct {
 type GetFriendListResp struct {
 	BaseResp
 	FriendsInfo []FriendInfo `json:"friendsInfo"`
-	Total       int32         `json:"total"`
+	Total       int32        `json:"total"`
 }
 
 // GetDesignatedFriends 相关类型
 type GetDesignatedFriendsReq struct {
-	OwnerUserID  string   `json:"ownerUserID"`
+	OwnerUserID   string   `json:"ownerUserID"`
 	FriendUserIDs []string `json:"friendUserIDs"`
 }
 
@@ -189,17 +188,17 @@ type GetIncrementalBlacksReq struct {
 
 type GetIncrementalBlacksResp struct {
 	BaseResp
-	Insert      []BlackInfo `json:"insert"`
-	Update      []BlackInfo `json:"update"`
-	Delete      []string    `json:"delete"`
-	Version     uint64      `json:"version"`
-	VersionID   string      `json:"versionID"`
-	Full        bool         `json:"full"`
+	Insert    []BlackInfo `json:"insert"`
+	Update    []BlackInfo `json:"update"`
+	Delete    []string    `json:"delete"`
+	Version   uint64      `json:"version"`
+	VersionID string      `json:"versionID"`
+	Full      bool        `json:"full"`
 }
 
 // ImportFriends 相关类型
 type ImportFriendsReq struct {
-	OwnerUserID  string   `json:"ownerUserID"`
+	OwnerUserID   string   `json:"ownerUserID"`
 	FriendUserIDs []string `json:"friendUserIDs"`
 }
 
@@ -242,7 +241,7 @@ type GetSpecifiedFriendsInfoResp struct {
 
 // UpdateFriends 相关类型
 type UpdateFriendsReq struct {
-	OwnerUserID  string   `json:"ownerUserID"`
+	OwnerUserID   string   `json:"ownerUserID"`
 	FriendUserIDs []string `json:"friendUserIDs"`
 }
 
@@ -259,12 +258,12 @@ type GetIncrementalFriendsReq struct {
 
 type GetIncrementalFriendsResp struct {
 	BaseResp
-	Insert      []FriendInfo `json:"insert"`
-	Update      []FriendInfo `json:"update"`
-	Delete      []string     `json:"delete"`
-	Version     uint64       `json:"version"`
-	VersionID   string       `json:"versionID"`
-	Full        bool         `json:"full"`
+	Insert    []FriendInfo `json:"insert"`
+	Update    []FriendInfo `json:"update"`
+	Delete    []string     `json:"delete"`
+	Version   uint64       `json:"version"`
+	VersionID string       `json:"versionID"`
+	Full      bool         `json:"full"`
 }
 
 // GetFullFriendUserIDs 相关类型

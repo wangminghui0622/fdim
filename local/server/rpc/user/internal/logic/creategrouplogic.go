@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -35,7 +35,7 @@ func NewCreateGroupLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Creat
 func (l *CreateGroupLogic) CreateGroup(req *user.CreateGroupReq) (*user.CreateGroupResp, error) {
 	resp := &user.CreateGroupResp{}
 
-	// ������֤
+	// ???????
 	if req.GroupInfo == nil {
 		return nil, fmt.Errorf("groupInfo is nil")
 	}
@@ -49,32 +49,32 @@ func (l *CreateGroupLogic) CreateGroup(req *user.CreateGroupReq) (*user.CreateGr
 		return nil, fmt.Errorf("groupName is empty")
 	}
 
-	// Ȩ����֤
+	// ??????
 	if err := authverify.CheckAccess(l.ctx, req.OwnerUserID); err != nil {
 		return nil, err
 	}
 
-	// �ռ������û�ID
+	// ??????????ID
 	userIDs := append(append(req.MemberUserIDs, req.AdminUserIDs...), req.OwnerUserID)
 	opUserID := mcontext.GetOpUserID(l.ctx)
 	if opUserID != "" && !util.Contains(userIDs, opUserID) {
 		userIDs = append(userIDs, opUserID)
 	}
 
-	// ����û�ID�Ƿ��ظ�
+	// ??????ID??????
 	if util.HasDuplicate(userIDs) {
 		return nil, fmt.Errorf("group member repeated")
 	}
 
-	// ����û��Ƿ����
+	// ????????????
 	_, err := l.svcCtx.UserDB.FindWithError(l.ctx, userIDs)
 	if err != nil {
 		return nil, fmt.Errorf("user not found: %v", err)
 	}
 
-	// Webhook BeforeCreateGroup �ص�
+	// Webhook BeforeCreateGroup ???
 	if l.svcCtx.WebhookClient != nil {
-		// ������һ����ʱ groupID ���� webhook��ʵ�ʻ��ں����������ɣ�
+		// ???????????? groupID ???? webhook????????????????????
 		tempGroupID := ""
 		cbReq := &webhook.CallbackBeforeCreateGroupReq{
 			CallbackCommand: webhook.CallbackBeforeCreateGroupCommand,
@@ -91,9 +91,9 @@ func (l *CreateGroupLogic) CreateGroup(req *user.CreateGroupReq) (*user.CreateGr
 			if err != webhook.ErrCallbackContinue {
 				return nil, err
 			}
-			// ErrCallbackContinue ��ʾ����ִ��
+			// ErrCallbackContinue ??????????
 		}
-		// �����������ݣ���� webhook �������޸ģ�
+		// ???????????????? webhook ??????????
 		if cbResp.GroupName != nil {
 			req.GroupInfo.GroupName = *cbResp.GroupName
 		}
@@ -114,33 +114,33 @@ func (l *CreateGroupLogic) CreateGroup(req *user.CreateGroupReq) (*user.CreateGr
 		}
 	}
 
-	// ����Ⱥ��ID
+	// ???????ID
 	groupID, err := mcontext.GenGroupID(l.ctx, func(id string) (bool, error) {
 		_, err := l.svcCtx.GroupDB.TakeGroup(l.ctx, id)
 		if err != nil {
-			// �����ѯ���������Ƿ���"δ�ҵ�"����
-			// �� MongoDB �У����ʹ�� FindOne �Ҳ����ĵ����᷵�� mongo.ErrNoDocuments
-			// �������Ǽ�����������������ID�����ڣ��������ã���Ҳ��������������
-			// Ϊ�˰�ȫ��������Ƿ��� false�������ڣ����� GenGroupID ��������
+			// ???????????????????"???"????
+			// ?? MongoDB ???????? FindOne ?????????????? mongo.ErrNoDocuments
+			// ?????????????????????????ID?????????????????????????????????
+			// ????????????????? false????????????? GenGroupID ????????
 			return false, nil
 		}
-		// �ҵ��ˣ�˵��ID�Ѵ���
+		// ?????????ID?????
 		return true, nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate group ID: %v", err)
 	}
 
-	// 转换群组信息
+	// תȺϢ
 	groupInfo := convert.Pb2ModelGroupInfo(req.GroupInfo)
 	groupInfo.GroupID = groupID
 	groupInfo.CreateTime = time.Now()
 
-	// ����Ⱥ��Ա
+	// ????????
 	var groupMembers []*model.GroupMember
 	now := time.Now()
 
-	// ���Ⱥ��
+	// ??????
 	groupMembers = append(groupMembers, &model.GroupMember{
 		GroupID:        groupID,
 		UserID:         req.OwnerUserID,
@@ -152,7 +152,7 @@ func (l *CreateGroupLogic) CreateGroup(req *user.CreateGroupReq) (*user.CreateGr
 		MuteEndTime:    time.UnixMilli(0),
 	})
 
-	// ��ӹ���Ա
+	// ???????
 	for _, userID := range req.AdminUserIDs {
 		groupMembers = append(groupMembers, &model.GroupMember{
 			GroupID:        groupID,
@@ -166,7 +166,7 @@ func (l *CreateGroupLogic) CreateGroup(req *user.CreateGroupReq) (*user.CreateGr
 		})
 	}
 
-	// �����ͨ��Ա
+	// ?????????
 	for _, userID := range req.MemberUserIDs {
 		groupMembers = append(groupMembers, &model.GroupMember{
 			GroupID:        groupID,
@@ -180,7 +180,7 @@ func (l *CreateGroupLogic) CreateGroup(req *user.CreateGroupReq) (*user.CreateGr
 		})
 	}
 
-	// Webhook BeforeMembersJoinGroup �ص�
+	// Webhook BeforeMembersJoinGroup ???
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackBeforeMembersJoinGroupReq{
 			CallbackCommand: webhook.CallbackBeforeMembersJoinGroupCommand,
@@ -194,21 +194,21 @@ func (l *CreateGroupLogic) CreateGroup(req *user.CreateGroupReq) (*user.CreateGr
 			if err != webhook.ErrCallbackContinue {
 				return nil, err
 			}
-			// ErrCallbackContinue ��ʾ����ִ��
+			// ErrCallbackContinue ??????????
 		}
-		// ��� webhook �������޸ĺ�ĳ�Ա�б����Ҫ���¹��� groupMembers
+		// ??? webhook ??????????????????????1??? groupMembers
 		if len(cbResp.MemberUserIDs) > 0 {
-			// ����򻯴����ʵ��Ӧ�ø��ݷ��صĳ�Ա�б����¹���
-			// Ϊ�˼򻯣�������ʱ��������޸�
+			// ??????????????????????????????1???
+			// ???????????????????????
 		}
 	}
 
-	// ����Ⱥ��ͳ�Ա
+	// ??????????
 	if err := l.svcCtx.GroupDB.CreateGroup(l.ctx, []*model.Group{groupInfo}, groupMembers); err != nil {
 		return nil, err
 	}
 
-	// 构建响应
+	// Ӧ
 	memberCount := uint32(len(userIDs))
 	resp.GroupInfo = convert.ModelGroupDB2Pb(groupInfo)
 	if resp.GroupInfo != nil {
@@ -216,7 +216,7 @@ func (l *CreateGroupLogic) CreateGroup(req *user.CreateGroupReq) (*user.CreateGr
 		resp.GroupInfo.MemberCount = memberCount
 	}
 
-	// 为所有成员创建群聊会话（与官方一致）
+	// ΪгԱȺĻỰٷһ£
 	if l.svcCtx.ConversationClient != nil {
 		go func() {
 			ctx2, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -232,12 +232,12 @@ func (l *CreateGroupLogic) CreateGroup(req *user.CreateGroupReq) (*user.CreateGr
 		}()
 	}
 
-	// ����Ⱥ�鴴��֪ͨ
+	// ??????????
 	if l.svcCtx.GroupNotification != nil {
 		l.svcCtx.GroupNotification.GroupCreatedNotification(l.ctx, groupID, req.OwnerUserID, userIDs)
 	}
 
-	// Webhook AfterCreateGroup �ص�
+	// Webhook AfterCreateGroup ???
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackAfterCreateGroupReq{
 			CallbackCommand: webhook.CallbackAfterCreateGroupCommand,

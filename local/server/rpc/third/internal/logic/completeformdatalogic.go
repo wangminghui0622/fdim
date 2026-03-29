@@ -31,7 +31,7 @@ func (l *CompleteFormDataLogic) CompleteFormData(req *third.CompleteFormDataReq)
 
 	cfg := l.svcCtx.Config.ObjectStorage
 
-	// 从 uploadID 中解码对象名（格式: "form:objectName"）
+	// ?uploadID 中解码对象名（格? "form:objectName"?
 	objectName := ""
 	if parts := strings.SplitN(req.Id, ":", 2); len(parts) == 2 {
 		objectName = parts[1]
@@ -40,7 +40,7 @@ func (l *CompleteFormDataLogic) CompleteFormData(req *third.CompleteFormDataReq)
 		return nil, fmt.Errorf("invalid upload id: %s", req.Id)
 	}
 
-	// 用 SignEndpoint（公网地址）构造访问 URL，回退到 Endpoint
+	// ?SignEndpoint（公网地址）构造访?URL，回退?Endpoint
 	endpoint := cfg.SignEndpoint
 	if endpoint == "" {
 		endpoint = cfg.Endpoint

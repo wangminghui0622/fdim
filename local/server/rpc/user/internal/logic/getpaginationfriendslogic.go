@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -30,24 +30,24 @@ func NewGetPaginationFriendsLogic(ctx context.Context, svcCtx *svc.ServiceContex
 func (l *GetPaginationFriendsLogic) GetPaginationFriends(req *user.GetPaginationFriendsReq) (*user.GetPaginationFriendsResp, error) {
 	resp := &user.GetPaginationFriendsResp{}
 
-	// Ȩ����֤
+	// ??????
 	if err := authverify.CheckAccess(l.ctx, req.UserID); err != nil {
 		return nil, err
 	}
 
-	// �����ҳ����
+	// ??????????
 	offset := util.CalculateOffset(req.Pagination.PageNumber, req.Pagination.ShowNumber)
 	limit := util.CalculateLimit(req.Pagination.ShowNumber)
 
-	// ��ҳ��ѯ�����б�
+	// ????????????
 	total, friends, err := l.svcCtx.FriendDB.PageOwnerFriends(l.ctx, req.UserID, offset, limit)
 	if err != nil {
 		return nil, err
 	}
 
-	// 转换为 Protocol Buffer 格式
+	// תΪ Protocol Buffer ʽ
 	resp.Total = int32(total)
-	// 转换 Friend 为 sdkws.FriendInfo
+	// ת Friend Ϊ sdkws.FriendInfo
 	relationFriends := convert.ModelFriendsDB2Pb(friends)
 	resp.FriendsInfo = make([]*sdkws.FriendInfo, 0, len(relationFriends))
 	for _, rf := range relationFriends {
@@ -63,7 +63,7 @@ func (l *GetPaginationFriendsLogic) GetPaginationFriends(req *user.GetPagination
 		resp.FriendsInfo = append(resp.FriendsInfo, sdkwsFriend)
 	}
 
-	// ��ȡ���ѵ��û���Ϣ
+	// ??????????????
 	if len(friends) > 0 {
 		friendUserIDs := make([]string, 0, len(friends))
 		for _, f := range friends {
@@ -75,18 +75,18 @@ func (l *GetPaginationFriendsLogic) GetPaginationFriends(req *user.GetPagination
 			return nil, err
 		}
 
-		// �����û�ӳ��
+		// ??????????
 		userMap := make(map[string]*model.User)
 		for _, u := range users {
 			userMap[u.UserID] = u
 		}
 
-		// 查询好友的在线状态
+		// ѯѵ״̬
 		onlineStatusMap := make(map[string][]int32)
 		for _, friendUserID := range friendUserIDs {
 			platformIDs, err := l.svcCtx.UserCache.GetUserOnline(l.ctx, friendUserID)
 			if err != nil {
-				// 记录错误但不中断流程
+				// ¼󵫲ж
 				l.Logger.Errorf("Failed to get online status for user %s: %v", friendUserID, err)
 				continue
 			}
@@ -95,8 +95,8 @@ func (l *GetPaginationFriendsLogic) GetPaginationFriends(req *user.GetPagination
 			}
 		}
 
-		// �����ѵ��û���Ϣ
-		// ���� convert.FriendsDB2Pb ���ص��б�˳��������� friends �б�˳��һ�£�����ֱ��ͨ������ƥ��
+		// ?????????????
+		// ???? convert.FriendsDB2Pb ????????????????? friends ?????????????????????????
 		for i, friendInfo := range resp.FriendsInfo {
 			if i < len(friends) {
 				friend := friends[i]
@@ -108,9 +108,9 @@ func (l *GetPaginationFriendsLogic) GetPaginationFriends(req *user.GetPagination
 						Ex:       user.Ex,
 					}
 					
-					// 添加在线状态信息
+					// ״̬Ϣ
 					if platformIDs, exists := onlineStatusMap[friend.FriendUserID]; exists && len(platformIDs) > 0 {
-						// 用户在线，设置在线平台列表
+						// ûߣƽ̨б
 						userInfo.OnlinePlatformIDs = platformIDs
 					}
 					

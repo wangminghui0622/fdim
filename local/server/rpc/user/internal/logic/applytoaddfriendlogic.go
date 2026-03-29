@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -28,23 +28,23 @@ func NewApplyToAddFriendLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 func (l *ApplyToAddFriendLogic) ApplyToAddFriend(req *user.ApplyToAddFriendReq) (*user.ApplyToAddFriendResp, error) {
 	resp := &user.ApplyToAddFriendResp{}
 
-	// Ȩ����֤
+	// ??????
 	if err := authverify.CheckAccess(l.ctx, req.FromUserID); err != nil {
 		return nil, err
 	}
 
-	// ������֤
+	// ???????
 	if req.ToUserID == req.FromUserID {
 		return nil, fmt.Errorf("can not add yourself")
 	}
 
-	// ����û��Ƿ����
+	// ????????????
 	_, err := l.svcCtx.UserDB.FindWithError(l.ctx, []string{req.ToUserID, req.FromUserID})
 	if err != nil {
 		return nil, err
 	}
 
-	// ����Ƿ��Ѿ��Ǻ���
+	// ??????????????
 	in1, in2, err := l.svcCtx.FriendDB.CheckIn(l.ctx, req.FromUserID, req.ToUserID)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (l *ApplyToAddFriendLogic) ApplyToAddFriend(req *user.ApplyToAddFriendReq) 
 		return nil, fmt.Errorf("already friends")
 	}
 
-	// Webhook BeforeAddFriend �ص�
+	// Webhook BeforeAddFriend ???
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackBeforeAddFriendReq{
 			CallbackCommand: webhook.CallbackBeforeAddFriendCommand,
@@ -67,16 +67,16 @@ func (l *ApplyToAddFriendLogic) ApplyToAddFriend(req *user.ApplyToAddFriendReq) 
 			if err != webhook.ErrCallbackContinue {
 				return nil, err
 			}
-			// ErrCallbackContinue ��ʾ����ִ��
+			// ErrCallbackContinue ??????????
 		}
 	}
 
-	// ��Ӻ�������
+	// ??????????
 	if err := l.svcCtx.FriendDB.AddFriendRequest(l.ctx, req.FromUserID, req.ToUserID, req.ReqMsg, req.Ex); err != nil {
 		return nil, err
 	}
 
-	// 发送好友申请通知
+	// ͺ֪ͨ
 	l.Infof("[ApplyToAddFriend] sending notification: from=%s to=%s, FriendNotification=%v",
 		req.FromUserID, req.ToUserID, l.svcCtx.FriendNotification != nil)
 	if l.svcCtx.FriendNotification != nil {
@@ -86,7 +86,7 @@ func (l *ApplyToAddFriendLogic) ApplyToAddFriend(req *user.ApplyToAddFriendReq) 
 		l.Errorf("[ApplyToAddFriend] FriendNotification is nil, cannot send notification")
 	}
 
-	// Webhook AfterAddFriend �ص�
+	// Webhook AfterAddFriend ???
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackAfterAddFriendReq{
 			CallbackCommand: webhook.CallbackAfterAddFriendCommand,

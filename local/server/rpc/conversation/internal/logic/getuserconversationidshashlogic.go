@@ -35,20 +35,19 @@ func (l *GetUserConversationIDsHashLogic) GetUserConversationIDsHash(req *conver
 		return nil, fmt.Errorf("failed to find conversation IDs: %w", err)
 	}
 
-	// 计算哈希：排序后使用 MD5，取前8个字符转换为 uint64
+	// 计算哈希：排序后使用 MD5，取?个字符转换为 uint64
 	hash := calculateConversationIDsHash(conversationIDs)
 
 	resp.Hash = hash
 	return resp, nil
 }
 
-// calculateConversationIDsHash 计算会话ID列表的哈希值
+// calculateConversationIDsHash 计算会话ID列表的哈希?
 func calculateConversationIDsHash(conversationIDs []string) uint64 {
 	if len(conversationIDs) == 0 {
 		return 0
 	}
 
-	// 使用 JSON marshal（与 open-im-server 保持一致）
 	data, _ := json.Marshal(conversationIDs)
 
 	// MD5 哈希

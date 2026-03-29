@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,12 +24,12 @@ func NewDelInvitationCodeLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 }
 
 func (l *DelInvitationCodeLogic) DelInvitationCode(req *admin.DelInvitationCodeReq) (*admin.DelInvitationCodeResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.Codes) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("codes cannot be empty")
 	}
 
-	// 2. 删除邀请码
+	// 2. ɾ
 	if err := l.svcCtx.AdminDB.DelInvitationCode(l.ctx, req.Codes); err != nil {
 		l.Errorf("DelInvitationCode failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to delete invitation codes")

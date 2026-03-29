@@ -6,7 +6,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'config.dart';
 
-/// Official OpenIM WebSocket protocol constants
+/// Official FDIM WebSocket protocol constants
 class WsProtocol {
   // Client → Server request identifiers
   static const int wsGetNewestSeq = 1001;
@@ -24,7 +24,7 @@ class WsProtocol {
 
 enum WsStatus { connecting, connected, disconnected }
 
-/// Official OpenIM WsResp frame
+/// Official FDIM WsResp frame
 class WsResp {
   final int reqIdentifier;
   final int errCode;

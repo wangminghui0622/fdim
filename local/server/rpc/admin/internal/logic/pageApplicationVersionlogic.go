@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,19 +24,19 @@ func NewPageApplicationVersionLogic(ctx context.Context, svcCtx *svc.ServiceCont
 }
 
 func (l *PageApplicationVersionLogic) PageApplicationVersion(req *admin.PageApplicationVersionReq) (*admin.PageApplicationVersionResp, error) {
-	// 1. 验证分页参数
+	// 1. ֤ҳ
 	if req.Pagination == nil || req.Pagination.PageNumber <= 0 || req.Pagination.ShowNumber <= 0 {
 		return nil, errs.ErrArgs.WrapMsg("invalid pagination parameters")
 	}
 
-	// 2. 分页获取应用版本
+	// 2. ҳȡӦð汾
 	total, versions, err := l.svcCtx.AdminDB.PageApplicationVersion(l.ctx, req.Platform, req.Pagination)
 	if err != nil {
 		l.Errorf("PageApplicationVersion failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to page application versions")
 	}
 
-	// 3. 转换为响应格式
+	// 3. תΪӦʽ
 	results := make([]*admin.ApplicationVersion, 0, len(versions))
 	for _, version := range versions {
 		results = append(results, &admin.ApplicationVersion{

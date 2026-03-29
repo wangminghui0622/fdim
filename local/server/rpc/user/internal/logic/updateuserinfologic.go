@@ -28,12 +28,12 @@ func NewUpdateUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Up
 func (l *UpdateUserInfoLogic) UpdateUserInfo(req *user.UpdateUserInfoReq) (*user.UpdateUserInfoResp, error) {
 	resp := &user.UpdateUserInfoResp{}
 
-	// Ȩ����֤
+	// Ȩ֤
 	if err := authverify.CheckAccess(l.ctx, req.UserInfo.UserID); err != nil {
 		return nil, err
 	}
 
-	// Webhook Before �ص�
+	// Webhook Before ص
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackBeforeUpdateUserInfoReq{
 			CallbackCommand: webhook.CallbackBeforeUpdateUserInfoCommand,
@@ -53,9 +53,9 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *user.UpdateUserInfoReq) (*user
 			if err != webhook.ErrCallbackContinue {
 				return nil, err
 			}
-			// ErrCallbackContinue ��ʾ����ִ��
+			// ErrCallbackContinue ʾִ
 		}
-		// �����������ݣ���� webhook �������޸ģ�
+		// ݣ?webhook ޸ģ
 		if cbResp.FaceURL != nil {
 			req.UserInfo.FaceURL = *cbResp.FaceURL
 		}
@@ -72,12 +72,12 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *user.UpdateUserInfoReq) (*user
 		return nil, err
 	}
 
-	// �����û���Ϣ����֪ͨ��֪ͨ�û��Լ���
+	// ûϢ֪֪ͨͨûԼ
 	if l.svcCtx.UserNotification != nil {
 		l.svcCtx.UserNotification.UserInfoUpdatedNotification(l.ctx, req.UserInfo.UserID, req.UserInfo.UserID)
 	}
 
-	// Webhook After �ص�
+	// Webhook After ص
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackAfterUpdateUserInfoReq{
 			CallbackCommand: webhook.CallbackAfterUpdateUserInfoCommand,

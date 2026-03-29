@@ -1,7 +1,6 @@
 package types
 
-// Conversation 相关请求和响应类型
-// 注意：这些类型需要与 open-im-server 的 API 接口保持一致
+// Conversation 相关请求和响应类?
 
 // GetAllConversations 相关类型
 type GetAllConversationsReq struct {
@@ -15,9 +14,9 @@ type GetAllConversationsResp struct {
 
 // GetSortedConversationList 相关类型
 type GetSortedConversationListReq struct {
-	UserID         string     `json:"userID,optional"`
+	UserID          string     `json:"userID,optional"`
 	ConversationIDs []string   `json:"conversationIDs,optional"`
-	Pagination     Pagination `json:"pagination,optional"`
+	Pagination      Pagination `json:"pagination,optional"`
 }
 
 type ConversationElem struct {
@@ -25,20 +24,20 @@ type ConversationElem struct {
 	RecvMsgOpt     int32       `json:"recvMsgOpt"`
 	UnreadCount    int64       `json:"unreadCount"`
 	IsPinned       bool        `json:"isPinned"`
-	MsgInfo        interface{} `json:"msgInfo,omitempty"` // 包含 senderName, faceURL 等
+	MsgInfo        interface{} `json:"msgInfo,omitempty"` // 包含 senderName, faceURL ?
 }
 
 type GetSortedConversationListResp struct {
 	BaseResp
-	ConversationTotal int64           `json:"conversationTotal"`
-	UnreadTotal       int64           `json:"unreadTotal"`
+	ConversationTotal int64              `json:"conversationTotal"`
+	UnreadTotal       int64              `json:"unreadTotal"`
 	ConversationElems []ConversationElem `json:"conversationElems"`
 }
 
 // GetConversation 相关类型
 type GetConversationReq struct {
-	OwnerUserID     string `json:"ownerUserID"`
-	ConversationID  string `json:"conversationID"`
+	OwnerUserID    string `json:"ownerUserID"`
+	ConversationID string `json:"conversationID"`
 }
 
 type GetConversationResp struct {
@@ -48,7 +47,7 @@ type GetConversationResp struct {
 
 // GetConversations 相关类型
 type GetConversationsReq struct {
-	OwnerUserID    string   `json:"ownerUserID"`
+	OwnerUserID     string   `json:"ownerUserID"`
 	ConversationIDs []string `json:"conversationIDs"`
 }
 
@@ -87,12 +86,12 @@ type GetIncrementalConversationReq struct {
 
 type GetIncrementalConversationResp struct {
 	BaseResp
-	Version        uint64        `json:"version"`
-	VersionID      string        `json:"versionID"`
-	Full           bool          `json:"full"`
-	Delete         []string      `json:"delete"`
-	Insert         []interface{} `json:"insert"` // 使用 sdkws.Conversation
-	Update         []interface{} `json:"update"` // 使用 sdkws.Conversation
+	Version   uint64        `json:"version"`
+	VersionID string        `json:"versionID"`
+	Full      bool          `json:"full"`
+	Delete    []string      `json:"delete"`
+	Insert    []interface{} `json:"insert"` // 使用 sdkws.Conversation
+	Update    []interface{} `json:"update"` // 使用 sdkws.Conversation
 }
 
 // GetOwnerConversation 相关类型
@@ -129,8 +128,8 @@ type GetPinnedConversationIDsResp struct {
 
 // UpdateConversationsByUser 相关类型
 type UpdateConversationsByUserReq struct {
-	UserID        string  `json:"userID"`
-	Ex            *string `json:"ex,optional"`
+	UserID string  `json:"userID"`
+	Ex     *string `json:"ex,optional"`
 }
 
 type UpdateConversationsByUserResp struct {

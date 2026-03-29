@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,6 +24,6 @@ func NewGetIncrementalBlacksLogic(ctx context.Context, svcCtx *svc.ServiceContex
 }
 
 func (l *GetIncrementalBlacksLogic) GetIncrementalBlacks(req *user.GetIncrementalBlacksReq) (*user.GetIncrementalBlacksResp, error) {
-	// TODO: 实现获取增量黑名单的逻辑
+	// TODO: ʵֻȡ߼
 	return nil, fmt.Errorf("GetIncrementalBlacks not fully implemented yet")
 }

@@ -19,7 +19,7 @@ import (
 func newTestOnline() *userOnline {
 	opt := &redis.Options{
 		Addr:     "172.16.8.48:16379",
-		Password: "openIM123",
+		Password: "FDIM123",
 		DB:       0,
 	}
 	rdb := redis.NewClient(opt)
@@ -85,19 +85,19 @@ func TestRecvOnline(t *testing.T) {
 func TestName1(t *testing.T) {
 	opt := &redis.Options{
 		Addr:     "172.16.8.48:16379",
-		Password: "openIM123",
+		Password: "FDIM123",
 		DB:       0,
 	}
 	rdb := redis.NewClient(opt)
 
 	mgo, err := mongo.Connect(context.Background(),
 		options.Client().
-			ApplyURI("mongodb://openIM:openIM123@172.16.8.48:37017/openim_v3?maxPoolSize=100").
+			ApplyURI("mongodb://FDIM:FDIM123@172.16.8.48:37017/FDIM_v3?maxPoolSize=100").
 			SetConnectTimeout(5*time.Second))
 	if err != nil {
 		panic(err)
 	}
-	model, err := mgo2.NewSeqUserMongo(mgo.Database("openim_v3"))
+	model, err := mgo2.NewSeqUserMongo(mgo.Database("FDIM_v3"))
 	if err != nil {
 		panic(err)
 	}

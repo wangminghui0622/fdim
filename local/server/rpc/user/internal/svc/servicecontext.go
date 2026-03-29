@@ -32,13 +32,13 @@ type ServiceContext struct {
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	// 初始化 MongoDB
+	// 初始?MongoDB
 	mongoDB := database.NewMongoDB(c.Mongo.Host, c.Mongo.Database, c.Mongo.Username, c.Mongo.Password)
 
-	// 初始化 Redis
+	// 初始?Redis
 	redisClient := cache.NewRedisClient(c.Cache)
 
-	// 初始化数据库层
+	// 初始化数据库?
 	userDB := database.NewUserDatabase(mongoDB)
 	friendDB := database.NewFriendDatabase(mongoDB)
 	groupDB := database.NewGroupDatabase(mongoDB)
@@ -69,15 +69,15 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	}
 	notifConf := pkgconfig.DefaultNotification()
 	friendNotification := notification.NewFriendNotificationSender(notifConf, notificationOpts...)
-	// 设置好友数据库，用于获取好友申请信息（包含reqMsg）
+	// 设置好友数据库，用于获取好友申请信息（包含reqMsg?
 	friendNotification.SetFriendDB(friendDB)
 	groupNotification := notification.NewGroupNotificationSender(notifConf, notificationOpts...)
 	userNotification := notification.NewUserNotificationSender(notifConf, notificationOpts...)
 
-	// 初始化 Webhook 客户端
+	// 初始?Webhook 客户?
 	webhookClient := webhook.NewWebhookClient(c.Webhook.URL)
 
-	// 初始化 Conversation RPC 客户端
+	// 初始?Conversation RPC 客户?
 	var convClient conversation.ConversationClient
 	if c.ConversationRpc.Target != "" || len(c.ConversationRpc.Endpoints) > 0 {
 		conn, err := zrpc.NewClient(c.ConversationRpc)

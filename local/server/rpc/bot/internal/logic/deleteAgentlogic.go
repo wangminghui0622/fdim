@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,12 +24,12 @@ func NewDeleteAgentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Delet
 }
 
 func (l *DeleteAgentLogic) DeleteAgent(req *bot.DeleteAgentReq) (*bot.DeleteAgentResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.UserIDs) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("user IDs cannot be empty")
 	}
 
-	// 2. 删除Agent
+	// 2. ɾAgent
 	if err := l.svcCtx.BotDB.DeleteAgent(l.ctx, req.UserIDs); err != nil {
 		l.Errorf("DeleteAgent failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to delete agents")

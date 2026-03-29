@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
+	"fdim/pkg/constant"
 	"fdim/pkg/mcontext"
 	"github.com/IBM/sarama"
-	"github.com/openimsdk/protocol/constant"
 )
 
 var errEmptyMsg = errors.New("kafka binary msg is empty")

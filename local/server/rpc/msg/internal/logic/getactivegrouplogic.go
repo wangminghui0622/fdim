@@ -32,7 +32,7 @@ func (l *GetActiveGroupLogic) GetActiveGroup(req *msg.GetActiveGroupReq) (*msg.G
 		req.End = time.Now().UnixMilli()
 	}
 	if req.Start == 0 || req.Start > req.End {
-		// 默认统计最近 7 天
+		// 默认统计最?7 ?
 		req.Start = req.End - int64(7*24*time.Hour/time.Millisecond)
 	}
 	if req.Pagination == nil || req.Pagination.ShowNumber <= 0 {
@@ -113,7 +113,7 @@ func (l *GetActiveGroupLogic) GetActiveGroup(req *msg.GetActiveGroupReq) (*msg.G
 	}
 	cur.Close(l.ctx)
 
-	// 3. 按 group 聚合消息数量，做分页
+	// 3. ?group 聚合消息数量，做分页
 	offset := int64((req.Pagination.PageNumber - 1) * req.Pagination.ShowNumber)
 	limit := int64(req.Pagination.ShowNumber)
 	groupAgg := mongo.Pipeline{

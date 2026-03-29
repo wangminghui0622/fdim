@@ -30,7 +30,7 @@ func (l *GetUserTokenLogic) GetUserToken(req *auth.GetUserTokenReq) (*auth.GetUs
 	// 	return nil, err
 	// }
 
-	// 检查 PlatformID
+	// 检?PlatformID
 	if req.PlatformID == constant.AdminPlatformID {
 		return nil, fmt.Errorf("platformID invalid. platformID must not be adminPlatformID")
 	}
@@ -39,7 +39,7 @@ func (l *GetUserTokenLogic) GetUserToken(req *auth.GetUserTokenReq) (*auth.GetUs
 		return nil, fmt.Errorf("auth database not initialized")
 	}
 
-	// 验证 userID 对应的用户是否存在（防止用昵称等无效ID获取token）
+	// 验证 userID 对应的用户是否存在（防止用昵称等无效ID获取token?
 	if l.svcCtx.UserDB != nil {
 		users, err := l.svcCtx.UserDB.FindWithError(l.ctx, []string{req.UserID})
 		if err != nil {

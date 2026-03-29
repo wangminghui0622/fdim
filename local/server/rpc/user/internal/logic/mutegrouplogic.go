@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -29,12 +29,12 @@ func NewMuteGroupLogic(ctx context.Context, svcCtx *svc.ServiceContext) *MuteGro
 func (l *MuteGroupLogic) MuteGroup(req *user.MuteGroupReq) (*user.MuteGroupResp, error) {
 	resp := &user.MuteGroupResp{}
 
-	// ������֤
+	// ???????
 	if req.GroupID == "" {
 		return nil, fmt.Errorf("groupID is empty")
 	}
 
-	// Ȩ�޼�飺��Ҫ��Ⱥ�������Ա
+	// ??????????????????
 	opUserID := mcontext.GetOpUserID(l.ctx)
 	if !authverify.IsAdmin(l.ctx) {
 		member, err := l.svcCtx.GroupDB.TakeGroupMember(l.ctx, req.GroupID, opUserID)
@@ -46,7 +46,7 @@ func (l *MuteGroupLogic) MuteGroup(req *user.MuteGroupReq) (*user.MuteGroupResp,
 		}
 	}
 
-	// ����Ⱥ��״̬Ϊ����
+	// ??????????????
 	data := map[string]interface{}{
 		"status": constant.GroupStatusMuted,
 	}
@@ -54,7 +54,7 @@ func (l *MuteGroupLogic) MuteGroup(req *user.MuteGroupReq) (*user.MuteGroupResp,
 		return nil, err
 	}
 
-	// ����Ⱥ�����֪ͨ
+	// ????????????
 	if l.svcCtx.GroupNotification != nil {
 		l.svcCtx.GroupNotification.GroupMutedNotification(l.ctx, req.GroupID, opUserID)
 	}

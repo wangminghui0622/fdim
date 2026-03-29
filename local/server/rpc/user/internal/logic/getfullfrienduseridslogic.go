@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -27,7 +27,7 @@ func NewGetFullFriendUserIDsLogic(ctx context.Context, svcCtx *svc.ServiceContex
 func (l *GetFullFriendUserIDsLogic) GetFullFriendUserIDs(req *user.GetFullFriendUserIDsReq) (*user.GetFullFriendUserIDsResp, error) {
 	resp := &user.GetFullFriendUserIDsResp{}
 
-	// Ȩ����֤
+	// ??????
 	opUserID := mcontext.GetOpUserID(l.ctx)
 	if req.UserID == "" {
 		req.UserID = opUserID
@@ -37,26 +37,26 @@ func (l *GetFullFriendUserIDsLogic) GetFullFriendUserIDs(req *user.GetFullFriend
 		}
 	}
 
-	// TODO: �ӻ����ȡ���汾��
+	// TODO: ????????????
 	// maxVersion, err := l.svcCtx.FriendCache.FindMaxFriendVersionCache(l.ctx, req.UserID)
 	// if err != nil {
 	// 	return nil, err
 	// }
 
-	// ��ȡ����ID�б�
+	// ???????ID??
 	friendIDs, err := l.svcCtx.FriendDB.FindFriendUserIDs(l.ctx, req.UserID)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO: �������ID�б�Ĺ�ϣֵ
+	// TODO: ???????ID??????
 	// idHash := hashutil.IdHash(friendIDs)
 	// if req.IdHash == idHash {
-	// 	friendIDs = nil // �����ϣֵ��ͬ��˵������δ�仯�����ؿ��б�
+	// 	friendIDs = nil // ?????????????????????????????
 	// }
 
 	resp.UserIDs = friendIDs
-	// TODO: ���ð汾��Ϣ
+	// TODO: ???e???
 	// resp.Version = uint64(maxVersion.Version)
 	// resp.VersionID = maxVersion.ID.Hex()
 	// resp.Equal = req.IdHash == idHash

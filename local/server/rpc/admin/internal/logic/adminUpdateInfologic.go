@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -26,20 +26,20 @@ func NewAdminUpdateInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *A
 }
 
 func (l *AdminUpdateInfoLogic) AdminUpdateInfo(req *admin.AdminUpdateInfoReq) (*admin.AdminUpdateInfoResp, error) {
-	// 1. 从 context 中获取 userID
+	// 1.  context лȡ userID
 	userID := mcontext.GetOpUserID(l.ctx)
 	if userID == "" {
 		return nil, errs.ErrArgs.WrapMsg("userID not found in context")
 	}
 
-	// 2. 获取当前管理员信息
+	// 2. ȡǰԱϢ
 	adminInfo, err := l.svcCtx.AdminDB.GetAdminUserID(l.ctx, userID)
 	if err != nil {
 		l.Errorf("GetAdminUserID failed: %v", err)
 		return nil, errs.ErrArgs.WrapMsg("admin not found")
 	}
 
-	// 3. 构建更新字段
+	// 3. ֶ
 	update := make(map[string]interface{})
 	if req.Account != nil && req.Account.Value != "" {
 		update["account"] = req.Account.Value
@@ -61,18 +61,18 @@ func (l *AdminUpdateInfoLogic) AdminUpdateInfo(req *admin.AdminUpdateInfoReq) (*
 		return nil, errs.ErrArgs.WrapMsg("no update info")
 	}
 
-	// 4. 更新管理员信息
+	// 4. ¹ԱϢ
 	if err := l.svcCtx.AdminDB.UpdateAdmin(l.ctx, userID, update); err != nil {
 		l.Errorf("UpdateAdmin failed: %v", err)
 		return nil, fmt.Errorf("failed to update admin: %w", err)
 	}
 
-	// 5. 构建响应
+	// 5. Ӧ
 	resp := &admin.AdminUpdateInfoResp{
 		UserID: adminInfo.UserID,
 	}
 
-	// 设置响应字段（使用更新后的值或原值）
+	// ӦֶΣʹøºֵԭֵ
 	if req.Nickname != nil {
 		resp.Nickname = req.Nickname.Value
 	} else {

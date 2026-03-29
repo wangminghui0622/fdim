@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -30,12 +30,12 @@ func NewAddBlackLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AddBlack
 func (l *AddBlackLogic) AddBlack(req *user.AddBlackReq) (*user.AddBlackResp, error) {
 	resp := &user.AddBlackResp{}
 
-	// Ȩ����֤
+	// ??????
 	if err := authverify.CheckAccess(l.ctx, req.OwnerUserID); err != nil {
 		return nil, err
 	}
 
-	// Webhook BeforeAddBlack �ص�
+	// Webhook BeforeAddBlack ???
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackBeforeAddBlackReq{
 			CallbackCommand: webhook.CallbackBeforeAddBlackCommand,
@@ -47,11 +47,11 @@ func (l *AddBlackLogic) AddBlack(req *user.AddBlackReq) (*user.AddBlackResp, err
 			if err != webhook.ErrCallbackContinue {
 				return nil, err
 			}
-			// ErrCallbackContinue ��ʾ����ִ��
+			// ErrCallbackContinue ??????????
 		}
 	}
 
-	// ��ȡ�����û�ID
+	// ??????????ID
 	opUserID := mcontext.GetOpUserID(l.ctx)
 	if opUserID == "" {
 		opUserID = req.OwnerUserID
@@ -61,7 +61,7 @@ func (l *AddBlackLogic) AddBlack(req *user.AddBlackReq) (*user.AddBlackResp, err
 		OwnerUserID:    req.OwnerUserID,
 		BlockUserID:    req.BlackUserID,
 		CreateTime:     time.Now(),
-		AddSource:      0, // AddBlackReq ��û�� AddSource �ֶΣ�ʹ��Ĭ��ֵ
+		AddSource:      0, // AddBlackReq ????? AddSource ??????????
 		OperatorUserID: opUserID,
 		Ex:             req.Ex,
 	}
@@ -70,12 +70,12 @@ func (l *AddBlackLogic) AddBlack(req *user.AddBlackReq) (*user.AddBlackResp, err
 		return nil, err
 	}
 
-	// ���ͺ��������֪ͨ
+	// ??????????????
 	if l.svcCtx.FriendNotification != nil {
 		l.svcCtx.FriendNotification.BlackAddedNotification(l.ctx, req.OwnerUserID, req.BlackUserID)
 	}
 
-	// Webhook AfterAddBlack �ص�
+	// Webhook AfterAddBlack ???
 	if l.svcCtx.WebhookClient != nil {
 		cbReq := &webhook.CallbackAfterAddBlackReq{
 			CallbackCommand: webhook.CallbackAfterAddBlackCommand,

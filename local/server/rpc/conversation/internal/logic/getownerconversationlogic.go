@@ -28,7 +28,7 @@ func (l *GetOwnerConversationLogic) GetOwnerConversation(req *conversation.GetOw
 
 	// 获取分页参数
 	offset := int64(0)
-	limit := int64(20) // 默认值
+	limit := int64(20) // 默认?
 	if req.Pagination != nil {
 		offset = int64((req.Pagination.PageNumber - 1) * req.Pagination.ShowNumber)
 		limit = int64(req.Pagination.ShowNumber)
@@ -52,7 +52,7 @@ func (l *GetOwnerConversationLogic) GetOwnerConversation(req *conversation.GetOw
 		return nil, fmt.Errorf("failed to get conversations: %w", err)
 	}
 
-	// 转换为 protobuf 格式
+	// 转换?protobuf 格式
 	resp.Conversations = make([]*conversation.Conversation, 0, len(conversations))
 	for _, conv := range conversations {
 		resp.Conversations = append(resp.Conversations, &conversation.Conversation{

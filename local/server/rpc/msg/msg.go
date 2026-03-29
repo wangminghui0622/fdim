@@ -27,7 +27,7 @@ func main() {
 	conf.MustLoad(*configFile, &c)
 	ctx := svc.NewServiceContext(c)
 	msgServer := server.NewMsgServer(ctx)
-	// 注入内部 SendMsg 函数引用（用于 HasReadReceipt 等通知，与官方一致）
+	// 注入内部 SendMsg 函数引用（用?HasReadReceipt 等通知，与官方一致）
 	ctx.SendMsgFunc = msgServer.SendMsg
 	// 初始化通知发送器（与官方一致）
 	ctx.NotificationSender = notification.NewNotificationSender(&c.NotificationConfig, notification.WithLocalSendMsg(msgServer.SendMsg))
@@ -40,7 +40,7 @@ func main() {
 		}
 	})
 
-	// 添加服务端拦截器：从 gRPC metadata 中提取 OpUserID 等信息到 context（与 user.go 一致）
+	// 添加服务端拦截器：从 gRPC metadata 中提?OpUserID 等信息到 context（与 user.go 一致）
 	s.AddUnaryInterceptors(func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		ctx = grpcinterceptor.ExtractContextFromMetadata(ctx)
 		return handler(ctx, req)

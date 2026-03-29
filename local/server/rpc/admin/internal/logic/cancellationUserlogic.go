@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -26,23 +26,23 @@ func NewCancellationUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *CancellationUserLogic) CancellationUser(req *admin.CancellationUserReq) (*admin.CancellationUserResp, error) {
-	// 1. 参数校验
+	// 1. У
 	if req.UserID == "" {
 		return nil, errs.ErrArgs.WrapMsg("userID cannot be empty")
 	}
 
-	// 2. 标记用户为封禁，相当于注销账号（简化实现）
-	// 如果已经封禁则直接返回
+	// 2. ûΪ൱ע˺ţʵ֣
+	// Ѿֱӷ
 	if _, err := l.svcCtx.AdminDB.GetBlockInfo(l.ctx, req.UserID); err == nil {
-		// 已经是封禁状态，视为注销成功
+		// ѾǷ״̬Ϊעɹ
 		return &admin.CancellationUserResp{}, nil
 	}
 
-	// 3. 添加封禁记录
+	// 3. ӷ¼
 	block := &database.BlockUser{
 		UserID:         req.UserID,
 		Reason:         req.Reason,
-		OperatorUserID: "system", // 可以按需从 ctx 中提取真实操作者
+		OperatorUserID: "system", // ԰ ctx ȡʵ
 		CreateTime:     time.Now(),
 	}
 	if err := l.svcCtx.AdminDB.AddBlockUser(l.ctx, []*database.BlockUser{block}); err != nil {
@@ -50,7 +50,7 @@ func (l *CancellationUserLogic) CancellationUser(req *admin.CancellationUserReq)
 		return nil, errs.WrapMsg(err, "failed to cancellation user (block user)")
 	}
 
-	// 4. 使该用户所有 token 失效，强制下线
+	// 4. ʹû token ʧЧǿ
 	if err := l.svcCtx.AdminDB.InvalidateToken(l.ctx, req.UserID); err != nil {
 		l.Errorw("InvalidateToken failed", logx.Field("userID", req.UserID), logx.Field("error", err))
 	}

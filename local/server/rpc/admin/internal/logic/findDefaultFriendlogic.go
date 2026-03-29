@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,7 +24,7 @@ func NewFindDefaultFriendLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 }
 
 func (l *FindDefaultFriendLogic) FindDefaultFriend(req *admin.FindDefaultFriendReq) (*admin.FindDefaultFriendResp, error) {
-	// FindDefaultFriendReq 没有 UserIDs 字段，返回所有默认好友
+	// FindDefaultFriendReq û UserIDs ֶΣĬϺ
 	userIDs, err := l.svcCtx.AdminDB.FindDefaultFriend(l.ctx, nil)
 	if err != nil {
 		l.Errorf("FindDefaultFriend failed: %v", err)

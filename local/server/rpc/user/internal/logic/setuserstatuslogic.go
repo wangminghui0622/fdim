@@ -27,23 +27,23 @@ func NewSetUserStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Set
 func (l *SetUserStatusLogic) SetUserStatus(req *user.SetUserStatusReq) (*user.SetUserStatusResp, error) {
 	resp := &user.SetUserStatusResp{}
 
-	// ������֤
+	// ֤
 	if req.UserID == "" {
 		return nil, fmt.Errorf("userID is empty")
 	}
 
-	// ����״̬�������߻�����
+	// ״̬߻
 	var online []int32
 	var offline []int32
 
-	// ״̬������1=Online, 0=Offline
+	// ״̬1=Online, 0=Offline
 	if req.Status == 1 { // Online
 		online = []int32{req.PlatformID}
 	} else { // Offline
 		offline = []int32{req.PlatformID}
 	}
 
-	// ���� Redis �е�����״̬
+	//  Redis е״̬
 	if err := l.svcCtx.UserCache.SetUserOnlineStatus(l.ctx, req.UserID, online, offline); err != nil {
 		return nil, err
 	}

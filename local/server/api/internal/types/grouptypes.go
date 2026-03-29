@@ -1,13 +1,9 @@
-﻿package types
+package types
 
-// Group 相关请求和响应类型
-// 注意：这些类型需要与 open-im-server 的 API 接口保持一致
-// 复杂的嵌套类型（如 GroupInfo）直接使用 protocol 包中的类型
-
-// CreateGroup 相关类型
+// CreateGroup
 type CreateGroupReq struct {
 	MemberUserIDs []string    `json:"memberUserIDs"`
-	GroupInfo     interface{} `json:"groupInfo"` // 使用 sdkws.GroupInfo
+	GroupInfo     interface{} `json:"groupInfo"` // ʹ sdkws.GroupInfo
 	AdminUserIDs  []string    `json:"adminUserIDs,optional"`
 	OwnerUserID   string      `json:"ownerUserID"`
 	SendMessage   *bool       `json:"sendMessage,optional"`
@@ -15,28 +11,28 @@ type CreateGroupReq struct {
 
 type CreateGroupResp struct {
 	BaseResp
-	GroupInfo interface{} `json:"groupInfo"` // 使用 sdkws.GroupInfo
+	GroupInfo interface{} `json:"groupInfo"` // ʹ sdkws.GroupInfo
 }
 
-// SetGroupInfo 相关类型
+// SetGroupInfo
 type SetGroupInfoReq struct {
-	GroupInfoForSet interface{} `json:"groupInfoForSet"` // 使用 sdkws.GroupInfoForSet
+	GroupInfoForSet interface{} `json:"groupInfoForSet"` // ʹ sdkws.GroupInfoForSet
 }
 
 type SetGroupInfoResp struct {
 	BaseResp
 }
 
-// SetGroupInfoEx 相关类型
+// SetGroupInfoEx
 type SetGroupInfoExReq struct {
-	GroupID         string  `json:"groupID"`
-	GroupName       *string `json:"groupName,optional"`
-	Notification    *string `json:"notification,optional"`
-	Introduction    *string `json:"introduction,optional"`
-	FaceURL         *string `json:"faceURL,optional"`
-	Ex              *string `json:"ex,optional"`
-	NeedVerification *int32  `json:"needVerification,optional"`
-	LookMemberInfo  *int32  `json:"lookMemberInfo,optional"`
+	GroupID           string  `json:"groupID"`
+	GroupName         *string `json:"groupName,optional"`
+	Notification      *string `json:"notification,optional"`
+	Introduction      *string `json:"introduction,optional"`
+	FaceURL           *string `json:"faceURL,optional"`
+	Ex                *string `json:"ex,optional"`
+	NeedVerification  *int32  `json:"needVerification,optional"`
+	LookMemberInfo    *int32  `json:"lookMemberInfo,optional"`
 	ApplyMemberFriend *int32  `json:"applyMemberFriend,optional"`
 }
 
@@ -44,20 +40,20 @@ type SetGroupInfoExResp struct {
 	BaseResp
 }
 
-// JoinGroup 相关类型
+// JoinGroup
 type JoinGroupReq struct {
-	GroupID      string `json:"groupID"`
-	ReqMessage   string `json:"reqMessage,optional"`
-	JoinSource   int32  `json:"joinSource"`
+	GroupID       string `json:"groupID"`
+	ReqMessage    string `json:"reqMessage,optional"`
+	JoinSource    int32  `json:"joinSource"`
 	InviterUserID string `json:"inviterUserID,optional"`
-	Ex           string `json:"ex,optional"`
+	Ex            string `json:"ex,optional"`
 }
 
 type JoinGroupResp struct {
 	BaseResp
 }
 
-// QuitGroup 相关类型
+// QuitGroup
 type QuitGroupReq struct {
 	GroupID string `json:"groupID"`
 	UserID  string `json:"userID"`
@@ -67,11 +63,11 @@ type QuitGroupResp struct {
 	BaseResp
 }
 
-// ApplicationGroupResponse 相关类型
+// ApplicationGroupResponse
 type ApplicationGroupResponseReq struct {
-	GroupID     string `json:"groupID"`
-	FromUserID  string `json:"fromUserID"`
-	HandledMsg  string `json:"handledMsg,optional"`
+	GroupID      string `json:"groupID"`
+	FromUserID   string `json:"fromUserID"`
+	HandledMsg   string `json:"handledMsg,optional"`
 	HandleResult int32  `json:"handleResult"`
 }
 
@@ -79,9 +75,9 @@ type ApplicationGroupResponseResp struct {
 	BaseResp
 }
 
-// TransferGroupOwner 相关类型
+// TransferGroupOwner
 type TransferGroupOwnerReq struct {
-	GroupID       string `json:"groupID"`
+	GroupID        string `json:"groupID"`
 	OldOwnerUserID string `json:"oldOwnerUserID"`
 	NewOwnerUserID string `json:"newOwnerUserID"`
 }
@@ -90,47 +86,47 @@ type TransferGroupOwnerResp struct {
 	BaseResp
 }
 
-// GetRecvGroupApplicationList 相关类型
+// GetRecvGroupApplicationList
 type GetRecvGroupApplicationListReq struct {
-	Pagination   Pagination `json:"pagination"`
-	FromUserID   string     `json:"fromUserID"`
-	GroupIDs     []string   `json:"groupIDs,optional"`
+	Pagination    Pagination `json:"pagination"`
+	FromUserID    string     `json:"fromUserID"`
+	GroupIDs      []string   `json:"groupIDs,optional"`
 	HandleResults []int32    `json:"handleResults,optional"`
 }
 
 type GetRecvGroupApplicationListResp struct {
 	BaseResp
 	Total         uint32        `json:"total"`
-	GroupRequests []interface{} `json:"groupRequests"` // 使用 sdkws.GroupRequest
+	GroupRequests []interface{} `json:"groupRequests"` // ʹ sdkws.GroupRequest
 }
 
-// GetUserReqGroupApplicationList 相关类型
+// GetUserReqGroupApplicationList
 type GetUserReqGroupApplicationListReq struct {
-	Pagination   Pagination `json:"pagination"`
-	UserID       string     `json:"userID"`
-	GroupIDs     []string   `json:"groupIDs,optional"`
+	Pagination    Pagination `json:"pagination"`
+	UserID        string     `json:"userID"`
+	GroupIDs      []string   `json:"groupIDs,optional"`
 	HandleResults []int32    `json:"handleResults,optional"`
 }
 
 type GetUserReqGroupApplicationListResp struct {
 	BaseResp
 	Total         uint32        `json:"total"`
-	GroupRequests []interface{} `json:"groupRequests"` // 使用 sdkws.GroupRequest
+	GroupRequests []interface{} `json:"groupRequests"` // ʹ sdkws.GroupRequest
 }
 
-// GetGroupUsersReqApplicationList 相关类型
+// GetGroupUsersReqApplicationList
 type GetGroupUsersReqApplicationListReq struct {
-	GroupID      string     `json:"groupID"`
-	UserIDs      []string   `json:"userIDs,optional"`
+	GroupID string   `json:"groupID"`
+	UserIDs []string `json:"userIDs,optional"`
 }
 
 type GetGroupUsersReqApplicationListResp struct {
 	BaseResp
 	Total         uint32        `json:"total"`
-	GroupRequests []interface{} `json:"groupRequests"` // 使用 sdkws.GroupRequest
+	GroupRequests []interface{} `json:"groupRequests"` // ʹ sdkws.GroupRequest
 }
 
-// GetSpecifiedUserGroupRequestInfo 相关类型
+// GetSpecifiedUserGroupRequestInfo
 type GetSpecifiedUserGroupRequestInfoReq struct {
 	GroupID string `json:"groupID"`
 	UserID  string `json:"userID"`
@@ -139,32 +135,32 @@ type GetSpecifiedUserGroupRequestInfoReq struct {
 type GetSpecifiedUserGroupRequestInfoResp struct {
 	BaseResp
 	Total         uint32        `json:"total"`
-	GroupRequests []interface{} `json:"groupRequests"` // 使用 sdkws.GroupRequest
+	GroupRequests []interface{} `json:"groupRequests"` // ʹ sdkws.GroupRequest
 }
 
-// GetGroupsInfo 相关类型
+// GetGroupsInfo
 type GetGroupsInfoReq struct {
 	GroupIDs []string `json:"groupIDs"`
 }
 
 type GetGroupsInfoResp struct {
 	BaseResp
-	GroupInfos []interface{} `json:"groupInfos"` // 使用 sdkws.GroupInfo
+	GroupInfos []interface{} `json:"groupInfos"` // ʹ sdkws.GroupInfo
 }
 
-// KickGroupMember 相关类型
+// KickGroupMember
 type KickGroupMemberReq struct {
-	GroupID      string   `json:"groupID"`
+	GroupID       string   `json:"groupID"`
 	KickedUserIDs []string `json:"kickedUserIDs"`
-	Reason       string   `json:"reason,optional"`
-	SendMessage  *bool    `json:"sendMessage,optional"`
+	Reason        string   `json:"reason,optional"`
+	SendMessage   *bool    `json:"sendMessage,optional"`
 }
 
 type KickGroupMemberResp struct {
 	BaseResp
 }
 
-// GetGroupMembersInfo 相关类型
+// GetGroupMembersInfo
 type GetGroupMembersInfoReq struct {
 	GroupID string   `json:"groupID"`
 	UserIDs []string `json:"userIDs"`
@@ -172,10 +168,10 @@ type GetGroupMembersInfoReq struct {
 
 type GetGroupMembersInfoResp struct {
 	BaseResp
-	Members []interface{} `json:"members"` // 使用 sdkws.GroupMemberFullInfo
+	Members []interface{} `json:"members"` // ʹ sdkws.GroupMemberFullInfo
 }
 
-// GetGroupMemberList 相关类型
+// GetGroupMemberList
 type GetGroupMemberListReq struct {
 	Pagination Pagination `json:"pagination"`
 	GroupID    string     `json:"groupID"`
@@ -186,22 +182,22 @@ type GetGroupMemberListReq struct {
 type GetGroupMemberListResp struct {
 	BaseResp
 	Total   uint32        `json:"total"`
-	Members []interface{} `json:"members"` // 使用 sdkws.GroupMemberFullInfo
+	Members []interface{} `json:"members"` // ʹ sdkws.GroupMemberFullInfo
 }
 
-// InviteUserToGroup 相关类型
+// InviteUserToGroup
 type InviteUserToGroupReq struct {
-	GroupID       string   `json:"groupID"`
-	Reason        string   `json:"reason,optional"`
+	GroupID        string   `json:"groupID"`
+	Reason         string   `json:"reason,optional"`
 	InvitedUserIDs []string `json:"invitedUserIDs"`
-	SendMessage   *bool    `json:"sendMessage,optional"`
+	SendMessage    *bool    `json:"sendMessage,optional"`
 }
 
 type InviteUserToGroupResp struct {
 	BaseResp
 }
 
-// GetJoinedGroupList 相关类型
+// GetJoinedGroupList
 type GetJoinedGroupListReq struct {
 	Pagination Pagination `json:"pagination"`
 	FromUserID string     `json:"fromUserID"`
@@ -210,10 +206,10 @@ type GetJoinedGroupListReq struct {
 type GetJoinedGroupListResp struct {
 	BaseResp
 	Total  uint32        `json:"total"`
-	Groups []interface{} `json:"groups"` // 使用 sdkws.GroupInfo
+	Groups []interface{} `json:"groups"` // ʹ sdkws.GroupInfo
 }
 
-// DismissGroup 相关类型
+// DismissGroup
 type DismissGroupReq struct {
 	GroupID string `json:"groupID"`
 }
@@ -222,10 +218,10 @@ type DismissGroupResp struct {
 	BaseResp
 }
 
-// MuteGroupMember 相关类型
+// MuteGroupMember
 type MuteGroupMemberReq struct {
-	GroupID    string `json:"groupID"`
-	UserID     string `json:"userID"`
+	GroupID      string `json:"groupID"`
+	UserID       string `json:"userID"`
 	MutedSeconds uint32 `json:"mutedSeconds"`
 }
 
@@ -233,7 +229,7 @@ type MuteGroupMemberResp struct {
 	BaseResp
 }
 
-// CancelMuteGroupMember 相关类型
+// CancelMuteGroupMember
 type CancelMuteGroupMemberReq struct {
 	GroupID string `json:"groupID"`
 	UserID  string `json:"userID"`
@@ -243,7 +239,7 @@ type CancelMuteGroupMemberResp struct {
 	BaseResp
 }
 
-// MuteGroup 相关类型
+// MuteGroup
 type MuteGroupReq struct {
 	GroupID string `json:"groupID"`
 }
@@ -252,7 +248,7 @@ type MuteGroupResp struct {
 	BaseResp
 }
 
-// CancelMuteGroup 相关类型
+// CancelMuteGroup
 type CancelMuteGroupReq struct {
 	GroupID string `json:"groupID"`
 }
@@ -261,28 +257,28 @@ type CancelMuteGroupResp struct {
 	BaseResp
 }
 
-// SetGroupMemberInfo 相关类型
+// SetGroupMemberInfo
 type SetGroupMemberInfoReq struct {
 	GroupID string      `json:"groupID"`
 	UserID  string      `json:"userID"`
-	Info    interface{} `json:"info,optional"` // 使用 sdkws.GroupMemberInfoForSet
+	Info    interface{} `json:"info,optional"` // ʹ sdkws.GroupMemberInfoForSet
 }
 
 type SetGroupMemberInfoResp struct {
 	BaseResp
 }
 
-// GetGroupAbstractInfo 相关类型
+// GetGroupAbstractInfo
 type GetGroupAbstractInfoReq struct {
 	GroupIDs []string `json:"groupIDs"`
 }
 
 type GetGroupAbstractInfoResp struct {
 	BaseResp
-	GroupAbstractInfos []interface{} `json:"groupAbstractInfos"` // 使用 user.GroupAbstractInfo
+	GroupAbstractInfos []interface{} `json:"groupAbstractInfos"` // ʹ user.GroupAbstractInfo
 }
 
-// GetGroups 相关类型
+// GetGroups
 type GetGroupsReq struct {
 	Pagination Pagination `json:"pagination"`
 	GroupName  string     `json:"groupName,optional"`
@@ -291,10 +287,10 @@ type GetGroupsReq struct {
 type GetGroupsResp struct {
 	BaseResp
 	Total  uint32        `json:"total"`
-	Groups []interface{} `json:"groups"` // 使用 sdkws.GroupInfo
+	Groups []interface{} `json:"groups"` // ʹ sdkws.GroupInfo
 }
 
-// GetGroupMemberUserIDs 相关类型
+// GetGroupMemberUserIDs
 type GetGroupMemberUserIDsReq struct {
 	GroupID string `json:"groupID"`
 }
@@ -304,7 +300,7 @@ type GetGroupMemberUserIDsResp struct {
 	UserIDs []string `json:"userIDs"`
 }
 
-// GetIncrementalJoinGroup 相关类型
+// GetIncrementalJoinGroup
 type GetIncrementalJoinGroupReq struct {
 	UserID    string `json:"userID"`
 	VersionID string `json:"versionID,optional"`
@@ -313,33 +309,33 @@ type GetIncrementalJoinGroupReq struct {
 
 type GetIncrementalJoinGroupResp struct {
 	BaseResp
-	Version     uint64        `json:"version"`
-	VersionID   string        `json:"versionID"`
-	Full        bool          `json:"full"`
-	Delete      []string      `json:"delete"`
-	Insert      []interface{} `json:"insert"` // 使用 sdkws.GroupInfo
-	Update      []interface{} `json:"update"` // 使用 sdkws.GroupInfo
-	Groups      []interface{} `json:"groups"` // Insert + Update 的组合，用于兼容
+	Version   uint64        `json:"version"`
+	VersionID string        `json:"versionID"`
+	Full      bool          `json:"full"`
+	Delete    []string      `json:"delete"`
+	Insert    []interface{} `json:"insert"` // ʹ sdkws.GroupInfo
+	Update    []interface{} `json:"update"` // ʹ sdkws.GroupInfo
+	Groups    []interface{} `json:"groups"` // Insert + Update ϣڼ
 }
 
-// GetIncrementalGroupMember 相关类型
+// GetIncrementalGroupMember
 type GetIncrementalGroupMemberReq struct {
-	GroupID    string `json:"groupID"`
+	GroupID   string `json:"groupID"`
 	VersionID string `json:"versionID,optional"`
-	Version    uint64 `json:"version"`
+	Version   uint64 `json:"version"`
 }
 
 type GetIncrementalGroupMemberResp struct {
 	BaseResp
-	Version     uint64        `json:"version"`
-	VersionID   string        `json:"versionID"`
-	Full        bool          `json:"full"`
-	Delete      []string      `json:"delete"`
-	Insert      []interface{} `json:"insert"` // 使用 sdkws.GroupMemberFullInfo
-	Update      []interface{} `json:"update"` // 使用 sdkws.GroupMemberFullInfo
+	Version   uint64        `json:"version"`
+	VersionID string        `json:"versionID"`
+	Full      bool          `json:"full"`
+	Delete    []string      `json:"delete"`
+	Insert    []interface{} `json:"insert"` // ʹ sdkws.GroupMemberFullInfo
+	Update    []interface{} `json:"update"` // ʹ sdkws.GroupMemberFullInfo
 }
 
-// GetIncrementalGroupMemberBatch 相关类型
+// GetIncrementalGroupMemberBatch
 type GetIncrementalGroupMemberBatchReq struct {
 	ReqList []GetIncrementalGroupMemberReq `json:"reqList"`
 }
@@ -349,7 +345,7 @@ type GetIncrementalGroupMemberBatchResp struct {
 	RespList map[string]GetIncrementalGroupMemberResp `json:"respList"`
 }
 
-// GetFullGroupMemberUserIDs 相关类型
+// GetFullGroupMemberUserIDs
 type GetFullGroupMemberUserIDsReq struct {
 	GroupID string `json:"groupID"`
 }
@@ -359,7 +355,7 @@ type GetFullGroupMemberUserIDsResp struct {
 	UserIDs []string `json:"userIDs"`
 }
 
-// GetFullJoinGroupIDs 相关类型
+// GetFullJoinGroupIDs
 type GetFullJoinGroupIDsReq struct {
 	UserID string `json:"userID"`
 }
@@ -369,7 +365,7 @@ type GetFullJoinGroupIDsResp struct {
 	GroupIDs []string `json:"groupIDs"`
 }
 
-// GetGroupApplicationUnhandledCount 相关类型
+// GetGroupApplicationUnhandledCount
 type GetGroupApplicationUnhandledCountReq struct {
 	UserID string `json:"userID"`
 	Time   int64  `json:"time"`

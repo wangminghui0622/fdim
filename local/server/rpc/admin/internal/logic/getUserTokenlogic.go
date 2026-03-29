@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,7 +24,7 @@ func NewGetUserTokenLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetU
 }
 
 func (l *GetUserTokenLogic) GetUserToken(req *admin.GetUserTokenReq) (*admin.GetUserTokenResp, error) {
-	// 获取用户的所有 Token
+	// ȡû Token
 	tokensMap, err := l.svcCtx.AdminDB.GetTokens(l.ctx, req.UserID)
 	if err != nil {
 		l.Errorf("GetTokens failed: %v", err)

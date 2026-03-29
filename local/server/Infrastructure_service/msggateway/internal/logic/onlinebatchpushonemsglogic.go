@@ -63,18 +63,18 @@ func (l *OnlineBatchPushOneMsgLogic) OnlineBatchPushOneMsg(req *msggateway.Onlin
 			Resp:   make([]*msggateway.SingleMsgToUserPlatform, 0),
 		}
 
-		// 获取用户的所有连接
+		// 获取用户的所有连?
 		sessions := l.svcCtx.WsServer.GetUserSessions(userID)
 		if len(sessions) == 0 {
-			// 用户不在线
+			// 用户不在?
 			results = append(results, result)
 			continue
 		}
 
-		// 向每个平台推送
+		// 向每个平台推?
 		onlinePush := false
 		for platformIDStr, session := range sessions {
-			// 将 platformIDStr 转换为 int32
+			// ?platformIDStr 转换?int32
 			platformID, err := strconv.ParseInt(platformIDStr, 10, 32)
 			if err != nil {
 				logx.Errorf("Failed to parse platformID %s: %v", platformIDStr, err)
@@ -86,10 +86,10 @@ func (l *OnlineBatchPushOneMsgLogic) OnlineBatchPushOneMsg(req *msggateway.Onlin
 				ResultCode:     0,
 			}
 
-			// 推送消息
+			// 推送消?
 			if err := session.Write(msgBytes); err != nil {
 				logx.Errorf("Failed to push to user %s platform %s: %v", userID, platformIDStr, err)
-				platform.ResultCode = 1 // 推送失败
+				platform.ResultCode = 1 // 推送失?
 			} else {
 				onlinePush = true
 			}

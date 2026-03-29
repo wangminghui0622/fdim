@@ -1,4 +1,4 @@
-﻿package notification
+package notification
 
 import (
 	"context"
@@ -9,19 +9,19 @@ import (
 	"fdim/protocol/sdkws"
 )
 
-// UserNotificationSender 用户通知发送器
+// UserNotificationSender û֪ͨ
 type UserNotificationSender struct {
 	*NotificationSender
 }
 
-// NewUserNotificationSender 创建用户通知发送器
+// NewUserNotificationSender û֪ͨ
 func NewUserNotificationSender(conf *config.Notification, opts ...NotificationSenderOptions) *UserNotificationSender {
 	return &UserNotificationSender{
 		NotificationSender: NewNotificationSender(conf, opts...),
 	}
 }
 
-// UserInfoUpdatedNotification 发送用户信息更新通知
+// UserInfoUpdatedNotification ûϢ֪ͨ
 func (u *UserNotificationSender) UserInfoUpdatedNotification(ctx context.Context, changedUserID string, needNotifiedUserID string) {
 	opUserID := mcontext.GetOpUserID(ctx)
 	if opUserID == "" {
@@ -33,22 +33,22 @@ func (u *UserNotificationSender) UserInfoUpdatedNotification(ctx context.Context
 	u.Notification(ctx, opUserID, needNotifiedUserID, constant.UserInfoUpdatedNotification, tips)
 }
 
-// UserStatusChangeNotification 发送用户状态变更通知
+// UserStatusChangeNotification û״̬֪ͨ
 func (u *UserNotificationSender) UserStatusChangeNotification(ctx context.Context, tips *sdkws.UserStatusChangeTips) {
 	u.Notification(ctx, tips.FromUserID, tips.ToUserID, constant.UserStatusChangeNotification, tips)
 }
 
-// UserCommandAddNotification 发送用户命令添加通知
+// UserCommandAddNotification û֪ͨ
 func (u *UserNotificationSender) UserCommandAddNotification(ctx context.Context, tips *sdkws.UserCommandAddTips) {
 	u.Notification(ctx, tips.FromUserID, tips.ToUserID, constant.UserCommandAddNotification, tips)
 }
 
-// UserCommandDeleteNotification 发送用户命令删除通知
+// UserCommandDeleteNotification ûɾ֪ͨ
 func (u *UserNotificationSender) UserCommandDeleteNotification(ctx context.Context, tips *sdkws.UserCommandDeleteTips) {
 	u.Notification(ctx, tips.FromUserID, tips.ToUserID, constant.UserCommandDeleteNotification, tips)
 }
 
-// UserCommandUpdateNotification 发送用户命令更新通知
+// UserCommandUpdateNotification û֪ͨ
 func (u *UserNotificationSender) UserCommandUpdateNotification(ctx context.Context, tips *sdkws.UserCommandUpdateTips) {
 	u.Notification(ctx, tips.FromUserID, tips.ToUserID, constant.UserCommandUpdateNotification, tips)
 }

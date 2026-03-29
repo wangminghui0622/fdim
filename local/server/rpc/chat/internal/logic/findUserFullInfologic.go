@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -25,19 +25,19 @@ func NewFindUserFullInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *FindUserFullInfoLogic) FindUserFullInfo(req *chat.FindUserFullInfoReq) (*chat.FindUserFullInfoResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.UserIDs) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("user IDs cannot be empty")
 	}
 
-	// 2. 查找用户完整信息
+	// 2. ûϢ
 	userInfos, err := l.svcCtx.ChatDB.FindUserFullInfo(l.ctx, req.UserIDs)
 	if err != nil {
 		l.Errorf("FindUserFullInfo failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to find user full info")
 	}
 
-	// 3. 转换为protobuf格式
+	// 3. תΪprotobufʽ
 	users := make([]*sdkws.ChatUserFullInfo, 0, len(userInfos))
 	for _, info := range userInfos {
 		users = append(users, &sdkws.ChatUserFullInfo{

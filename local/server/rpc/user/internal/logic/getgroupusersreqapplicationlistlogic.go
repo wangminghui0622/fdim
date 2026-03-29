@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,6 +24,6 @@ func NewGetGroupUsersReqApplicationListLogic(ctx context.Context, svcCtx *svc.Se
 }
 
 func (l *GetGroupUsersReqApplicationListLogic) GetGroupUsersReqApplicationList(req *user.GetGroupUsersReqApplicationListReq) (*user.GetGroupUsersReqApplicationListResp, error) {
-	// TODO: 实现获取群组用户申请列表的逻辑
+	// TODO: ʵֻȡȺûб߼
 	return nil, fmt.Errorf("GetGroupUsersReqApplicationList not fully implemented yet")
 }

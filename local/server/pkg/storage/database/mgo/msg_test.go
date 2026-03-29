@@ -20,10 +20,10 @@ import (
 func TestName1(t *testing.T) {
 	//ctx, cancel := context.WithTimeout(context.Background(), time.Second*300)
 	//defer cancel()
-	//cli := Result(mongo.Connect(ctx, options.Client().ApplyURI("mongodb://openIM:openIM123@172.16.8.66:37017/openim_v3?maxPoolSize=100").SetConnectTimeout(5*time.Second)))
+	//cli := Result(mongo.Connect(ctx, options.Client().ApplyURI("mongodb://FDIM:FDIM123@172.16.8.66:37017/FDIM_v3?maxPoolSize=100").SetConnectTimeout(5*time.Second)))
 	//
 	//v := &MsgMgo{
-	//	coll: cli.Database("openim_v3").Collection("msg3"),
+	//	coll: cli.Database("FDIM_v3").Collection("msg3"),
 	//}
 	//
 	//req := &msg.SearchMessageReq{
@@ -48,7 +48,7 @@ func TestName1(t *testing.T) {
 	//
 	//t.Log(total)
 	//
-	//msg, err := NewMsgMongo(cli.Database("openim_v3"))
+	//msg, err := NewMsgMongo(cli.Database("FDIM_v3"))
 	//if err != nil {
 	//	panic(err)
 	//}
@@ -62,10 +62,10 @@ func TestName1(t *testing.T) {
 func TestName10(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	cli := Result(mongo.Connect(ctx, options.Client().ApplyURI("mongodb://openIM:openIM123@172.16.8.48:37017/openim_v3?maxPoolSize=100").SetConnectTimeout(5*time.Second)))
+	cli := Result(mongo.Connect(ctx, options.Client().ApplyURI("mongodb://FDIM:FDIM123@172.16.8.48:37017/FDIM_v3?maxPoolSize=100").SetConnectTimeout(5*time.Second)))
 
 	v := &MsgMgo{
-		coll: cli.Database("openim_v3").Collection("msg3"),
+		coll: cli.Database("FDIM_v3").Collection("msg3"),
 	}
 	opt := options.Find().SetLimit(1000)
 
@@ -96,9 +96,9 @@ func TestName3(t *testing.T) {
 func TestName4(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*300)
 	defer cancel()
-	cli := Result(mongo.Connect(ctx, options.Client().ApplyURI("mongodb://openIM:openIM123@172.16.8.135:37017/openim_v3?maxPoolSize=100").SetConnectTimeout(5*time.Second)))
+	cli := Result(mongo.Connect(ctx, options.Client().ApplyURI("mongodb://FDIM:FDIM123@172.16.8.135:37017/FDIM_v3?maxPoolSize=100").SetConnectTimeout(5*time.Second)))
 
-	msg, err := NewMsgMongo(cli.Database("openim_v3"))
+	msg, err := NewMsgMongo(cli.Database("FDIM_v3"))
 	if err != nil {
 		panic(err)
 	}
@@ -114,9 +114,9 @@ func TestName4(t *testing.T) {
 func TestName5(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*300)
 	defer cancel()
-	cli := Result(mongo.Connect(ctx, options.Client().ApplyURI("mongodb://openIM:openIM123@172.16.8.135:37017/openim_v3?maxPoolSize=100").SetConnectTimeout(5*time.Second)))
+	cli := Result(mongo.Connect(ctx, options.Client().ApplyURI("mongodb://FDIM:FDIM123@172.16.8.135:37017/FDIM_v3?maxPoolSize=100").SetConnectTimeout(5*time.Second)))
 
-	tmp, err := NewMsgMongo(cli.Database("openim_v3"))
+	tmp, err := NewMsgMongo(cli.Database("FDIM_v3"))
 	if err != nil {
 		panic(err)
 	}
@@ -137,9 +137,9 @@ func TestName5(t *testing.T) {
 //func TestName6(t *testing.T) {
 //	ctx, cancel := context.WithTimeout(context.Background(), time.Second*300)
 //	defer cancel()
-//	cli := Result(mongo.Connect(ctx, options.Client().ApplyURI("mongodb://openIM:openIM123@172.16.8.135:37017/openim_v3?maxPoolSize=100").SetConnectTimeout(5*time.Second)))
+//	cli := Result(mongo.Connect(ctx, options.Client().ApplyURI("mongodb://FDIM:FDIM123@172.16.8.135:37017/FDIM_v3?maxPoolSize=100").SetConnectTimeout(5*time.Second)))
 //
-//	tmp, err := NewMsgMongo(cli.Database("openim_v3"))
+//	tmp, err := NewMsgMongo(cli.Database("FDIM_v3"))
 //	if err != nil {
 //		panic(err)
 //	}
@@ -154,9 +154,9 @@ func TestName5(t *testing.T) {
 func TestSearchMessage(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*300)
 	defer cancel()
-	cli := Result(mongo.Connect(ctx, options.Client().ApplyURI("mongodb://openIM:openIM123@172.16.8.135:37017/openim_v3?maxPoolSize=100").SetConnectTimeout(5*time.Second)))
+	cli := Result(mongo.Connect(ctx, options.Client().ApplyURI("mongodb://FDIM:FDIM123@172.16.8.135:37017/FDIM_v3?maxPoolSize=100").SetConnectTimeout(5*time.Second)))
 
-	msgMongo, err := NewMsgMongo(cli.Database("openim_v3"))
+	msgMongo, err := NewMsgMongo(cli.Database("FDIM_v3"))
 	if err != nil {
 		panic(err)
 	}

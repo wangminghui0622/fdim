@@ -1,4 +1,4 @@
-﻿package database
+package database
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 
 // AdminDatabase 管理员数据库接口
 type AdminDatabase interface {
-	// 管理员账户管理
+	// 管理员账户
 	GetAdmin(ctx context.Context, account string) (*Admin, error)
 	GetAdminUserID(ctx context.Context, userID string) (*Admin, error)
 	AddAdminAccount(ctx context.Context, admins []*Admin) error
@@ -23,26 +23,26 @@ type AdminDatabase interface {
 	ChangePassword(ctx context.Context, userID string, newPassword string) error
 	SearchAdminAccount(ctx context.Context, pagination *sdkws.RequestPagination) (int64, []*Admin, error)
 
-	// 默认好友管理
+	// 默认好友关系
 	FindDefaultFriend(ctx context.Context, userIDs []string) ([]string, error)
 	AddDefaultFriend(ctx context.Context, userIDs []string) error
 	DelDefaultFriend(ctx context.Context, userIDs []string) error
 	SearchDefaultFriend(ctx context.Context, keyword string, pagination *sdkws.RequestPagination) (int64, []*DefaultFriend, error)
 
-	// 默认群组管理
+	// 默认群组
 	FindDefaultGroup(ctx context.Context, groupIDs []string) ([]string, error)
 	AddDefaultGroup(ctx context.Context, groupIDs []string) error
 	DelDefaultGroup(ctx context.Context, groupIDs []string) error
 	SearchDefaultGroup(ctx context.Context, keyword string, pagination *sdkws.RequestPagination) (int64, []string, error)
 
-	// 邀请码管理
+	// 邀请码
 	FindInvitationRegister(ctx context.Context, codes []string) ([]*InvitationRegister, error)
 	AddInvitationCode(ctx context.Context, codes []*InvitationRegister) error
 	DelInvitationCode(ctx context.Context, codes []string) error
 	UseInvitationCode(ctx context.Context, code string, userID string) error
 	SearchInvitationCode(ctx context.Context, status int32, userIDs []string, codes []string, keyword string, pagination *sdkws.RequestPagination) (int64, []*InvitationRegister, error)
 
-	// IP禁止管理
+	// IP禁止
 	FindIPForbidden(ctx context.Context, ips []string) ([]*IPForbidden, error)
 	AddIPForbidden(ctx context.Context, forbiddens []*IPForbidden) error
 	DelIPForbidden(ctx context.Context, ips []string) error
@@ -55,19 +55,19 @@ type AdminDatabase interface {
 	SearchUserLimitLogin(ctx context.Context, keyword string, pagination *sdkws.RequestPagination) (int64, []*LimitUserLoginIP, error)
 	CountLimitUserLoginIP(ctx context.Context, userID string) (int64, error)
 
-	// 用户封禁管理
+	// 用户封禁
 	GetBlockInfo(ctx context.Context, userID string) (*BlockUser, error)
 	AddBlockUser(ctx context.Context, blocks []*BlockUser) error
 	DelBlockUser(ctx context.Context, userIDs []string) error
 	SearchBlockUser(ctx context.Context, keyword string, pagination *sdkws.RequestPagination) (int64, []*BlockUser, error)
 	FindUserBlockInfo(ctx context.Context, userIDs []string) ([]*BlockUser, error)
 
-	// Token管理
+	// Token
 	CacheToken(ctx context.Context, userID string, token string, expire int64) error
 	GetTokens(ctx context.Context, userID string) (map[string]int32, error)
 	InvalidateToken(ctx context.Context, userID string) error
 
-	// 小程序管理
+	// 小程序
 	FindApplet(ctx context.Context, appletIDs []string) ([]*Applet, error)
 	FindOnShelfApplet(ctx context.Context) ([]*Applet, error)
 	AddApplet(ctx context.Context, applets []*Applet) error
@@ -75,12 +75,12 @@ type AdminDatabase interface {
 	UpdateApplet(ctx context.Context, appletID string, update map[string]interface{}) error
 	SearchApplet(ctx context.Context, keyword string, pagination *sdkws.RequestPagination) (int64, []*Applet, error)
 
-	// 客户端配置管理
+	// 客户端配置
 	GetConfig(ctx context.Context) (map[string]string, error)
 	SetConfig(ctx context.Context, config map[string]string) error
 	DelConfig(ctx context.Context, keys []string) error
 
-	// 应用版本管理
+	// 应用版本
 	LatestVersion(ctx context.Context, platform string) (*ApplicationVersion, error)
 	AddApplicationVersion(ctx context.Context, versions []*ApplicationVersion) error
 	UpdateApplicationVersion(ctx context.Context, id string, update map[string]interface{}) error
@@ -105,7 +105,7 @@ type DefaultFriend struct {
 	CreateTime time.Time `bson:"create_time"`
 }
 
-// InvitationRegister 邀请码注册模型
+// InvitationRegister 邀请注册模型
 type InvitationRegister struct {
 	InvitationCode string    `bson:"invitation_code"`
 	UsedByUserID   string    `bson:"used_by_user_id"`
@@ -127,7 +127,7 @@ type LimitUserLoginIP struct {
 	CreateTime time.Time `bson:"create_time"`
 }
 
-// BlockUser 封禁用户模型
+// BlockUser ûģ
 type BlockUser struct {
 	UserID         string    `bson:"user_id"`
 	Reason         string    `bson:"reason"`
@@ -135,7 +135,7 @@ type BlockUser struct {
 	CreateTime     time.Time `bson:"create_time"`
 }
 
-// Applet 小程序模型
+// Applet Сģ
 type Applet struct {
 	ID         string    `bson:"id"`
 	Name       string    `bson:"name"`
@@ -150,7 +150,7 @@ type Applet struct {
 	CreateTime time.Time `bson:"create_time"`
 }
 
-// ApplicationVersion 应用版本模型
+// ApplicationVersion Ӧð汾ģ
 type ApplicationVersion struct {
 	ID         string    `bson:"id"`
 	Platform   string    `bson:"platform"`
@@ -163,7 +163,7 @@ type ApplicationVersion struct {
 	CreateTime time.Time `bson:"create_time"`
 }
 
-// NewAdminDatabase 创建管理员数据库实例
+// NewAdminDatabase Աݿʵ
 func NewAdminDatabase(mongoDB *MongoDB, redisClient *redis.Client) AdminDatabase {
 	return &adminDatabase{
 		adminCollection:         mongoDB.GetCollection("admin"),
@@ -194,8 +194,8 @@ type adminDatabase struct {
 	redis                   *redis.Client
 }
 
-// TODO: 实现所有 AdminDatabase 接口方法
-// 这里先提供框架，具体实现需要根据 MongoDB 操作来完成
+// TODO: ʵ AdminDatabase ӿڷ
+// ṩܣʵҪ MongoDB 
 
 func (d *adminDatabase) GetAdmin(ctx context.Context, account string) (*Admin, error) {
 	var admin Admin
@@ -246,7 +246,7 @@ func (d *adminDatabase) ChangePassword(ctx context.Context, userID string, newPa
 }
 
 func (d *adminDatabase) SearchAdminAccount(ctx context.Context, pagination *sdkws.RequestPagination) (int64, []*Admin, error) {
-	// 计算分页参数
+	// ҳ
 	pageNumber := int32(1)
 	showNumber := int32(10)
 	if pagination != nil {
@@ -261,16 +261,16 @@ func (d *adminDatabase) SearchAdminAccount(ctx context.Context, pagination *sdkw
 	offset := int64((pageNumber - 1) * showNumber)
 	limit := int64(showNumber)
 
-	// 构建查询条件（只查询普通管理员，级别为 80）
+	// ѯֻѯͨԱΪ 80
 	filter := bson.M{"level": 80} // NormalAdmin
 
-	// 获取总数
+	// ȡ
 	total, err := d.adminCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().
 		SetSkip(offset).
 		SetLimit(limit).
@@ -349,7 +349,7 @@ func (d *adminDatabase) SearchDefaultFriend(ctx context.Context, keyword string,
 		filter["user_id"] = bson.M{"$regex": keyword, "$options": "i"}
 	}
 
-	// 计算分页
+	// ҳ
 	offset := int64(0)
 	limit := int64(10)
 	if pagination != nil {
@@ -361,13 +361,13 @@ func (d *adminDatabase) SearchDefaultFriend(ctx context.Context, keyword string,
 		}
 	}
 
-	// 获取总数
+	// ȡ
 	total, err := d.defaultFriendCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().
 		SetSkip(offset).
 		SetLimit(limit).
@@ -448,7 +448,7 @@ func (d *adminDatabase) SearchDefaultGroup(ctx context.Context, keyword string, 
 		filter["group_id"] = bson.M{"$regex": keyword, "$options": "i"}
 	}
 
-	// 计算分页
+	// ҳ
 	offset := int64(0)
 	limit := int64(10)
 	if pagination != nil {
@@ -460,13 +460,13 @@ func (d *adminDatabase) SearchDefaultGroup(ctx context.Context, keyword string, 
 		}
 	}
 
-	// 获取总数
+	// ȡ
 	total, err := d.defaultGroupCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().
 		SetSkip(offset).
 		SetLimit(limit).
@@ -536,7 +536,7 @@ func (d *adminDatabase) DelInvitationCode(ctx context.Context, codes []string) e
 }
 
 func (d *adminDatabase) UseInvitationCode(ctx context.Context, code string, userID string) error {
-	// 更新邀请码，标记为已使用
+	// 룬Ϊʹ
 	update := bson.M{
 		"$set": bson.M{
 			"used_by_user_id": userID,
@@ -549,29 +549,29 @@ func (d *adminDatabase) UseInvitationCode(ctx context.Context, code string, user
 func (d *adminDatabase) SearchInvitationCode(ctx context.Context, status int32, userIDs []string, codes []string, keyword string, pagination *sdkws.RequestPagination) (int64, []*InvitationRegister, error) {
 	filter := bson.M{}
 
-	// 状态过滤：0=未使用(used_by_user_id为空), 1=已使用(used_by_user_id不为空)
+	// ״̬ˣ0=δʹ(used_by_user_idΪ), 1=ʹ(used_by_user_idΪ)
 	if status == 0 {
 		filter["used_by_user_id"] = bson.M{"$in": []interface{}{nil, ""}}
 	} else if status == 1 {
 		filter["used_by_user_id"] = bson.M{"$ne": ""}
 	}
 
-	// 用户ID过滤
+	// ûID
 	if len(userIDs) > 0 {
 		filter["used_by_user_id"] = bson.M{"$in": userIDs}
 	}
 
-	// 邀请码过滤
+	// 
 	if len(codes) > 0 {
 		filter["invitation_code"] = bson.M{"$in": codes}
 	}
 
-	// 关键词搜索
+	// ؼ
 	if keyword != "" {
 		filter["invitation_code"] = bson.M{"$regex": keyword, "$options": "i"}
 	}
 
-	// 计算分页
+	// ҳ
 	offset := int64(0)
 	limit := int64(10)
 	if pagination != nil {
@@ -583,13 +583,13 @@ func (d *adminDatabase) SearchInvitationCode(ctx context.Context, status int32, 
 		}
 	}
 
-	// 获取总数
+	// ȡ
 	total, err := d.invitationCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().
 		SetSkip(offset).
 		SetLimit(limit).
@@ -654,13 +654,13 @@ func (d *adminDatabase) DelIPForbidden(ctx context.Context, ips []string) error 
 func (d *adminDatabase) SearchIPForbidden(ctx context.Context, keyword string, status int32, pagination *sdkws.RequestPagination) (int64, []*IPForbidden, error) {
 	filter := bson.M{}
 
-	// 关键词搜索
+	// ؼ
 	if keyword != "" {
 		filter["ip"] = bson.M{"$regex": keyword, "$options": "i"}
 	}
 
-	// 状态过滤：根据limit_register和limit_login
-	// status: 0=全部, 1=仅禁止注册, 2=仅禁止登录, 3=禁止注册和登录
+	// ״̬ˣlimit_registerlimit_login
+	// status: 0=ȫ, 1=ֹע, 2=ֹ¼, 3=ֹע͵¼
 	if status > 0 {
 		if status == 1 {
 			filter["limit_register"] = true
@@ -672,7 +672,7 @@ func (d *adminDatabase) SearchIPForbidden(ctx context.Context, keyword string, s
 		}
 	}
 
-	// 计算分页
+	// ҳ
 	offset := int64(0)
 	limit := int64(10)
 	if pagination != nil {
@@ -684,13 +684,13 @@ func (d *adminDatabase) SearchIPForbidden(ctx context.Context, keyword string, s
 		}
 	}
 
-	// 获取总数
+	// ȡ
 	total, err := d.ipForbiddenCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().
 		SetSkip(offset).
 		SetLimit(limit).
@@ -745,7 +745,7 @@ func (d *adminDatabase) DelUserIPLimitLogin(ctx context.Context, limits []*Limit
 		return nil
 	}
 
-	// 构建删除条件
+	// ɾ
 	filters := make([]bson.M, len(limits))
 	for i, limit := range limits {
 		filters[i] = bson.M{
@@ -761,14 +761,14 @@ func (d *adminDatabase) DelUserIPLimitLogin(ctx context.Context, limits []*Limit
 func (d *adminDatabase) SearchUserLimitLogin(ctx context.Context, keyword string, pagination *sdkws.RequestPagination) (int64, []*LimitUserLoginIP, error) {
 	filter := bson.M{}
 	if keyword != "" {
-		// 支持按userID或IP搜索
+		// ְ֧userIDIP
 		filter["$or"] = []bson.M{
 			{"user_id": bson.M{"$regex": keyword, "$options": "i"}},
 			{"ip": bson.M{"$regex": keyword, "$options": "i"}},
 		}
 	}
 
-	// 计算分页
+	// ҳ
 	offset := int64(0)
 	limit := int64(10)
 	if pagination != nil {
@@ -780,13 +780,13 @@ func (d *adminDatabase) SearchUserLimitLogin(ctx context.Context, keyword string
 		}
 	}
 
-	// 获取总数
+	// ȡ
 	total, err := d.limitLoginCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().
 		SetSkip(offset).
 		SetLimit(limit).
@@ -849,11 +849,11 @@ func (d *adminDatabase) DelBlockUser(ctx context.Context, userIDs []string) erro
 func (d *adminDatabase) SearchBlockUser(ctx context.Context, keyword string, pagination *sdkws.RequestPagination) (int64, []*BlockUser, error) {
 	filter := bson.M{}
 	if keyword != "" {
-		// 支持按userID搜索
+		// ְ֧userID
 		filter["user_id"] = bson.M{"$regex": keyword, "$options": "i"}
 	}
 
-	// 计算分页
+	// ҳ
 	offset := int64(0)
 	limit := int64(10)
 	if pagination != nil {
@@ -865,13 +865,13 @@ func (d *adminDatabase) SearchBlockUser(ctx context.Context, keyword string, pag
 		}
 	}
 
-	// 获取总数
+	// ȡ
 	total, err := d.blockUserCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().
 		SetSkip(offset).
 		SetLimit(limit).
@@ -914,15 +914,15 @@ func (d *adminDatabase) CacheToken(ctx context.Context, userID string, token str
 	if d.redis == nil {
 		return fmt.Errorf("redis client not initialized")
 	}
-	// 使用 Hash 结构存储 token: ADMIN_UID_TOKEN_STATUS:{userID}
+	// ʹ Hash ṹ洢 token: ADMIN_UID_TOKEN_STATUS:{userID}
 	key := fmt.Sprintf("ADMIN_UID_TOKEN_STATUS:%s", userID)
 
-	// 使用 HSet 存储 token，值为 1 表示正常token
+	// ʹ HSet 洢 tokenֵΪ 1 ʾtoken
 	if err := d.redis.HSet(ctx, key, token, 1).Err(); err != nil {
 		return err
 	}
 
-	// 设置整个 Hash 的过期时间
+	//  Hash Ĺʱ
 	expireDuration := time.Duration(expire) * time.Second
 	return d.redis.Expire(ctx, key, expireDuration).Err()
 }
@@ -931,19 +931,19 @@ func (d *adminDatabase) GetTokens(ctx context.Context, userID string) (map[strin
 	if d.redis == nil {
 		return nil, fmt.Errorf("redis client not initialized")
 	}
-	// 使用 Hash 结构: ADMIN_UID_TOKEN_STATUS:{userID}
+	// ʹ Hash ṹ: ADMIN_UID_TOKEN_STATUS:{userID}
 	key := fmt.Sprintf("ADMIN_UID_TOKEN_STATUS:%s", userID)
 
-	// 获取 Hash 中的所有字段和值
+	// ȡ Hash еֶκֵ
 	m, err := d.redis.HGetAll(ctx, key).Result()
 	if err != nil {
 		return nil, err
 	}
 
-	// 转换为 map[string]int32
+	// תΪ map[string]int32
 	result := make(map[string]int32)
 	for token, value := range m {
-		// value 是字符串 "1"，需要转换为 int32
+		// value ַ "1"ҪתΪ int32
 		var flag int32
 		if value == "1" {
 			flag = 1
@@ -958,10 +958,10 @@ func (d *adminDatabase) InvalidateToken(ctx context.Context, userID string) erro
 	if d.redis == nil {
 		return fmt.Errorf("redis client not initialized")
 	}
-	// 使用 Hash 结构: ADMIN_UID_TOKEN_STATUS:{userID}
+	// ʹ Hash ṹ: ADMIN_UID_TOKEN_STATUS:{userID}
 	key := fmt.Sprintf("ADMIN_UID_TOKEN_STATUS:%s", userID)
 
-	// 删除整个 Hash（使该用户的所有 token 失效）
+	// ɾ Hashʹû token ʧЧ
 	return d.redis.Del(ctx, key).Err()
 }
 
@@ -1021,7 +1021,7 @@ func (d *adminDatabase) SearchApplet(ctx context.Context, keyword string, pagina
 		}
 	}
 
-	// 计算分页
+	// ҳ
 	offset := int64(0)
 	limit := int64(10)
 	if pagination != nil {
@@ -1033,13 +1033,13 @@ func (d *adminDatabase) SearchApplet(ctx context.Context, keyword string, pagina
 		}
 	}
 
-	// 获取总数
+	// ȡ
 	total, err := d.appletCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().
 		SetSkip(offset).
 		SetLimit(limit).
@@ -1060,7 +1060,7 @@ func (d *adminDatabase) SearchApplet(ctx context.Context, keyword string, pagina
 }
 
 func (d *adminDatabase) FindOnShelfApplet(ctx context.Context) ([]*Applet, error) {
-	// 查找所有已上架的小程序（status=1）
+	// ϼܵСstatus=1
 	filter := bson.M{"status": 1}
 	cursor, err := d.appletCollection.Find(ctx, filter, options.Find().SetSort(bson.D{{Key: "priority", Value: -1}}))
 	if err != nil {
@@ -1099,7 +1099,7 @@ func (d *adminDatabase) GetConfig(ctx context.Context) (map[string]string, error
 }
 
 func (d *adminDatabase) SetConfig(ctx context.Context, config map[string]string) error {
-	// 使用 upsert 更新或插入配置
+	// ʹ upsert »
 	for key, value := range config {
 		_, err := d.configCollection.UpdateOne(
 			ctx,
@@ -1172,7 +1172,7 @@ func (d *adminDatabase) PageApplicationVersion(ctx context.Context, platforms []
 		filter["platform"] = bson.M{"$in": platforms}
 	}
 
-	// 计算分页
+	// ҳ
 	offset := int64(0)
 	limit := int64(10)
 	if pagination != nil {
@@ -1184,13 +1184,13 @@ func (d *adminDatabase) PageApplicationVersion(ctx context.Context, platforms []
 		}
 	}
 
-	// 获取总数
+	// ȡ
 	total, err := d.versionCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().
 		SetSkip(offset).
 		SetLimit(limit).

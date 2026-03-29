@@ -28,7 +28,7 @@ func WithOpUserID(ctx context.Context, userID string) context.Context {
 func GetOperationID(ctx context.Context) string {
 	operationID, _ := ctx.Value(constant.CtxOperationIDKey).(string)
 	if operationID == "" {
-		// 如果没有操作ID，生成一个
+		// 如果没有操作ID，生成一?
 		operationID = generateOperationID()
 	}
 	return operationID
@@ -44,7 +44,7 @@ func generateOperationID() string {
 	return fmt.Sprintf("%d-%d", time.Now().UnixNano(), rand.Int63())
 }
 
-// GenGroupID 生成群组ID（使用MD5 哈希）
+// GenGroupID 生成群组ID（使用MD5 哈希?
 func GenGroupID(ctx context.Context, checkExists func(string) (bool, error)) (string, error) {
 	operationID := GetOperationID(ctx)
 	for i := 0; i < 10; i++ {

@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -31,7 +31,7 @@ func NewRegisterUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Regi
 	}
 }
 
-// genUserID 生成10位数字用户ID
+// genUserID 10λûID
 func (l *RegisterUserLogic) genUserID() string {
 	const length = 10
 	data := make([]byte, length)
@@ -39,7 +39,7 @@ func (l *RegisterUserLogic) genUserID() string {
 	chars := []byte("0123456789")
 	for i := 0; i < len(data); i++ {
 		if i == 0 {
-			data[i] = chars[1:][data[i]%9] // 第一位不能是0
+			data[i] = chars[1:][data[i]%9] // һλ0
 		} else {
 			data[i] = chars[data[i]%10]
 		}
@@ -47,13 +47,13 @@ func (l *RegisterUserLogic) genUserID() string {
 	return string(data)
 }
 
-// BuildCredentialPhone 构建手机号凭证
+// BuildCredentialPhone ֻƾ֤
 func BuildCredentialPhone(areaCode, phone string) string {
 	return areaCode + " " + phone
 }
 
 func (l *RegisterUserLogic) RegisterUser(req *chat.RegisterUserReq) (*chat.RegisterUserResp, error) {
-	// 1. 检查注册是否被禁止
+	// 1. עǷ񱻽ֹ
 	if l.svcCtx.AdminRpc != nil {
 		_, err := l.svcCtx.AdminRpc.CheckRegisterForbidden(l.ctx, &admin.CheckRegisterForbiddenReq{
 			Ip: req.Ip,
@@ -64,17 +64,17 @@ func (l *RegisterUserLogic) RegisterUser(req *chat.RegisterUserReq) (*chat.Regis
 		}
 	}
 
-	// 2. 验证用户信息
+	// 2. ֤ûϢ
 	if req.User == nil {
 		return nil, errs.ErrArgs.WrapMsg("user info is required")
 	}
 
-	// 检查至少有一种登录方式
+	// һֵ¼ʽ
 	if req.User.Email == "" && req.User.PhoneNumber == "" && req.User.Account == "" {
 		return nil, errs.ErrArgs.WrapMsg("at least one account type is required")
 	}
 
-	// 3. 验证手机号格式
+	// 3. ֻ֤Ÿʽ
 	if req.User.PhoneNumber != "" {
 		if req.User.AreaCode == "" {
 			return nil, errs.ErrArgs.WrapMsg("area code is required for phone number")
@@ -90,7 +90,7 @@ func (l *RegisterUserLogic) RegisterUser(req *chat.RegisterUserReq) (*chat.Regis
 		}
 	}
 
-	// 4. 检查用户是否已存在
+	// 4. ûǷѴ
 	if req.User.PhoneNumber != "" {
 		_, err := l.svcCtx.ChatDB.GetUserAccountByPhone(l.ctx, req.User.AreaCode, req.User.PhoneNumber)
 		if err == nil {
@@ -110,9 +110,9 @@ func (l *RegisterUserLogic) RegisterUser(req *chat.RegisterUserReq) (*chat.Regis
 		}
 	}
 
-	// 5. 验证验证码（非管理员注册需要）
+	// 5. ֤֤루ǹԱעҪ
 	if req.VerifyCode != "" {
-		// 开发阶段：固定测试验证码 123456 直接通过
+		// ׶Σ̶֤ 123456 ֱͨ
 		if req.VerifyCode == "123456" {
 			l.Infof("Using test verify code for registration")
 		} else if req.User.PhoneNumber != "" {
@@ -136,21 +136,21 @@ func (l *RegisterUserLogic) RegisterUser(req *chat.RegisterUserReq) (*chat.Regis
 		}
 	}
 
-	// 6. 检查邀请码（如果需要，这里只验证，不立即使用）
-	// 实际使用会在用户创建成功后
+	// 6. 루Ҫֻ֤ʹã
+	// ʵʹûûɹ
 	if req.InvitationCode != "" && l.svcCtx.AdminRpc != nil {
-		// 这里可以添加邀请码验证逻辑，但不在注册前使用
-		// 因为UseInvitationCode会标记为已使用
+		// ֤߼עǰʹ
+		// ΪUseInvitationCodeΪʹ
 	}
 
-	// 7. 生成用户ID
+	// 7. ûID
 	userID := req.User.UserID
 	if userID == "" {
 		for i := 0; i < 20; i++ {
 			userID = l.genUserID()
 			_, err := l.svcCtx.ChatDB.GetUserAccountByUserID(l.ctx, userID)
 			if err != nil {
-				// 用户ID不存在，可以使用
+				// ûIDڣʹ
 				break
 			}
 			if i == 19 {
@@ -158,21 +158,21 @@ func (l *RegisterUserLogic) RegisterUser(req *chat.RegisterUserReq) (*chat.Regis
 			}
 		}
 	} else {
-		// 检查指定的用户ID是否已存在
+		// ָûIDǷѴ
 		_, err := l.svcCtx.ChatDB.GetUserAccountByUserID(l.ctx, userID)
 		if err == nil {
 			return nil, errs.ErrArgs.WrapMsg("user ID already exists")
 		}
 	}
 
-	// 8. 加密密码
+	// 8. 
 	hashedPassword := req.User.Password
 	if hashedPassword != "" {
 		hash := sha256.Sum256([]byte(hashedPassword))
 		hashedPassword = hex.EncodeToString(hash[:])
 	}
 
-	// 9. 创建用户账户
+	// 9. û˻
 	now := time.Now()
 	userAccount := &database.UserAccount{
 		UserID:      userID,
@@ -188,7 +188,7 @@ func (l *RegisterUserLogic) RegisterUser(req *chat.RegisterUserReq) (*chat.Regis
 		return nil, errs.WrapMsg(err, "failed to create user account")
 	}
 
-	// 10. 创建用户信息
+	// 10. ûϢ
 	userInfo := &database.UserFullInfo{
 		UserID:           userID,
 		Account:          req.User.Account,
@@ -212,7 +212,7 @@ func (l *RegisterUserLogic) RegisterUser(req *chat.RegisterUserReq) (*chat.Regis
 		return nil, errs.WrapMsg(err, "failed to create user info")
 	}
 
-	// 11. 使用邀请码（在用户创建成功后使用）
+	// 11. ʹ루ûɹʹã
 	if req.InvitationCode != "" && l.svcCtx.AdminRpc != nil {
 		_, err := l.svcCtx.AdminRpc.UseInvitationCode(l.ctx, &admin.UseInvitationCodeReq{
 			Code: req.InvitationCode,
@@ -222,8 +222,8 @@ func (l *RegisterUserLogic) RegisterUser(req *chat.RegisterUserReq) (*chat.Regis
 		}
 	}
 
-	// 12. 与官方一致：注册只注册，不自动签发 token
-	// 登录与注册分离，token 只在登录成功后创建
+	// 12. ٷһ£עֻעᣬԶǩ token
+	// ¼ע룬token ֻڵ¼ɹ󴴽
 	resp := &chat.RegisterUserResp{
 		UserID: userID,
 	}

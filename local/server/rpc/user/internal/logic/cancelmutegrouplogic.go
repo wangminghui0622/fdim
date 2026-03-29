@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -29,12 +29,12 @@ func NewCancelMuteGroupLogic(ctx context.Context, svcCtx *svc.ServiceContext) *C
 func (l *CancelMuteGroupLogic) CancelMuteGroup(req *user.CancelMuteGroupReq) (*user.CancelMuteGroupResp, error) {
 	resp := &user.CancelMuteGroupResp{}
 
-	// ������֤
+	// ???????
 	if req.GroupID == "" {
 		return nil, fmt.Errorf("groupID is empty")
 	}
 
-	// Ȩ�޼�飺��Ҫ��Ⱥ�������Ա
+	// ??????????????????
 	opUserID := mcontext.GetOpUserID(l.ctx)
 	if !authverify.IsAdmin(l.ctx) {
 		member, err := l.svcCtx.GroupDB.TakeGroupMember(l.ctx, req.GroupID, opUserID)
@@ -46,7 +46,7 @@ func (l *CancelMuteGroupLogic) CancelMuteGroup(req *user.CancelMuteGroupReq) (*u
 		}
 	}
 
-	// ����Ⱥ��״̬Ϊ����
+	// ??????????????
 	data := map[string]interface{}{
 		"status": constant.GroupStatusNormal,
 	}
@@ -54,7 +54,7 @@ func (l *CancelMuteGroupLogic) CancelMuteGroup(req *user.CancelMuteGroupReq) (*u
 		return nil, err
 	}
 
-	// ����Ⱥ��ȡ������֪ͨ
+	// ????????????????
 	if l.svcCtx.GroupNotification != nil {
 		l.svcCtx.GroupNotification.GroupCancelMutedNotification(l.ctx, req.GroupID, opUserID)
 	}

@@ -10,7 +10,6 @@ import (
 )
 
 // Third API Handlers
-// 注意：这些接口需要与 open-im-server 的接口完全一致
 
 func GetPrometheusHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +18,7 @@ func GetPrometheusHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		if err != nil {
 			ServerError(w, err)
 		} else {
-			// GET 请求，重定向到 Grafana URL
+			// GET 请求，重定向?Grafana URL
 			http.Redirect(w, r, resp.Url, http.StatusFound)
 		}
 	}
@@ -261,13 +260,13 @@ func CompleteFormDataHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 
 func ObjectRedirectHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// 从路径参数获取 name
+		// 从路径参数获?name
 		name := r.URL.Path
 		if name != "" && name[0] == '/' {
 			name = name[1:]
 		}
 
-		// 从查询参数构建 query map
+		// 从查询参数构?query map
 		query := make(map[string]string)
 		for key, values := range r.URL.Query() {
 			if len(values) > 0 {

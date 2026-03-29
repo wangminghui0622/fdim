@@ -32,7 +32,7 @@ func (l *GetConversationsLogic) GetConversations(req *conversation.GetConversati
 		return nil, fmt.Errorf("failed to find conversations: %w", err)
 	}
 
-	// 转换为 protobuf 格式
+	// 转换?protobuf 格式
 	resp.Conversations = make([]*conversation.Conversation, 0, len(conversations))
 	for _, conv := range conversations {
 		resp.Conversations = append(resp.Conversations, &conversation.Conversation{

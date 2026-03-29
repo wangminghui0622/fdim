@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -29,22 +29,22 @@ func NewGetUserReqApplicationListLogic(ctx context.Context, svcCtx *svc.ServiceC
 func (l *GetUserReqApplicationListLogic) GetUserReqApplicationList(req *user.GetUserReqApplicationListReq) (*user.GetUserReqApplicationListResp, error) {
 	resp := &user.GetUserReqApplicationListResp{}
 
-	// Ȩ����֤
+	// ??????
 	if err := authverify.CheckAccess(l.ctx, req.UserID); err != nil {
 		return nil, err
 	}
 
-	// ת�� handleResults
+	// ??? handleResults
 	var handleResults []int32
 	if len(req.HandleResults) > 0 {
 		handleResults = req.HandleResults
 	}
 
-	// �����ҳ����
+	// ??????????
 	offset := util.CalculateOffset(req.Pagination.PageNumber, req.Pagination.ShowNumber)
 	limit := util.CalculateLimit(req.Pagination.ShowNumber)
 
-	// ��ҳ��ѯ�û����͵�Ⱥ������
+	// ?????????????????????
 	total, requests, err := l.svcCtx.GroupDB.PageGroupRequest(
 		l.ctx,
 		req.UserID,
@@ -57,9 +57,9 @@ func (l *GetUserReqApplicationListLogic) GetUserReqApplicationList(req *user.Get
 		return nil, err
 	}
 
-	// ת��Ϊ Protocol Buffer ��ʽ
+	// ???? Protocol Buffer ???
 	resp.Total = uint32(total)
-	// ����������������ȡ�û���Ⱥ����Ϣ
+	// ????????????????????????????
 	getUserInfo := func(userID string) *sdkws.PublicUserInfo {
 		user, err := l.svcCtx.UserDB.Take(l.ctx, userID)
 		if err != nil || user == nil {

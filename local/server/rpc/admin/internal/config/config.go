@@ -22,7 +22,7 @@ type Config struct {
 	TokenPolicy struct {
 		Expire int `json:",optional"` // 过期天数
 	} `json:",optional"`
-	// MultiLogin 是否允许多设备登录
+	// MultiLogin 是否允许多设备登?
 	MultiLogin bool `json:",optional"`
 	// AdminUserIDs 管理员用户ID列表
 	AdminUserIDs []string `json:",optional"`

@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -30,7 +30,7 @@ func NewCancelMuteGroupMemberLogic(ctx context.Context, svcCtx *svc.ServiceConte
 func (l *CancelMuteGroupMemberLogic) CancelMuteGroupMember(req *user.CancelMuteGroupMemberReq) (*user.CancelMuteGroupMemberResp, error) {
 	resp := &user.CancelMuteGroupMemberResp{}
 
-	// ������֤
+	// ???????
 	if req.GroupID == "" {
 		return nil, fmt.Errorf("groupID is empty")
 	}
@@ -38,7 +38,7 @@ func (l *CancelMuteGroupMemberLogic) CancelMuteGroupMember(req *user.CancelMuteG
 		return nil, fmt.Errorf("userID is empty")
 	}
 
-	// Ȩ�޼�飺��Ҫ��Ⱥ�������Ա���Ҳ���ȡ��Ⱥ���Ľ���
+	// ????????????????????????????????????
 	opUserID := mcontext.GetOpUserID(l.ctx)
 	member, err := l.svcCtx.GroupDB.TakeGroupMember(l.ctx, req.GroupID, req.UserID)
 	if err != nil {
@@ -46,7 +46,7 @@ func (l *CancelMuteGroupMemberLogic) CancelMuteGroupMember(req *user.CancelMuteG
 	}
 
 	if !authverify.IsAdmin(l.ctx) {
-		// ����ȡ��Ⱥ���Ľ���
+		// ???????????????
 		if member.RoleLevel == constant.GroupOwner {
 			return nil, fmt.Errorf("cannot cancel mute group owner")
 		}
@@ -56,21 +56,21 @@ func (l *CancelMuteGroupMemberLogic) CancelMuteGroupMember(req *user.CancelMuteG
 			return nil, fmt.Errorf("user not in group")
 		}
 
-		// ���Ȩ��
+		// ??????
 		if member.RoleLevel == constant.GroupAdmin {
-			// ֻ��Ⱥ������ȡ������Ա�Ľ���
+			// ???????????????????????
 			if opMember.RoleLevel != constant.GroupOwner {
 				return nil, fmt.Errorf("no permission: only group owner can cancel mute group admin")
 			}
 		} else if member.RoleLevel == constant.GroupOrdinaryUsers {
-			// Ⱥ�������Ա����ȡ����ͨ��Ա�Ľ���
+			// ???????????????????????????
 			if opMember.RoleLevel != constant.GroupOwner && opMember.RoleLevel != constant.GroupAdmin {
 				return nil, fmt.Errorf("no permission: only group owner or admin can cancel mute member")
 			}
 		}
 	}
 
-	// ����Ⱥ��Ա����ʱ��Ϊ0��ȡ�����ԣ�
+	// ????????????????0??????????
 	data := map[string]interface{}{
 		"mute_end_time": time.UnixMilli(0),
 	}
@@ -78,7 +78,7 @@ func (l *CancelMuteGroupMemberLogic) CancelMuteGroupMember(req *user.CancelMuteG
 		return nil, err
 	}
 
-	// ����Ⱥ��Աȡ������֪ͨ
+	// ?????????????????
 	if l.svcCtx.GroupNotification != nil {
 		l.svcCtx.GroupNotification.GroupMemberCancelMutedNotification(l.ctx, req.GroupID, opUserID, []string{req.UserID})
 	}

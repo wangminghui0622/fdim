@@ -15,16 +15,16 @@ type ServiceContext struct {
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	// 初始化 Auth RPC 客户端
+	// 初始?Auth RPC 客户?
 	var authClient auth.AuthClient
 	if c.AuthRpc.Etcd.Key != "" || c.AuthRpc.Target != "" {
 		authClient = auth.NewAuthClient(zrpc.MustNewClient(c.AuthRpc).Conn())
 	}
 
-	// 初始化 Redis 客户端（用于在线状态缓存等）
+	// 初始?Redis 客户端（用于在线状态缓存等?
 	redisClient := cache.NewRedisClient(c.Cache)
 
-	// 初始化 WebSocket 服务器
+	// 初始?WebSocket 服务?
 	wsServer := ws.NewWsServer(&c, authClient, redisClient)
 
 	return &ServiceContext{

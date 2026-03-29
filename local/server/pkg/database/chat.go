@@ -1,4 +1,4 @@
-﻿package database
+package database
 
 import (
 	"context"
@@ -11,9 +11,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// ChatDatabase Chat数据库接口
+// ChatDatabase Chatݿӿ
 type ChatDatabase interface {
-	// 用户账户管理
+	// û˻
 	FindUserAccount(ctx context.Context, accounts []*UserAccount) ([]*UserAccount, error)
 	AddUserAccount(ctx context.Context, accounts []*UserAccount) error
 	DelUserAccount(ctx context.Context, userIDs []string) error
@@ -23,7 +23,7 @@ type ChatDatabase interface {
 	GetUserAccountByPhone(ctx context.Context, areaCode string, phoneNumber string) (*UserAccount, error)
 	GetUserAccountByEmail(ctx context.Context, email string) (*UserAccount, error)
 
-	// 用户信息管理
+	// ûϢ
 	FindUserPublicInfo(ctx context.Context, userIDs []string) ([]*UserPublicInfo, error)
 	FindUserFullInfo(ctx context.Context, userIDs []string) ([]*UserFullInfo, error)
 	SearchUserPublicInfo(ctx context.Context, keyword string, pagination *sdkws.RequestPagination) (int64, []*UserPublicInfo, error)
@@ -31,7 +31,7 @@ type ChatDatabase interface {
 	AddUserInfo(ctx context.Context, info *UserFullInfo) error
 	UpdateUserInfo(ctx context.Context, userID string, update map[string]interface{}) error
 
-	// 验证码管理
+	// ֤
 	AddVerifyCode(ctx context.Context, code *VerifyCode) error
 	FindVerifyCode(ctx context.Context, phoneNumber string, areaCode string, verifyCode string) (*VerifyCode, error)
 	DelVerifyCode(ctx context.Context, phoneNumber string, areaCode string) error
@@ -40,12 +40,12 @@ type ChatDatabase interface {
 	GetLastVerifyCode(ctx context.Context, phoneNumber string, areaCode string) (*VerifyCode, error)
 	GetLastVerifyCodeByEmail(ctx context.Context, email string) (*VerifyCode, error)
 
-	// 用户登录记录
+	// û¼¼
 	AddUserLoginRecord(ctx context.Context, record *UserLoginRecord) error
 	UserLoginCount(ctx context.Context, startTime int64, endTime int64) (int64, error)
 }
 
-// UserAccount 用户账户模型
+// UserAccount û˻ģ
 type UserAccount struct {
 	UserID      string    `bson:"user_id"`
 	Account     string    `bson:"account"`
@@ -56,7 +56,7 @@ type UserAccount struct {
 	CreateTime  time.Time `bson:"create_time"`
 }
 
-// UserPublicInfo 用户公开信息模型
+// UserPublicInfo ûϢģ
 type UserPublicInfo struct {
 	UserID   string `bson:"user_id"`
 	Account  string `bson:"account"`
@@ -66,7 +66,7 @@ type UserPublicInfo struct {
 	Level    int32  `bson:"level"`
 }
 
-// UserFullInfo 用户完整信息模型
+// UserFullInfo ûϢģ
 type UserFullInfo struct {
 	UserID           string    `bson:"user_id"`
 	Account          string    `bson:"account"`
@@ -86,12 +86,12 @@ type UserFullInfo struct {
 	CreateTime       time.Time `bson:"create_time"`
 }
 
-// VerifyCode 验证码模型
-// 兼容手机和邮箱两种账号形式：
-//   - 手机：使用 phone_number + area_code
-//   - 邮箱：使用 email
+// VerifyCode ֤ģ
+// ֻ˺ʽ
+//   - ֻʹ phone_number + area_code
+//   - 䣺ʹ email
 //
-// 旧数据只包含 phone_number/area_code 字段，新字段 email 使用omitempty 以保持兼容。
+// ֻ phone_number/area_code ֶΣֶ email ʹomitempty Աּݡ
 type VerifyCode struct {
 	PhoneNumber string    `bson:"phone_number,omitempty"`
 	AreaCode    string    `bson:"area_code,omitempty"`
@@ -101,7 +101,7 @@ type VerifyCode struct {
 	ExpireTime  time.Time `bson:"expire_time"`
 }
 
-// UserLoginRecord 用户登录记录模型
+// UserLoginRecord û¼¼ģ
 type UserLoginRecord struct {
 	UserID    string    `bson:"user_id"`
 	LoginTime time.Time `bson:"login_time"`
@@ -110,7 +110,7 @@ type UserLoginRecord struct {
 	Platform  int32     `bson:"platform"`
 }
 
-// NewChatDatabase 创建Chat数据库实例
+// NewChatDatabase Chatݿʵ
 func NewChatDatabase(mongoDB *MongoDB) ChatDatabase {
 	return &chatDatabase{
 		userAccountCollection: mongoDB.GetCollection("user_account"),
@@ -132,7 +132,7 @@ func (d *chatDatabase) FindUserAccount(ctx context.Context, accounts []*UserAcco
 		return nil, nil
 	}
 
-	// 构建查询条件：支持按account、phone_number+area_code、email查询
+	// ѯְ֧accountphone_number+area_codeemailѯ
 	var filters []bson.M
 	for _, acc := range accounts {
 		filter := bson.M{}
@@ -245,7 +245,7 @@ func (d *chatDatabase) SearchUserPublicInfo(ctx context.Context, keyword string,
 		}
 	}
 
-	// 计算分页
+	// ҳ
 	offset := int64(0)
 	limit := int64(10)
 	if pagination != nil {
@@ -257,13 +257,13 @@ func (d *chatDatabase) SearchUserPublicInfo(ctx context.Context, keyword string,
 		}
 	}
 
-	// 获取总数
+	// ȡ
 	total, err := d.userInfoCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().
 		SetSkip(offset).
 		SetLimit(limit).
@@ -295,7 +295,7 @@ func (d *chatDatabase) SearchUserFullInfo(ctx context.Context, keyword string, p
 		}
 	}
 
-	// 计算分页
+	// ҳ
 	offset := int64(0)
 	limit := int64(10)
 	if pagination != nil {
@@ -307,13 +307,13 @@ func (d *chatDatabase) SearchUserFullInfo(ctx context.Context, keyword string, p
 		}
 	}
 
-	// 获取总数
+	// ȡ
 	total, err := d.userInfoCollection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	// 分页查询
+	// ҳѯ
 	opts := options.Find().
 		SetSkip(offset).
 		SetLimit(limit).

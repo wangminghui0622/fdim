@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -23,7 +23,7 @@ func NewNotificationUserInfoUpdateLogic(ctx context.Context, svcCtx *svc.Service
 }
 
 func (l *NotificationUserInfoUpdateLogic) NotificationUserInfoUpdate(req *user.NotificationUserInfoUpdateReq) (*user.NotificationUserInfoUpdateResp, error) {
-	// TODO: 实现通知用户信息更新的逻辑
-	// 当前返回空实现
+	// TODO: ʵ֪ͨûϢµ߼
+	// ǰؿʵ
 	return &user.NotificationUserInfoUpdateResp{}, nil
 }

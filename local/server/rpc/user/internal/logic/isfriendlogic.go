@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -26,7 +26,7 @@ func NewIsFriendLogic(ctx context.Context, svcCtx *svc.ServiceContext) *IsFriend
 func (l *IsFriendLogic) IsFriend(req *user.IsFriendReq) (*user.IsFriendResp, error) {
 	resp := &user.IsFriendResp{}
 
-	// Ȩ����֤
+	// ??????
 	if err := authverify.CheckAccessIn(l.ctx, req.UserID1, req.UserID2); err != nil {
 		return nil, err
 	}

@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,21 +24,21 @@ func NewParseTokenLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ParseT
 }
 
 func (l *ParseTokenLogic) ParseToken(req *admin.ParseTokenReq) (*admin.ParseTokenResp, error) {
-	// 1. 解析 Token
+	// 1.  Token
 	userID, userType, err := l.svcCtx.Token.GetToken(req.Token)
 	if err != nil {
 		l.Errorf("GetToken failed: %v", err)
 		return nil, fmt.Errorf("invalid token: %w", err)
 	}
 
-	// 2. 从 Redis 验证 Token 是否存在
+	// 2.  Redis ֤ Token Ƿ
 	tokensMap, err := l.svcCtx.AdminDB.GetTokens(l.ctx, userID)
 	if err != nil {
 		l.Errorf("GetTokens failed: %v", err)
 		return nil, fmt.Errorf("failed to get tokens: %w", err)
 	}
 
-	// 3. 检查 Token 是否在缓存中
+	// 3.  Token Ƿڻ
 	if _, ok := tokensMap[req.Token]; !ok {
 		return nil, fmt.Errorf("token not found in cache")
 	}

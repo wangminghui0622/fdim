@@ -10,12 +10,12 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// ToMongoHandler 处理 toMongo topic 的消息
+// ToMongoHandler 处理 toMongo topic 的消?
 type ToMongoHandler struct {
 	msgDB database.MsgDatabase
 }
 
-// NewToMongoHandler 创建 toMongo 处理器
+// NewToMongoHandler 创建 toMongo 处理?
 func NewToMongoHandler(msgDB database.MsgDatabase) *ToMongoHandler {
 	return &ToMongoHandler{
 		msgDB: msgDB,
@@ -28,7 +28,7 @@ func (h *ToMongoHandler) HandleMessage(msg mq.Message) error {
 	key := msg.Key()
 	value := msg.Value()
 
-	// 解析消息（toMongo topic 发送的是 MsgDataToMongoByMQ）
+	// 解析消息（toMongo topic 发送的?MsgDataToMongoByMQ?
 	var mongoMsg pbmsg.MsgDataToMongoByMQ
 	if err := proto.Unmarshal(value, &mongoMsg); err != nil {
 		logx.Errorf("Failed to unmarshal message: %v, marking as processed to avoid redelivery", err)
@@ -42,13 +42,13 @@ func (h *ToMongoHandler) HandleMessage(msg mq.Message) error {
 	currentMaxSeq, err := h.msgDB.GetMaxSeq(ctx, mongoMsg.ConversationID)
 	if err != nil {
 		logx.Errorf("Failed to get max seq: %v, marking as processed", err)
-		// 【修复】获取失败时也标记消息已处理，避免重复消费
+		// 【修复】获取失败时也标记消息已处理，避免重复消?
 		msg.Mark()
 		msg.Commit()
 		return nil
 	}
 
-	// 转换消息为 MsgDoc
+	// 转换消息?MsgDoc
 	msgDocs := make([]*model.MsgDoc, 0, len(mongoMsg.MsgData))
 	for _, msgData := range mongoMsg.MsgData {
 		msgDoc := pbToMsgDoc(mongoMsg.ConversationID, msgData)
@@ -64,10 +64,10 @@ func (h *ToMongoHandler) HandleMessage(msg mq.Message) error {
 		return nil
 	}
 
-	// 批量插入到 MongoDB
+	// 批量插入?MongoDB
 	if err := h.msgDB.BatchInsertChat2DB(ctx, mongoMsg.ConversationID, msgDocs, currentMaxSeq); err != nil {
 		logx.Errorf("Failed to insert messages to MongoDB: %v, marking as processed", err)
-		// 【修复】插入失败时也标记消息已处理，避免重复消费
+		// 【修复】插入失败时也标记消息已处理，避免重复消?
 		msg.Mark()
 		msg.Commit()
 		return nil
@@ -75,7 +75,7 @@ func (h *ToMongoHandler) HandleMessage(msg mq.Message) error {
 
 	logx.Infof("Persisted %d messages to MongoDB: key=%s, conversationID=%s", len(msgDocs), key, mongoMsg.ConversationID)
 
-	// 标记消息已处理
+	// 标记消息已处?
 	msg.Mark()
 	msg.Commit()
 
@@ -103,8 +103,8 @@ func pbToMsgDoc(conversationID string, pb *sdkws.MsgData) *model.MsgDoc {
 		MsgFrom:          pb.MsgFrom,
 		ContentType:      pb.ContentType,
 		Content:          pb.Content,
-		CreateTime:       pb.CreateTime,  // 直接使用 int64 时间戳
-		SendTime:         pb.SendTime,    // 直接使用 int64 时间戳
+		CreateTime:       pb.CreateTime,  // 直接使用 int64 时间?
+		SendTime:         pb.SendTime,    // 直接使用 int64 时间?
 		Status:           pb.Status,
 		Options:          pb.Options,
 		AtUserIDs:        pb.AtUserIDList,
@@ -112,6 +112,6 @@ func pbToMsgDoc(conversationID string, pb *sdkws.MsgData) *model.MsgDoc {
 		Ex:               pb.Ex,
 		IsRead:           false, // 默认未读
 		ReadTime:         0,      // 0 表示未读
-		BurnTime:         0,      // 0 表示未设置
+		BurnTime:         0,      // 0 表示未设?
 	}
 }

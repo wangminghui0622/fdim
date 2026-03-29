@@ -25,7 +25,7 @@ class AboutUsPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           const Center(
-            child: Text('OpenIM',
+            child: Text('FDIM',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           ),
           const SizedBox(height: 4),
@@ -37,13 +37,13 @@ class AboutUsPage extends StatelessWidget {
           const ListTile(
             leading: Icon(Icons.language),
             title: Text('官方网站'),
-            subtitle: Text('https://www.openim.io'),
+            subtitle: Text('https://www.fdim.io'),
           ),
           const Divider(height: 1),
           const ListTile(
             leading: Icon(Icons.code),
             title: Text('开源地址'),
-            subtitle: Text('https://github.com/openimsdk'),
+            subtitle: Text('https://github.com/fdimsdk'),
           ),
           const Divider(height: 1),
           const ListTile(

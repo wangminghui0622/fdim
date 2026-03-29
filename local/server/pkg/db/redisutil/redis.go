@@ -4,9 +4,9 @@ import (
 	"context"
 	"crypto/tls"
 
+	"fdim/pkg/errs"
+	"fdim/pkg/mw/specialerror"
 	"fdim/pkg/xtls"
-	"github.com/openimsdk/tools/errs"
-	"github.com/openimsdk/tools/mw/specialerror"
 	"github.com/redis/go-redis/v9"
 )
 

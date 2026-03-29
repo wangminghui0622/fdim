@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,12 +24,12 @@ func NewDelClientConfigLogic(ctx context.Context, svcCtx *svc.ServiceContext) *D
 }
 
 func (l *DelClientConfigLogic) DelClientConfig(req *admin.DelClientConfigReq) (*admin.DelClientConfigResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.Keys) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("keys cannot be empty")
 	}
 
-	// 2. 删除配置
+	// 2. ɾ
 	if err := l.svcCtx.AdminDB.DelConfig(l.ctx, req.Keys); err != nil {
 		l.Errorf("DelConfig failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to delete client config")

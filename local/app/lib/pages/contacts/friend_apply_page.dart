@@ -24,7 +24,7 @@ class _FriendApplyPageState extends State<FriendApplyPage> {
 
   Future<void> _load() async {
     try {
-      final list = await OpenIM.iMManager.friendshipManager
+      final list = await FDIM.iMManager.friendshipManager
           .getFriendApplicationListAsRecipient();
       if (mounted) setState(() { _applies = list; _loading = false; });
     } catch (_) {
@@ -35,7 +35,7 @@ class _FriendApplyPageState extends State<FriendApplyPage> {
   Future<void> _accept(FriendApplicationInfo apply) async {
     EasyLoading.show();
     try {
-      await OpenIM.iMManager.friendshipManager.acceptFriendApplication(
+      await FDIM.iMManager.friendshipManager.acceptFriendApplication(
           userID: apply.fromUserID ?? '');
       EasyLoading.showToast('已同意');
 
@@ -120,9 +120,9 @@ class _FriendApplyPageState extends State<FriendApplyPage> {
       await LocalStore.putConversation(conv);
 
       // 通知 UI 刷新
-      OpenIM.iMManager.conversationManager.listener
+      FDIM.iMManager.conversationManager.listener
           .conversationChanged([conv]);
-      OpenIM.iMManager.conversationManager.listener
+      FDIM.iMManager.conversationManager.listener
           .totalUnreadMessageCountChanged(LocalStore.getTotalUnreadCount());
 
       debugPrint('[FriendApply] 2 local messages created for $friendUserID in $convID');
@@ -134,7 +134,7 @@ class _FriendApplyPageState extends State<FriendApplyPage> {
   Future<void> _reject(FriendApplicationInfo apply) async {
     EasyLoading.show();
     try {
-      await OpenIM.iMManager.friendshipManager.refuseFriendApplication(
+      await FDIM.iMManager.friendshipManager.refuseFriendApplication(
           userID: apply.fromUserID ?? '');
       EasyLoading.showToast('已拒绝');
       _load();

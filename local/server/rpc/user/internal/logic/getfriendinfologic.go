@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,6 +24,6 @@ func NewGetFriendInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Get
 }
 
 func (l *GetFriendInfoLogic) GetFriendInfo(req *user.GetFriendInfoReq) (*user.GetFriendInfoResp, error) {
-	// TODO: 实现获取好友信息的逻辑
+	// TODO: ʵֻȡϢ߼
 	return nil, fmt.Errorf("GetFriendInfo not fully implemented yet")
 }

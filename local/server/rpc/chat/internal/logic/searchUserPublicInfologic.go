@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -26,14 +26,14 @@ func NewSearchUserPublicInfoLogic(ctx context.Context, svcCtx *svc.ServiceContex
 }
 
 func (l *SearchUserPublicInfoLogic) SearchUserPublicInfo(req *chat.SearchUserPublicInfoReq) (*chat.SearchUserPublicInfoResp, error) {
-	// 1. 搜索用户公开信息
+	// 1. ûϢ
 	total, userInfos, err := l.svcCtx.ChatDB.SearchUserPublicInfo(l.ctx, req.Keyword, req.Pagination)
 	if err != nil {
 		l.Errorf("SearchUserPublicInfo failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to search user public info")
 	}
 
-	// 2. 过滤性别（如果指定）
+	// 2. Աָ
 	var filteredInfos []*database.UserPublicInfo
 	if req.Genders != 0 {
 		for _, info := range userInfos {
@@ -44,7 +44,7 @@ func (l *SearchUserPublicInfoLogic) SearchUserPublicInfo(req *chat.SearchUserPub
 		userInfos = filteredInfos
 	}
 
-	// 3. 转换为protobuf格式
+	// 3. תΪprotobufʽ
 	users := make([]*sdkws.ChatUserPublicInfo, 0, len(userInfos))
 	for _, info := range userInfos {
 		users = append(users, &sdkws.ChatUserPublicInfo{

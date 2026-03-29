@@ -46,7 +46,7 @@ func (l *InvalidateTokenLogic) InvalidateToken(req *auth.InvalidateTokenReq) (*a
 		return nil, err
 	}
 
-	// 保留的 token 明确标记为 Normal
+	// 保留?token 明确标记?Normal
 	if req.PreservedToken != "" {
 		_ = l.svcCtx.AuthDB.SetTokenStatus(l.ctx, req.UserID, req.PlatformID, req.PreservedToken, constantpb.NormalToken)
 	}

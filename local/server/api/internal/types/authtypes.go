@@ -1,7 +1,6 @@
 package types
 
-// Auth 相关请求和响应类型
-// 注意：这些类型需要与 open-im-server 的 API 接口保持一致
+// Auth 相关请求和响应类?
 
 // GetAdminToken 相关类型
 type GetAdminTokenReq struct {

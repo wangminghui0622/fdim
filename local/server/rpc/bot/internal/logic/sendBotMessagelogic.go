@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -28,7 +28,7 @@ func NewSendBotMessageLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Se
 }
 
 func (l *SendBotMessageLogic) SendBotMessage(req *bot.SendBotMessageReq) (*bot.SendBotMessageResp, error) {
-	// 1. 校验参数
+	// 1. У
 	if req.AgentID == "" {
 		return nil, errs.ErrArgs.WrapMsg("agentID cannot be empty")
 	}
@@ -36,14 +36,14 @@ func (l *SendBotMessageLogic) SendBotMessage(req *bot.SendBotMessageReq) (*bot.S
 		return nil, errs.ErrArgs.WrapMsg("conversationID cannot be empty")
 	}
 
-	// 2. 查询 Agent 信息
+	// 2. ѯ Agent Ϣ
 	_, agents, err := l.svcCtx.BotDB.PageFindAgent(l.ctx, []string{req.AgentID}, nil)
 	if err != nil || len(agents) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("agent not found")
 	}
 	agent := agents[0]
 
-	// 3. 从 conversationID 推导单聊 recvID / 群聊 groupID
+	// 3.  conversationID Ƶ recvID / Ⱥ groupID
 	var recvID string
 	var groupID string
 	sessionType := int32(1)
@@ -87,7 +87,7 @@ func (l *SendBotMessageLogic) SendBotMessage(req *bot.SendBotMessageReq) (*bot.S
 		AttachedInfo:   req.Ex,
 	}
 
-	// 4. 调用 Msg RPC 发送消息
+	// 4.  Msg RPC Ϣ
 	if l.svcCtx.MsgRpc == nil {
 		return nil, errs.ErrInternalServer.WrapMsg("Msg RPC client not initialized")
 	}

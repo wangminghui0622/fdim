@@ -24,7 +24,7 @@ func NewFcmUpdateTokenLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Fc
 }
 
 func (l *FcmUpdateTokenLogic) FcmUpdateToken(req *third.FcmUpdateTokenReq) (*third.FcmUpdateTokenResp, error) {
-	// 1. 参数检查（使用 proto 自带的 Check 方法）
+	// 1. 参数检查（使用 proto 自带?Check 方法?
 	if err := req.Check(); err != nil {
 		return nil, fmt.Errorf("invalid FcmUpdateTokenReq: %w", err)
 	}
@@ -32,8 +32,8 @@ func (l *FcmUpdateTokenLogic) FcmUpdateToken(req *third.FcmUpdateTokenReq) (*thi
 		return nil, fmt.Errorf("redis client not initialized")
 	}
 
-	// 2. 将 FCM token 写入 Redis，供 push 服务离线推送使用
-	// key 规则与 push 服务中 DelUserPushToken 保持一致：fcm_token:{account}:{platformID}
+	// 2. ?FCM token 写入 Redis，供 push 服务离线推送使?
+	// key 规则?push 服务?DelUserPushToken 保持一致：fcm_token:{account}:{platformID}
 	key := fmt.Sprintf("fcm_token:%s:%d", req.Account, req.PlatformID)
 	if err := l.svcCtx.Redis.Set(l.ctx, key, req.FcmToken, 0).Err(); err != nil {
 		l.Errorf("failed to set FCM token in redis, key=%s, err=%v", key, err)

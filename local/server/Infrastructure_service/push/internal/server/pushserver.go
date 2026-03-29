@@ -19,7 +19,7 @@ func NewPushServer(svcCtx *svc.ServiceContext) *PushServer {
 	}
 }
 
-// PushMsg 推送消息
+// PushMsg 推送消?
 func (s *PushServer) PushMsg(ctx context.Context, req *pbpush.PushMsgReq) (*pbpush.PushMsgResp, error) {
 	l := logic2.NewPushMsgLogic(ctx, s.svcCtx)
 	return l.PushMsg(req)

@@ -19,13 +19,13 @@ func NewConversationServer(svcCtx *svc.ServiceContext) *ConversationServer {
 	}
 }
 
-// GetAllConversations 获取所有会话
+// GetAllConversations 获取所有会?
 func (s *ConversationServer) GetAllConversations(ctx context.Context, req *conversation.GetAllConversationsReq) (*conversation.GetAllConversationsResp, error) {
 	l := logic.NewGetAllConversationsLogic(ctx, s.svcCtx)
 	return l.GetAllConversations(req)
 }
 
-// GetSortedConversationList 获取排序的会话列表
+// GetSortedConversationList 获取排序的会话列?
 func (s *ConversationServer) GetSortedConversationList(ctx context.Context, req *conversation.GetSortedConversationListReq) (*conversation.GetSortedConversationListResp, error) {
 	l := logic.NewGetSortedConversationListLogic(ctx, s.svcCtx)
 	return l.GetSortedConversationList(req)
@@ -133,7 +133,7 @@ func (s *ConversationServer) GetIncrementalConversation(ctx context.Context, req
 	return l.GetIncrementalConversation(req)
 }
 
-// GetOwnerConversation 获取拥有者会话
+// GetOwnerConversation 获取拥有者会?
 func (s *ConversationServer) GetOwnerConversation(ctx context.Context, req *conversation.GetOwnerConversationReq) (*conversation.GetOwnerConversationResp, error) {
 	l := logic.NewGetOwnerConversationLogic(ctx, s.svcCtx)
 	return l.GetOwnerConversation(req)
@@ -163,7 +163,7 @@ func (s *ConversationServer) ClearUserConversationMsg(ctx context.Context, req *
 	return l.ClearUserConversationMsg(req)
 }
 
-// UpdateConversationsByUser 按用户更新会话
+// UpdateConversationsByUser 按用户更新会?
 func (s *ConversationServer) UpdateConversationsByUser(ctx context.Context, req *conversation.UpdateConversationsByUserReq) (*conversation.UpdateConversationsByUserResp, error) {
 	l := logic.NewUpdateConversationsByUserLogic(ctx, s.svcCtx)
 	return l.UpdateConversationsByUser(req)

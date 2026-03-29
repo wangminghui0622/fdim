@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -27,7 +27,7 @@ func NewAddAppletLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AddAppl
 }
 
 func (l *AddAppletLogic) AddApplet(req *admin.AddAppletReq) (*admin.AddAppletResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if req.Name == "" {
 		return nil, errs.ErrArgs.WrapMsg("name cannot be empty")
 	}
@@ -35,13 +35,13 @@ func (l *AddAppletLogic) AddApplet(req *admin.AddAppletReq) (*admin.AddAppletRes
 		return nil, errs.ErrArgs.WrapMsg("appID cannot be empty")
 	}
 
-	// 2. 生成ID（如果未提供）
+	// 2. IDδṩ
 	appletID := req.Id
 	if appletID == "" {
 		appletID = uuid.New().String()
 	}
 
-	// 3. 构建小程序对象
+	// 3. С
 	applet := &database.Applet{
 		ID:         appletID,
 		Name:       req.Name,
@@ -56,7 +56,7 @@ func (l *AddAppletLogic) AddApplet(req *admin.AddAppletReq) (*admin.AddAppletRes
 		CreateTime: time.Now(),
 	}
 
-	// 4. 添加小程序
+	// 4. С
 	if err := l.svcCtx.AdminDB.AddApplet(l.ctx, []*database.Applet{applet}); err != nil {
 		l.Errorf("AddApplet failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to add applet")

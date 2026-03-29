@@ -35,7 +35,7 @@ class AuthController extends GetxController {
   Future<void> _initSDKAndLogin() async {
     try {
       final imCtrl = Get.find<IMController>();
-      await imCtrl.initOpenIM();
+      await imCtrl.initFDIM();
       final info = await imCtrl.loginSDK();
       
       // 从 Chat 层获取完整用户信息（包含手机号等）
@@ -257,7 +257,7 @@ class AuthController extends GetxController {
     });
 
     // IM layer via SDK
-    await OpenIM.iMManager.userManager.setSelfInfo(
+    await FDIM.iMManager.userManager.setSelfInfo(
       nickname: nickname,
       faceURL: faceURL,
     );

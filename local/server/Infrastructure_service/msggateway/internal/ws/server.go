@@ -17,7 +17,7 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-// WsServer WebSocket 服务器
+// WsServer WebSocket 服务?
 type WsServer struct {
 	melody           *melody.Melody
 	config           *config.Config
@@ -47,7 +47,7 @@ func (cm *ClientManager) Add(userID, platformID string, session *melody.Session)
 	if cm.clients[userID] == nil {
 		cm.clients[userID] = make(map[string]*melody.Session)
 	}
-	// 返回旧 session（如果存在），用于同平台踢下线
+	// 返回?session（如果存在），用于同平台踢下?
 	old := cm.clients[userID][platformID]
 	cm.clients[userID][platformID] = session
 	return old
@@ -93,7 +93,7 @@ func (cm *ClientManager) GetTotalConnections() int {
 	return count
 }
 
-// OnlineCache 在线状态缓存
+// OnlineCache 在线状态缓?
 type OnlineCache struct {
 	redis *redis.Client
 }
@@ -104,7 +104,7 @@ func NewOnlineCache(redis *redis.Client) *OnlineCache {
 	}
 }
 
-// SetUserOnline 设置用户在线状态
+// SetUserOnline 设置用户在线状?
 func (oc *OnlineCache) SetUserOnline(ctx context.Context, userID string, platformID int32) error {
 	if oc.redis == nil {
 		return nil
@@ -114,11 +114,11 @@ func (oc *OnlineCache) SetUserOnline(ctx context.Context, userID string, platfor
 	if err := oc.redis.SAdd(ctx, key, member).Err(); err != nil {
 		return err
 	}
-	// 设置过期时间（24小时）
+	// 设置过期时间?4小时?
 	return oc.redis.Expire(ctx, key, 24*time.Hour).Err()
 }
 
-// SetUserOffline 设置用户离线状态
+// SetUserOffline 设置用户离线状?
 func (oc *OnlineCache) SetUserOffline(ctx context.Context, userID string, platformID int32) error {
 	if oc.redis == nil {
 		return nil
@@ -128,7 +128,7 @@ func (oc *OnlineCache) SetUserOffline(ctx context.Context, userID string, platfo
 	return oc.redis.SRem(ctx, key, member).Err()
 }
 
-// GetUserOnlinePlatforms 获取用户在线的平台列表
+// GetUserOnlinePlatforms 获取用户在线的平台列?
 func (oc *OnlineCache) GetUserOnlinePlatforms(ctx context.Context, userID string) ([]int32, error) {
 	if oc.redis == nil {
 		return nil, nil
@@ -152,7 +152,7 @@ func (oc *OnlineCache) GetUserOnlinePlatforms(ctx context.Context, userID string
 	return platforms, nil
 }
 
-// NewWsServer 创建 WebSocket 服务器
+// NewWsServer 创建 WebSocket 服务?
 func NewWsServer(cfg *config.Config, authClient auth.AuthClient, redisClient *redis.Client) *WsServer {
 	m := melody.New()
 
@@ -165,7 +165,7 @@ func NewWsServer(cfg *config.Config, authClient auth.AuthClient, redisClient *re
 
 	// 设置 Upgrader
 	m.Upgrader.CheckOrigin = func(r *http.Request) bool {
-		return true // 开发环境允许所有来源
+		return true // 开发环境允许所有来?
 	}
 
 	ws := &WsServer{
@@ -192,7 +192,7 @@ func (ws *WsServer) handleConnect(session *melody.Session) {
 	logx.Infof("[WebSocket Connected] New connection established - remoteAddr=%s, totalConnections=%d",
 		session.RemoteAddr(), ws.totalConnections.Load())
 
-	// 从 session 中获取用户信息
+	// ?session 中获取用户信?
 	userID, _ := session.Get("userID")
 	platformID, _ := session.Get("platformID")
 
@@ -271,7 +271,7 @@ func (ws *WsServer) handleDisconnect(session *melody.Session) {
 	}
 }
 
-// handleMessage 处理消息 (official OpenIM WsReq/WsResp protocol)
+// handleMessage 处理消息 (official FDIM WsReq/WsResp protocol)
 func (ws *WsServer) handleMessage(session *melody.Session, msg []byte) {
 	logx.Debugf("Received message: %s", string(msg))
 
@@ -283,7 +283,7 @@ func (ws *WsServer) handleMessage(session *melody.Session, msg []byte) {
 
 	switch req.ReqIdentifier {
 	case WSSetBackgroundStatus:
-		// 心跳/后台状态设置
+		// 心跳/后台状态设?
 		resp := WsResp{
 			ReqIdentifier: req.ReqIdentifier,
 			OperationID:   req.OperationID,
@@ -295,7 +295,7 @@ func (ws *WsServer) handleMessage(session *melody.Session, msg []byte) {
 			logx.Errorf("Failed to send SetBackgroundStatus resp: %v", err)
 		}
 	case WSGetNewestSeq:
-		// 获取最新 seq - 通过 REST API 实现，WS 返回空
+		// 获取最?seq - 通过 REST API 实现，WS 返回?
 		resp := WsResp{
 			ReqIdentifier: req.ReqIdentifier,
 			OperationID:   req.OperationID,
@@ -305,7 +305,7 @@ func (ws *WsServer) handleMessage(session *melody.Session, msg []byte) {
 		respBytes, _ := json.Marshal(resp)
 		session.Write(respBytes)
 	case WSSendMsg:
-		// 发送消息 - 通过 REST API 实现，WS 返回不支持
+		// 发送消?- 通过 REST API 实现，WS 返回不支?
 		resp := WsResp{
 			ReqIdentifier: req.ReqIdentifier,
 			OperationID:   req.OperationID,
@@ -363,7 +363,7 @@ func (ws *WsServer) HandleRequest(w http.ResponseWriter, r *http.Request) error 
 		return fmt.Errorf("missing required parameters")
 	}
 
-	// 解析并验证 platformID
+	// 解析并验?platformID
 	platformID, err := strconv.Atoi(platformIDStr)
 	if err != nil {
 		logx.Errorf("[WebSocket Login Failed] Invalid platformID - userID=%s, platformID=%s, remoteAddr=%s, error=%v",
@@ -384,14 +384,14 @@ func (ws *WsServer) HandleRequest(w http.ResponseWriter, r *http.Request) error 
 			return fmt.Errorf("invalid token: %w", err)
 		}
 
-		// 验证 token 中的 userID 是否与请求一致
+		// 验证 token 中的 userID 是否与请求一?
 		if resp.UserID != userID {
 			logx.Errorf("[WebSocket Login Failed] Token userID mismatch - tokenUserID=%s, requestUserID=%s, platformID=%d, remoteAddr=%s",
 				resp.UserID, userID, platformID, r.RemoteAddr)
 			http.Error(w, "Token userID mismatch", http.StatusUnauthorized)
 			return fmt.Errorf("token userID mismatch: token has %s, request has %s", resp.UserID, userID)
 		}
-		// 不严格验证 platformID，允许跨平台使用 token
+		// 不严格验?platformID，允许跨平台使用 token
 		if resp.PlatformID != int32(platformID) {
 			logx.Infof("[WebSocket Login] Token platformID differs: token=%d, request=%d (allowed)", resp.PlatformID, platformID)
 		}
@@ -402,7 +402,7 @@ func (ws *WsServer) HandleRequest(w http.ResponseWriter, r *http.Request) error 
 		logx.Infof("AuthClient is nil, skipping token validation")
 	}
 
-	// 从 session 中存储用户信息
+	// ?session 中存储用户信?
 	keys := make(map[string]interface{})
 	keys["userID"] = userID
 	keys["platformID"] = platformIDStr
@@ -414,7 +414,7 @@ func (ws *WsServer) HandleRequest(w http.ResponseWriter, r *http.Request) error 
 	return ws.melody.HandleRequestWithKeys(w, r, keys)
 }
 
-// BroadcastToUser 向指定用户推送消息
+// BroadcastToUser 向指定用户推送消?
 func (ws *WsServer) BroadcastToUser(userID string, message []byte) error {
 	logx.Infof("[BroadcastToUser] Attempting to broadcast to user: %s, message size: %d bytes", userID, len(message))
 	platformSessions := ws.clients.Get(userID)
@@ -443,7 +443,7 @@ func (ws *WsServer) BroadcastToUser(userID string, message []byte) error {
 	return nil
 }
 
-// BroadcastToUsers 向多个用户推送消息
+// BroadcastToUsers 向多个用户推送消?
 func (ws *WsServer) BroadcastToUsers(userIDs []string, message []byte) error {
 	for _, userID := range userIDs {
 		if err := ws.BroadcastToUser(userID, message); err != nil {
@@ -453,12 +453,12 @@ func (ws *WsServer) BroadcastToUsers(userIDs []string, message []byte) error {
 	return nil
 }
 
-// BroadcastFilter 按条件广播消息
+// BroadcastFilter 按条件广播消?
 func (ws *WsServer) BroadcastFilter(message []byte, filter func(*melody.Session) bool) error {
 	return ws.melody.BroadcastFilter(message, filter)
 }
 
-// KickUserOffline 踢用户下线
+// KickUserOffline 踢用户下?
 func (ws *WsServer) KickUserOffline(userID string, platformID string) error {
 	logx.Infof("[WebSocket Kick] Attempting to kick user offline - userID=%s, platformID=%s", userID, platformID)
 	
@@ -488,7 +488,7 @@ func (ws *WsServer) KickUserOffline(userID string, platformID string) error {
 	return fmt.Errorf("user %s not online on platform %s", userID, platformID)
 }
 
-// PushMessage 推送消息 (official: WSPushMsg = 2001, all push events use this)
+// PushMessage 推送消?(official: WSPushMsg = 2001, all push events use this)
 func (ws *WsServer) PushMessage(userID string, data []byte) error {
 	resp := WsResp{
 		ReqIdentifier: WSPushMsg,
@@ -526,7 +526,7 @@ func (ws *WsServer) GetOnlineUsers(userIDs []string) map[string]bool {
 	return result
 }
 
-// GetUserSessions 获取用户的所有会话
+// GetUserSessions 获取用户的所有会?
 func (ws *WsServer) GetUserSessions(userID string) map[string]*melody.Session {
 	return ws.clients.Get(userID)
 }
@@ -536,7 +536,7 @@ func (ws *WsServer) GetTotalConnections() int64 {
 	return ws.totalConnections.Load()
 }
 
-// Run 启动 WebSocket 服务器（阻塞）
+// Run 启动 WebSocket 服务器（阻塞?
 func (ws *WsServer) Run(ctx context.Context, port int) error {
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		err := ws.HandleRequest(w, r)

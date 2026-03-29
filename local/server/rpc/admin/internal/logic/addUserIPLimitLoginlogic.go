@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -26,12 +26,12 @@ func NewAddUserIPLimitLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext
 }
 
 func (l *AddUserIPLimitLoginLogic) AddUserIPLimitLogin(req *admin.AddUserIPLimitLoginReq) (*admin.AddUserIPLimitLoginResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if len(req.Limits) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("limits cannot be empty")
 	}
 
-	// 2. 构建限制列表
+	// 2. б
 	limits := make([]*database.LimitUserLoginIP, len(req.Limits))
 	now := time.Now()
 	for i, limit := range req.Limits {
@@ -45,7 +45,7 @@ func (l *AddUserIPLimitLoginLogic) AddUserIPLimitLogin(req *admin.AddUserIPLimit
 		}
 	}
 
-	// 3. 添加用户IP登录限制
+	// 3. ûIP¼
 	if err := l.svcCtx.AdminDB.AddUserIPLimitLogin(l.ctx, limits); err != nil {
 		l.Errorf("AddUserIPLimitLogin failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to add user IP limit login")

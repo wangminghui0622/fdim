@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,6 +24,6 @@ func NewGetGroupsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetGrou
 }
 
 func (l *GetGroupsLogic) GetGroups(req *user.GetGroupsReq) (*user.GetGroupsResp, error) {
-	// TODO: 实现获取群组列表的逻辑
+	// TODO: ʵֻȡȺб߼
 	return nil, fmt.Errorf("GetGroups not fully implemented yet")
 }

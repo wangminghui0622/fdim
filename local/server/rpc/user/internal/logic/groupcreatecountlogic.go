@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -26,18 +26,18 @@ func NewGroupCreateCountLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 func (l *GroupCreateCountLogic) GroupCreateCount(req *user.GroupCreateCountReq) (*user.GroupCreateCountResp, error) {
 	resp := &user.GroupCreateCountResp{}
 
-	// Ȩ����֤����Ҫ����ԱȨ��
+	// ???????????????????
 	if err := authverify.CheckAdmin(l.ctx); err != nil {
 		return nil, err
 	}
 
-	// ͳ����Ⱥ����
+	// ??????????
 	total, err := l.svcCtx.GroupDB.CountGroups(l.ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// ͳ��ָ��ʱ�䷶Χ֮ǰ��Ⱥ����
+	// ??????????????????
 	var before int64
 	if req.Start > 0 {
 		before, err = l.svcCtx.GroupDB.CountGroupsBeforeTime(l.ctx, req.Start)

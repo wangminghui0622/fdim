@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -24,7 +24,7 @@ func NewFindDefaultGroupLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *FindDefaultGroupLogic) FindDefaultGroup(req *admin.FindDefaultGroupReq) (*admin.FindDefaultGroupResp, error) {
-	// FindDefaultGroupReq 没有 GroupIDs 字段，返回所有默认群组
+	// FindDefaultGroupReq û GroupIDs ֶΣĬȺ
 	groupIDs, err := l.svcCtx.AdminDB.FindDefaultGroup(l.ctx, nil)
 	if err != nil {
 		l.Errorf("FindDefaultGroup failed: %v", err)

@@ -27,29 +27,29 @@ func NewAccountCheckLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Acco
 func (l *AccountCheckLogic) AccountCheck(req *user.AccountCheckReq) (*user.AccountCheckResp, error) {
 	resp := &user.AccountCheckResp{}
 
-	// Ȩ����֤����Ҫ����ԱȨ��
+	// Ȩ֤ҪԱȨ
 	if err := authverify.CheckAdmin(l.ctx); err != nil {
 		return nil, err
 	}
 
-	// ������֤
+	// ֤
 	if len(req.CheckUserIDs) == 0 {
 		return nil, fmt.Errorf("checkUserIDs is empty")
 	}
 
-	// �����û�
+	// û
 	users, err := l.svcCtx.UserDB.Find(l.ctx, req.CheckUserIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	// �����û�IDӳ��
+	// ûIDӳ
 	userIDMap := make(map[string]bool)
 	for _, u := range users {
 		userIDMap[u.UserID] = true
 	}
 
-	// ������Ӧ
+	// Ӧ
 	for _, userID := range req.CheckUserIDs {
 		status := &user.AccountCheckRespSingleUserStatus{
 			UserID: userID,

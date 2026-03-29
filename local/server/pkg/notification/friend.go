@@ -1,4 +1,4 @@
-﻿package notification
+package notification
 
 import (
 	"context"
@@ -11,25 +11,25 @@ import (
 	"fdim/protocol/sdkws"
 )
 
-// FriendNotificationSender 好友通知发送器
+// FriendNotificationSender ֪ͨ
 type FriendNotificationSender struct {
 	*NotificationSender
 	friendDB *database.FriendDatabase
 }
 
-// NewFriendNotificationSender 创建好友通知发送器
+// NewFriendNotificationSender ֪ͨ
 func NewFriendNotificationSender(conf *config.Notification, opts ...NotificationSenderOptions) *FriendNotificationSender {
 	return &FriendNotificationSender{
 		NotificationSender: NewNotificationSender(conf, opts...),
 	}
 }
 
-// SetFriendDB 设置好友数据库（用于获取好友申请信息）
+// SetFriendDB úݿ⣨ڻȡϢ
 func (f *FriendNotificationSender) SetFriendDB(db *database.FriendDatabase) {
 	f.friendDB = db
 }
 
-// FriendApplicationAddNotification 发送好友申请通知
+// FriendApplicationAddNotification ͺ֪ͨ
 func (f *FriendNotificationSender) FriendApplicationAddNotification(ctx context.Context, fromUserID, toUserID string) {
 	log.ZInfo(ctx, "[FriendNotification] FriendApplicationAddNotification called", "fromUserID", fromUserID, "toUserID", toUserID, "contentType", constant.FriendApplicationNotification)
 	tips := &sdkws.FriendApplicationTips{
@@ -41,25 +41,25 @@ func (f *FriendNotificationSender) FriendApplicationAddNotification(ctx context.
 	f.Notification(ctx, fromUserID, toUserID, constant.FriendApplicationNotification, tips)
 }
 
-// FriendApplicationAgreedNotification 发送好友申请同意通知
-// 参考官方实现：会获取好友申请信息（包含reqMsg）并发送，这样双方都能在消息列表看到对方
+// FriendApplicationAgreedNotification ͺ֪ͬͨ
+// οٷʵ֣ȡϢreqMsgͣ˫ϢбԷ
 func (f *FriendNotificationSender) FriendApplicationAgreedNotification(ctx context.Context, fromUserID, toUserID, handleMsg string) {
 	var request *sdkws.FriendRequest
 	
-	// 尝试获取好友申请信息（包含reqMsg验证消息）
+	// ԻȡϢreqMsg֤Ϣ
 	if f.friendDB != nil {
 		requests, err := f.friendDB.FindBothFriendRequests(ctx, fromUserID, toUserID)
 		if err != nil {
 			log.ZError(ctx, "FriendApplicationAgreedNotification get friend request failed", err, "fromUserID", fromUserID, "toUserID", toUserID)
 		} else {
-			// 找到从fromUserID到toUserID的申请
+			// ҵfromUserIDtoUserID
 			for _, req := range requests {
 				if req.FromUserID == fromUserID && req.ToUserID == toUserID {
 					request = &sdkws.FriendRequest{
 						FromUserID:    req.FromUserID,
 						ToUserID:      req.ToUserID,
 						HandleResult:  req.HandleResult,
-						ReqMsg:        req.ReqMsg, // 这是关键：申请时的验证消息
+						ReqMsg:        req.ReqMsg, // ǹؼʱ֤Ϣ
 						CreateTime:    req.CreateTime.UnixMilli(),
 						HandlerUserID: req.HandlerUserID,
 						HandleMsg:     req.HandleMsg,
@@ -78,12 +78,12 @@ func (f *FriendNotificationSender) FriendApplicationAgreedNotification(ctx conte
 			ToUserID:   toUserID,
 		},
 		HandleMsg: handleMsg,
-		Request:   request, // 包含完整的申请信息，包括reqMsg
+		Request:   request, // ϢreqMsg
 	}
 	f.Notification(ctx, toUserID, fromUserID, constant.FriendApplicationApprovedNotification, tips)
 }
 
-// FriendApplicationRejectedNotification 发送好友申请拒绝通知
+// FriendApplicationRejectedNotification ͺܾ֪ͨ
 func (f *FriendNotificationSender) FriendApplicationRejectedNotification(ctx context.Context, fromUserID, toUserID, handleMsg string) {
 	tips := &sdkws.FriendApplicationRejectedTips{
 		FromToUserID: &sdkws.FromToUserID{
@@ -95,7 +95,7 @@ func (f *FriendNotificationSender) FriendApplicationRejectedNotification(ctx con
 	f.Notification(ctx, toUserID, fromUserID, constant.FriendApplicationRejectedNotification, tips)
 }
 
-// FriendAddedNotification 发送好友添加成功通知（双方都收到）
+// FriendAddedNotification ͺӳɹ֪ͨ˫յ
 func (f *FriendNotificationSender) FriendAddedNotification(ctx context.Context, fromUserID, toUserID string) {
 	tips := &sdkws.FriendAddedTips{
 		Friend: &sdkws.FriendInfo{},
@@ -104,7 +104,7 @@ func (f *FriendNotificationSender) FriendAddedNotification(ctx context.Context, 
 	f.Notification(ctx, fromUserID, toUserID, constant.FriendAddedNotification, tips)
 }
 
-// FriendDeletedNotification 发送好友删除通知
+// FriendDeletedNotification ͺɾ֪ͨ
 func (f *FriendNotificationSender) FriendDeletedNotification(ctx context.Context, ownerUserID, friendUserID string) {
 	tips := &sdkws.FriendDeletedTips{
 		FromToUserID: &sdkws.FromToUserID{
@@ -115,7 +115,7 @@ func (f *FriendNotificationSender) FriendDeletedNotification(ctx context.Context
 	f.Notification(ctx, ownerUserID, friendUserID, constant.FriendDeletedNotification, tips)
 }
 
-// FriendRemarkSetNotification 发送好友备注设置通知
+// FriendRemarkSetNotification ͺѱע֪ͨ
 func (f *FriendNotificationSender) FriendRemarkSetNotification(ctx context.Context, fromUserID, toUserID string) {
 	tips := &sdkws.FriendInfoChangedTips{
 		FromToUserID: &sdkws.FromToUserID{
@@ -126,7 +126,7 @@ func (f *FriendNotificationSender) FriendRemarkSetNotification(ctx context.Conte
 	f.Notification(ctx, fromUserID, toUserID, constant.FriendRemarkSetNotification, tips)
 }
 
-// FriendsInfoUpdateNotification 发送好友信息更新通知
+// FriendsInfoUpdateNotification ͺϢ֪ͨ
 func (f *FriendNotificationSender) FriendsInfoUpdateNotification(ctx context.Context, ownerUserID string, friendIDs []string) {
 	tips := &sdkws.FriendsInfoUpdateTips{
 		FromToUserID: &sdkws.FromToUserID{
@@ -137,7 +137,7 @@ func (f *FriendNotificationSender) FriendsInfoUpdateNotification(ctx context.Con
 	f.Notification(ctx, ownerUserID, ownerUserID, constant.FriendsInfoUpdateNotification, tips)
 }
 
-// BlackAddedNotification 发送黑名单添加通知
+// BlackAddedNotification ͺ֪ͨ
 func (f *FriendNotificationSender) BlackAddedNotification(ctx context.Context, ownerUserID, blackUserID string) {
 	tips := &sdkws.BlackAddedTips{
 		FromToUserID: &sdkws.FromToUserID{
@@ -148,7 +148,7 @@ func (f *FriendNotificationSender) BlackAddedNotification(ctx context.Context, o
 	f.Notification(ctx, ownerUserID, blackUserID, constant.BlackAddedNotification, tips)
 }
 
-// BlackDeletedNotification 发送黑名单删除通知
+// BlackDeletedNotification ͺɾ֪ͨ
 func (f *FriendNotificationSender) BlackDeletedNotification(ctx context.Context, ownerUserID, blackUserID string) {
 	tips := &sdkws.BlackDeletedTips{
 		FromToUserID: &sdkws.FromToUserID{
@@ -159,7 +159,7 @@ func (f *FriendNotificationSender) BlackDeletedNotification(ctx context.Context,
 	f.Notification(ctx, ownerUserID, blackUserID, constant.BlackDeletedNotification, tips)
 }
 
-// FriendInfoUpdatedNotification 发送好友信息更新通知
+// FriendInfoUpdatedNotification ͺϢ֪ͨ
 func (f *FriendNotificationSender) FriendInfoUpdatedNotification(ctx context.Context, changedUserID, needNotifiedUserID string) {
 	opUserID := mcontext.GetOpUserID(ctx)
 	if opUserID == "" {

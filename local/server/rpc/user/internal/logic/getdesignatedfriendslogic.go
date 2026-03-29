@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -29,12 +29,12 @@ func NewGetDesignatedFriendsLogic(ctx context.Context, svcCtx *svc.ServiceContex
 func (l *GetDesignatedFriendsLogic) GetDesignatedFriends(req *user.GetDesignatedFriendsReq) (*user.GetDesignatedFriendsResp, error) {
 	resp := &user.GetDesignatedFriendsResp{}
 
-	// ������֤
+	// ???????
 	if len(req.FriendUserIDs) == 0 {
 		return nil, fmt.Errorf("friendUserIDs is empty")
 	}
 
-	// ����ظ��� FriendUserIDs
+	// ???????? FriendUserIDs
 	seen := make(map[string]bool)
 	for _, userID := range req.FriendUserIDs {
 		if seen[userID] {
@@ -43,30 +43,30 @@ func (l *GetDesignatedFriendsLogic) GetDesignatedFriends(req *user.GetDesignated
 		seen[userID] = true
 	}
 
-	// Ȩ����֤
+	// ??????
 	if err := authverify.CheckAccess(l.ctx, req.OwnerUserID); err != nil {
 		return nil, err
 	}
 
-	// ���Һ���
+	// ???????
 	friends, err := l.svcCtx.FriendDB.FindFriendsWithError(l.ctx, req.OwnerUserID, req.FriendUserIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	// ��ȡ���ѵ��û���Ϣ
+	// ??????????????
 	users, err := l.svcCtx.UserDB.Find(l.ctx, req.FriendUserIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	// �����û�ӳ��
+	// ??????????
 	userMap := make(map[string]*model.User)
 	for _, u := range users {
 		userMap[u.UserID] = u
 	}
 
-	// ת��Ϊ Protocol Buffer ��ʽ������û���Ϣ
+	// ???? Protocol Buffer ??????????????
 	result := make([]*sdkws.FriendInfo, 0, len(friends))
 	for _, friend := range friends {
 		friendInfo := &sdkws.FriendInfo{
@@ -79,7 +79,7 @@ func (l *GetDesignatedFriendsLogic) GetDesignatedFriends(req *user.GetDesignated
 			IsPinned:       friend.IsPinned,
 		}
 
-		// �����ѵ��û���Ϣ
+		// ?????????????
 		if user, ok := userMap[friend.FriendUserID]; ok {
 			friendInfo.FriendUser = &sdkws.UserInfo{
 				UserID:   user.UserID,

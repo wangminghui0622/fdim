@@ -1,4 +1,4 @@
-﻿package database
+package database
 
 import (
 	"context"
@@ -16,7 +16,7 @@ type ConversationDatabase struct {
 
 func NewConversationDatabase(db *MongoDB) *ConversationDatabase {
 	coll := db.GetCollection("conversations")
-	// 创建索引
+	// 
 	indexes := []mongo.IndexModel{
 		{
 			Keys: bson.D{
@@ -43,7 +43,7 @@ func NewConversationDatabase(db *MongoDB) *ConversationDatabase {
 	}
 }
 
-// Create 创建会话
+// Create Ự
 func (d *ConversationDatabase) Create(ctx context.Context, conversations []*model.Conversation) error {
 	if len(conversations) == 0 {
 		return nil
@@ -56,7 +56,7 @@ func (d *ConversationDatabase) Create(ctx context.Context, conversations []*mode
 	return err
 }
 
-// UpdateByMap 根据Map更新会话
+// UpdateByMap Map»Ự
 func (d *ConversationDatabase) UpdateByMap(ctx context.Context, userIDs []string, conversationID string, args map[string]interface{}) (int64, error) {
 	if len(args) == 0 || len(userIDs) == 0 {
 		return 0, nil
@@ -72,14 +72,14 @@ func (d *ConversationDatabase) UpdateByMap(ctx context.Context, userIDs []string
 	return result.ModifiedCount, nil
 }
 
-// UpdateUserConversations 更新用户的所有会话
+// UpdateUserConversations ûлỰ
 func (d *ConversationDatabase) UpdateUserConversations(ctx context.Context, userID string, args map[string]interface{}) ([]*model.Conversation, error) {
 	if len(args) == 0 {
 		return nil, nil
 	}
 	filter := bson.M{"user_id": userID}
 
-	// 先查找要更新的会话
+	// ȲҪµĻỰ
 	cursor, err := d.collection.Find(ctx, filter, options.Find().SetProjection(bson.M{"_id": 0, "owner_user_id": 1, "conversation_id": 1}))
 	if err != nil {
 		return nil, err
@@ -91,7 +91,7 @@ func (d *ConversationDatabase) UpdateUserConversations(ctx context.Context, user
 		return nil, err
 	}
 
-	// 更新
+	// 
 	_, err = d.collection.UpdateMany(ctx, filter, bson.M{"$set": args})
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func (d *ConversationDatabase) UpdateUserConversations(ctx context.Context, user
 	return conversations, nil
 }
 
-// Update 更新会话
+// Update »Ự
 func (d *ConversationDatabase) Update(ctx context.Context, conversation *model.Conversation) error {
 	filter := bson.M{
 		"owner_user_id":   conversation.OwnerUserID,
@@ -110,9 +110,9 @@ func (d *ConversationDatabase) Update(ctx context.Context, conversation *model.C
 	return err
 }
 
-// Find 查找会话
+// Find һỰ
 func (d *ConversationDatabase) Find(ctx context.Context, ownerUserID string, conversationIDs []string) ([]*model.Conversation, error) {
-	// 如果conversationIDs为空，返回空结果
+	// conversationIDsΪգؿս
 	if len(conversationIDs) == 0 {
 		return []*model.Conversation{}, nil
 	}
@@ -133,7 +133,7 @@ func (d *ConversationDatabase) Find(ctx context.Context, ownerUserID string, con
 	return conversations, nil
 }
 
-// FindUserIDAllConversationID 查找用户的所有会话ID
+// FindUserIDAllConversationID ûлỰID
 func (d *ConversationDatabase) FindUserIDAllConversationID(ctx context.Context, userID string) ([]string, error) {
 	filter := bson.M{"owner_user_id": userID}
 	opts := options.Find().SetProjection(bson.M{"_id": 0, "conversation_id": 1})
@@ -156,7 +156,7 @@ func (d *ConversationDatabase) FindUserIDAllConversationID(ctx context.Context, 
 	return conversationIDs, nil
 }
 
-// FindUserIDAllNotNotifyConversationID 查找用户的所有不通知会话ID
+// FindUserIDAllNotNotifyConversationID ûв֪ͨỰID
 func (d *ConversationDatabase) FindUserIDAllNotNotifyConversationID(ctx context.Context, userID string) ([]string, error) {
 	filter := bson.M{
 		"owner_user_id": userID,
@@ -182,7 +182,7 @@ func (d *ConversationDatabase) FindUserIDAllNotNotifyConversationID(ctx context.
 	return conversationIDs, nil
 }
 
-// FindUserIDAllPinnedConversationID 查找用户的所有置顶会话ID
+// FindUserIDAllPinnedConversationID ûöỰID
 func (d *ConversationDatabase) FindUserIDAllPinnedConversationID(ctx context.Context, userID string) ([]string, error) {
 	filter := bson.M{
 		"owner_user_id": userID,
@@ -208,7 +208,7 @@ func (d *ConversationDatabase) FindUserIDAllPinnedConversationID(ctx context.Con
 	return conversationIDs, nil
 }
 
-// Take 获取单个会话
+// Take ȡỰ
 func (d *ConversationDatabase) Take(ctx context.Context, userID, conversationID string) (*model.Conversation, error) {
 	filter := bson.M{
 		"owner_user_id":   userID,
@@ -222,7 +222,7 @@ func (d *ConversationDatabase) Take(ctx context.Context, userID, conversationID 
 	return &conversation, nil
 }
 
-// FindUserIDAllConversations 查找用户的所有会话
+// FindUserIDAllConversations ûлỰ
 func (d *ConversationDatabase) FindUserIDAllConversations(ctx context.Context, userID string) ([]*model.Conversation, error) {
 	filter := bson.M{"owner_user_id": userID}
 	cursor, err := d.collection.Find(ctx, filter)
@@ -238,9 +238,9 @@ func (d *ConversationDatabase) FindUserIDAllConversations(ctx context.Context, u
 	return conversations, nil
 }
 
-// GetConversationsByConversationID 根据会话ID查找会话
+// GetConversationsByConversationID ݻỰIDһỰ
 func (d *ConversationDatabase) GetConversationsByConversationID(ctx context.Context, conversationIDs []string) ([]*model.Conversation, error) {
-	// 如果conversationIDs为空或nil，返回空结果
+	// conversationIDsΪջnilؿս
 	if len(conversationIDs) == 0 {
 		return []*model.Conversation{}, nil
 	}
@@ -258,7 +258,7 @@ func (d *ConversationDatabase) GetConversationsByConversationID(ctx context.Cont
 	return conversations, nil
 }
 
-// DeleteUsersConversations 删除用户的会话
+// DeleteUsersConversations ɾûĻỰ
 func (d *ConversationDatabase) DeleteUsersConversations(ctx context.Context, userID string, conversationIDs []string) error {
 	if len(conversationIDs) == 0 {
 		return nil
@@ -271,7 +271,7 @@ func (d *ConversationDatabase) DeleteUsersConversations(ctx context.Context, use
 	return err
 }
 
-// GetAllConversationIDs 获取所有会话ID
+// GetAllConversationIDs ȡлỰID
 func (d *ConversationDatabase) GetAllConversationIDs(ctx context.Context) ([]string, error) {
 	pipeline := []bson.M{
 		{"$group": bson.M{"_id": "$conversation_id"}},
@@ -296,7 +296,7 @@ func (d *ConversationDatabase) GetAllConversationIDs(ctx context.Context) ([]str
 	return conversationIDs, nil
 }
 
-// FindUserID 查找用户ID
+// FindUserID ûID
 func (d *ConversationDatabase) FindUserID(ctx context.Context, userIDs []string, conversationIDs []string) ([]string, error) {
 	if len(userIDs) == 0 || len(conversationIDs) == 0 {
 		return []string{}, nil
@@ -329,7 +329,7 @@ func (d *ConversationDatabase) FindUserID(ctx context.Context, userIDs []string,
 	return resultUserIDs, nil
 }
 
-// FindConversationID 查找会话ID
+// FindConversationID һỰID
 func (d *ConversationDatabase) FindConversationID(ctx context.Context, userID string, conversationIDs []string) ([]string, error) {
 	if len(conversationIDs) == 0 {
 		return []string{}, nil
@@ -358,7 +358,7 @@ func (d *ConversationDatabase) FindConversationID(ctx context.Context, userID st
 	return resultConversationIDs, nil
 }
 
-// FindRecvMsgUserIDs 查找接收消息的用户ID
+// FindRecvMsgUserIDs ҽϢûID
 func (d *ConversationDatabase) FindRecvMsgUserIDs(ctx context.Context, conversationID string, recvOpts []int32) ([]string, error) {
 	filter := bson.M{"conversation_id": conversationID}
 	if len(recvOpts) > 0 {
@@ -384,7 +384,7 @@ func (d *ConversationDatabase) FindRecvMsgUserIDs(ctx context.Context, conversat
 	return userIDs, nil
 }
 
-// GetUserRecvMsgOpt 获取用户接收消息选项
+// GetUserRecvMsgOpt ȡûϢѡ
 func (d *ConversationDatabase) GetUserRecvMsgOpt(ctx context.Context, ownerUserID, conversationID string) (int32, error) {
 	filter := bson.M{
 		"owner_user_id":   ownerUserID,
@@ -401,7 +401,7 @@ func (d *ConversationDatabase) GetUserRecvMsgOpt(ctx context.Context, ownerUserI
 	return result.RecvMsgOpt, nil
 }
 
-// GetAllConversationIDsNumber 获取所有会话ID数量
+// GetAllConversationIDsNumber ȡлỰID
 func (d *ConversationDatabase) GetAllConversationIDsNumber(ctx context.Context) (int64, error) {
 	pipeline := []bson.M{
 		{"$group": bson.M{"_id": "$conversation_id"}},
@@ -426,7 +426,7 @@ func (d *ConversationDatabase) GetAllConversationIDsNumber(ctx context.Context) 
 	return 0, nil
 }
 
-// PageConversationIDs 分页获取会话ID
+// PageConversationIDs ҳȡỰID
 func (d *ConversationDatabase) PageConversationIDs(ctx context.Context, offset, limit int64) ([]string, error) {
 	pipeline := []bson.M{
 		{"$group": bson.M{"_id": "$conversation_id"}},
@@ -453,7 +453,7 @@ func (d *ConversationDatabase) PageConversationIDs(ctx context.Context, offset, 
 	return conversationIDs, nil
 }
 
-// GetConversationIDsNeedDestruct 获取需要销毁的会话ID
+// GetConversationIDsNeedDestruct ȡҪٵĻỰID
 func (d *ConversationDatabase) GetConversationIDsNeedDestruct(ctx context.Context) ([]*model.Conversation, error) {
 	// is_msg_destruct = 1 && msg_destruct_time != 0 && (UNIX_TIMESTAMP(NOW()) > (msg_destruct_time + UNIX_TIMESTAMP(latest_msg_destruct_time)) || latest_msg_destruct_time is NULL)
 	now := time.Now()
@@ -487,7 +487,7 @@ func (d *ConversationDatabase) GetConversationIDsNeedDestruct(ctx context.Contex
 	return conversations, nil
 }
 
-// GetConversationNotReceiveMessageUserIDs 获取不接收消息的用户ID
+// GetConversationNotReceiveMessageUserIDs ȡϢûID
 func (d *ConversationDatabase) GetConversationNotReceiveMessageUserIDs(ctx context.Context, conversationID string) ([]string, error) {
 	// recv_msg_opt != ReceiveMessage (0)
 	filter := bson.M{

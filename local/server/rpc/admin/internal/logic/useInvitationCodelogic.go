@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -25,7 +25,7 @@ func NewUseInvitationCodeLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 }
 
 func (l *UseInvitationCodeLogic) UseInvitationCode(req *admin.UseInvitationCodeReq) (*admin.UseInvitationCodeResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if req.Code == "" {
 		return nil, errs.ErrArgs.WrapMsg("code cannot be empty")
 	}
@@ -33,7 +33,7 @@ func (l *UseInvitationCodeLogic) UseInvitationCode(req *admin.UseInvitationCodeR
 		return nil, errs.ErrArgs.WrapMsg("userID cannot be empty")
 	}
 
-	// 2. 检查邀请码是否存在
+	// 2. Ƿ
 	invitations, err := l.svcCtx.AdminDB.FindInvitationRegister(l.ctx, []string{req.Code})
 	if err != nil {
 		l.Errorf("FindInvitationRegister failed: %v", err)
@@ -43,13 +43,13 @@ func (l *UseInvitationCodeLogic) UseInvitationCode(req *admin.UseInvitationCodeR
 		return nil, errs.ErrRecordNotFound.WrapMsg("invitation code not found")
 	}
 
-	// 3. 检查邀请码是否已被使用
+	// 3. Ƿѱʹ
 	inv := invitations[0]
 	if inv.UsedByUserID != "" {
 		return nil, fmt.Errorf("invitation code already used by user: %s", inv.UsedByUserID)
 	}
 
-	// 4. 标记邀请码为已使用
+	// 4. Ϊʹ
 	if err := l.svcCtx.AdminDB.UseInvitationCode(l.ctx, req.Code, req.UserID); err != nil {
 		l.Errorf("UseInvitationCode failed: %v", err)
 		return nil, errs.WrapMsg(err, "failed to use invitation code")

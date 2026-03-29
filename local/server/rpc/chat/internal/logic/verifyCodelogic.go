@@ -1,4 +1,4 @@
-﻿package logic
+package logic
 
 import (
 	"context"
@@ -25,12 +25,12 @@ func NewVerifyCodeLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Verify
 }
 
 func (l *VerifyCodeLogic) VerifyCode(req *chat.VerifyCodeReq) (*chat.VerifyCodeResp, error) {
-	// 1. 验证参数
+	// 1. ֤
 	if req.VerifyCode == "" {
 		return nil, errs.ErrArgs.WrapMsg("verify code cannot be empty")
 	}
 
-	// 2. 根据手机号或邮箱验证验证码
+	// 2. ֻŻ֤֤
 	if req.PhoneNumber != "" {
 		if req.AreaCode == "" {
 			return nil, errs.ErrArgs.WrapMsg("area code is required for phone number")
@@ -39,22 +39,22 @@ func (l *VerifyCodeLogic) VerifyCode(req *chat.VerifyCodeReq) (*chat.VerifyCodeR
 		if err != nil {
 			return nil, errs.ErrArgs.WrapMsg("invalid verify code")
 		}
-		// 检查验证码是否过期
+		// ֤Ƿ
 		if time.Now().After(verifyCode.ExpireTime) {
 			return nil, errs.ErrArgs.WrapMsg("verify code expired")
 		}
-		// 验证成功后删除验证码
+		// ֤ɹɾ֤
 		_ = l.svcCtx.ChatDB.DelVerifyCode(l.ctx, req.PhoneNumber, req.AreaCode)
 	} else if req.Email != "" {
 		verifyCode, err := l.svcCtx.ChatDB.FindVerifyCodeByEmail(l.ctx, req.Email, req.VerifyCode)
 		if err != nil {
 			return nil, errs.ErrArgs.WrapMsg("invalid verify code")
 		}
-		// 检查验证码是否过期
+		// ֤Ƿ
 		if time.Now().After(verifyCode.ExpireTime) {
 			return nil, errs.ErrArgs.WrapMsg("verify code expired")
 		}
-		// 验证成功后删除验证码
+		// ֤ɹɾ֤
 		_ = l.svcCtx.ChatDB.DelVerifyCodeByEmail(l.ctx, req.Email)
 	} else {
 		return nil, errs.ErrArgs.WrapMsg("phone number or email must be set")

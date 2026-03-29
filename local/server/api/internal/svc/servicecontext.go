@@ -42,7 +42,7 @@ type ServiceContext struct {
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	// 初始化 RPC 客户端，添加拦截器以传递context中的用户信息
+	// 初始?RPC 客户端，添加拦截器以传递context中的用户信息
 	userClient := user.NewUserClient(zrpc.MustNewClient(c.UserRpc, zrpc.WithDialOption(grpcinterceptor.GrpcClient())).Conn())
 	friendClient := user.NewFriendClient(zrpc.MustNewClient(c.FriendRpc, zrpc.WithDialOption(grpcinterceptor.GrpcClient())).Conn())
 	groupClient := user.NewGroupClient(zrpc.MustNewClient(c.GroupRpc, zrpc.WithDialOption(grpcinterceptor.GrpcClient())).Conn())

@@ -44,7 +44,7 @@ func (l *SetConversationHasReadSeqLogic) SetConversationHasReadSeq(req *msg.SetC
 		return nil, errs.WrapMsg(err, "failed to set has read seq")
 	}
 
-	// 发送会话未读数变更通知给自己（与官方一致，除非明确禁用）
+	// 发送会话未读数变更通知给自己（与官方一致，除非明确禁用?
 	if !req.NoNotification && l.svcCtx.NotificationSender != nil {
 		maxSeq, err := l.svcCtx.MsgCache.GetMaxSeq(l.ctx, req.ConversationID)
 		if err != nil {
@@ -54,7 +54,7 @@ func (l *SetConversationHasReadSeqLogic) SetConversationHasReadSeq(req *msg.SetC
 			if maxSeq > req.HasReadSeq {
 				unreadCount = maxSeq - req.HasReadSeq
 			}
-			// 使用 ConversationNotificationSender 包装器
+			// 使用 ConversationNotificationSender 包装?
 			convSender := &notification.ConversationNotificationSender{NotificationSender: l.svcCtx.NotificationSender}
 			go convSender.ConversationUnreadChangeNotification(
 				l.ctx, req.UserID, req.ConversationID, unreadCount, req.HasReadSeq)

@@ -9,9 +9,9 @@ import (
 
 func TestName(t *testing.T) {
 	conf := Config{
-		Bucket:          "openim",
+		Bucket:          "FDIM",
 		AccessKeyID:     "root",
-		SecretAccessKey: "openIM123",
+		SecretAccessKey: "FDIM123",
 		Endpoint:        "http://127.0.0.1:10005",
 	}
 	ctx := context.Background()
@@ -19,10 +19,10 @@ func TestName(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	t.Log(m.DeleteObject(ctx, "/openim/data/hash/6aeb6959cad0d0b2ef4a5d9f66ed394a"))
+	t.Log(m.DeleteObject(ctx, "/FDIM/data/hash/6aeb6959cad0d0b2ef4a5d9f66ed394a"))
 }
 
 func TestName2(t *testing.T) {
-	t.Log(strings.Trim(path.Base("openim/thumbnail/ae20fe3d6466fdb11bcf465386b51312/image_w640_h640.jpeg"), "."))
+	t.Log(strings.Trim(path.Base("FDIM/thumbnail/ae20fe3d6466fdb11bcf465386b51312/image_w640_h640.jpeg"), "."))
 
 }

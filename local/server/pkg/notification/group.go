@@ -1,4 +1,4 @@
-﻿package notification
+package notification
 
 import (
 	"context"
@@ -10,19 +10,19 @@ import (
 	"fdim/protocol/sdkws"
 )
 
-// GroupNotificationSender 群组通知发送器
+// GroupNotificationSender Ⱥ֪ͨ
 type GroupNotificationSender struct {
 	*NotificationSender
 }
 
-// NewGroupNotificationSender 创建群组通知发送器
+// NewGroupNotificationSender Ⱥ֪ͨ
 func NewGroupNotificationSender(conf *config.Notification, opts ...NotificationSenderOptions) *GroupNotificationSender {
 	return &GroupNotificationSender{
 		NotificationSender: NewNotificationSender(conf, opts...),
 	}
 }
 
-// GroupCreatedNotification 发送群组创建通知
+// GroupCreatedNotification Ⱥ鴴֪ͨ
 func (g *GroupNotificationSender) GroupCreatedNotification(ctx context.Context, groupID string, ownerUserID string, memberUserIDs []string) {
 	opUserID := mcontext.GetOpUserID(ctx)
 	if opUserID == "" {
@@ -37,13 +37,13 @@ func (g *GroupNotificationSender) GroupCreatedNotification(ctx context.Context, 
 			UserID: opUserID,
 		},
 	}
-	// 发送给所有群成员
+	// ͸ȺԱ
 	for _, memberID := range memberUserIDs {
 		g.Notification(ctx, opUserID, memberID, protoconstant.GroupCreatedNotification, tips)
 	}
 }
 
-// GroupInfoSetNotification 发送群组信息设置通知
+// GroupInfoSetNotification ȺϢ֪ͨ
 func (g *GroupNotificationSender) GroupInfoSetNotification(ctx context.Context, groupID string, opUserID string) {
 	tips := &sdkws.GroupInfoSetTips{
 		Group: &sdkws.GroupInfo{
@@ -53,11 +53,11 @@ func (g *GroupNotificationSender) GroupInfoSetNotification(ctx context.Context, 
 			UserID: opUserID,
 		},
 	}
-	// 发送给群组（群聊类型）
+	// ͸Ⱥ飨Ⱥͣ
 	g.NotificationWithSessionType(ctx, opUserID, groupID, protoconstant.GroupInfoSetNotification, constant.SuperGroupChatType, tips)
 }
 
-// GroupOwnerTransferredNotification 发送群主转让通知
+// GroupOwnerTransferredNotification Ⱥת֪ͨ
 func (g *GroupNotificationSender) GroupOwnerTransferredNotification(ctx context.Context, groupID string, oldOwnerUserID string, newOwnerUserID string) {
 	tips := &sdkws.GroupOwnerTransferredTips{
 		Group: &sdkws.GroupInfo{
@@ -70,11 +70,11 @@ func (g *GroupNotificationSender) GroupOwnerTransferredNotification(ctx context.
 			UserID: newOwnerUserID,
 		},
 	}
-	// 发送给群组
+	// ͸Ⱥ
 	g.NotificationWithSessionType(ctx, oldOwnerUserID, groupID, protoconstant.GroupOwnerTransferredNotification, constant.SuperGroupChatType, tips)
 }
 
-// MemberKickedNotification 发送成员被踢出通知
+// MemberKickedNotification ͳԱ֪߳ͨ
 func (g *GroupNotificationSender) MemberKickedNotification(ctx context.Context, groupID string, opUserID string, kickedUserIDs []string) {
 	tips := &sdkws.MemberKickedTips{
 		Group: &sdkws.GroupInfo{
@@ -90,11 +90,11 @@ func (g *GroupNotificationSender) MemberKickedNotification(ctx context.Context, 
 			UserID: userID,
 		})
 	}
-	// 发送给群组
+	// ͸Ⱥ
 	g.NotificationWithSessionType(ctx, opUserID, groupID, protoconstant.MemberKickedNotification, constant.SuperGroupChatType, tips)
 }
 
-// MemberQuitNotification 发送成员退出通知
+// MemberQuitNotification ͳԱ˳֪ͨ
 func (g *GroupNotificationSender) MemberQuitNotification(ctx context.Context, groupID string, quitUserID string) {
 	tips := &sdkws.MemberQuitTips{
 		Group: &sdkws.GroupInfo{
@@ -104,22 +104,22 @@ func (g *GroupNotificationSender) MemberQuitNotification(ctx context.Context, gr
 			UserID: quitUserID,
 		},
 	}
-	// 发送给群组
+	// ͸Ⱥ
 	g.NotificationWithSessionType(ctx, quitUserID, groupID, protoconstant.MemberQuitNotification, constant.SuperGroupChatType, tips)
 }
 
-// MemberEnterNotification 发送成员加入通知
+// MemberEnterNotification ͳԱ֪ͨ
 func (g *GroupNotificationSender) MemberEnterNotification(ctx context.Context, groupID string, inviterUserID string, newMemberUserIDs []string) {
 	opUserID := mcontext.GetOpUserID(ctx)
 	if opUserID == "" {
 		opUserID = inviterUserID
 	}
-	// 注意：MemberEnterTips.EntrantUser 是单个对象，不是切片
-	// 如果有多个成员，需要为每个成员发送单独的通知
+	// ע⣺MemberEnterTips.EntrantUser ǵ󣬲Ƭ
+	// жԱҪΪÿԱ͵֪ͨ
 	if len(newMemberUserIDs) == 0 {
 		return
 	}
-	// 为每个新成员发送单独的通知
+	// Ϊÿ³Ա͵֪ͨ
 	for _, userID := range newMemberUserIDs {
 		tips := &sdkws.MemberEnterTips{
 			Group: &sdkws.GroupInfo{
@@ -129,12 +129,12 @@ func (g *GroupNotificationSender) MemberEnterNotification(ctx context.Context, g
 				UserID: userID,
 			},
 		}
-		// 发送给群组
+		// ͸Ⱥ
 		g.NotificationWithSessionType(ctx, opUserID, groupID, protoconstant.MemberEnterNotification, constant.SuperGroupChatType, tips)
 	}
 }
 
-// GroupDismissedNotification 发送群组解散通知
+// GroupDismissedNotification Ⱥɢ֪ͨ
 func (g *GroupNotificationSender) GroupDismissedNotification(ctx context.Context, groupID string, opUserID string) {
 	tips := &sdkws.GroupDismissedTips{
 		Group: &sdkws.GroupInfo{
@@ -144,11 +144,11 @@ func (g *GroupNotificationSender) GroupDismissedNotification(ctx context.Context
 			UserID: opUserID,
 		},
 	}
-	// 发送给群组
+	// ͸Ⱥ
 	g.NotificationWithSessionType(ctx, opUserID, groupID, protoconstant.GroupDismissedNotification, constant.SuperGroupChatType, tips)
 }
 
-// GroupMemberInfoSetNotification 发送群成员信息设置通知
+// GroupMemberInfoSetNotification ȺԱϢ֪ͨ
 func (g *GroupNotificationSender) GroupMemberInfoSetNotification(ctx context.Context, groupID string, opUserID string, changedUserID string) {
 	tips := &sdkws.GroupMemberInfoSetTips{
 		Group: &sdkws.GroupInfo{
@@ -161,14 +161,14 @@ func (g *GroupNotificationSender) GroupMemberInfoSetNotification(ctx context.Con
 			UserID: changedUserID,
 		},
 	}
-	// 发送给群组
+	// ͸Ⱥ
 	g.NotificationWithSessionType(ctx, opUserID, groupID, protoconstant.GroupMemberInfoSetNotification, constant.SuperGroupChatType, tips)
 }
 
-// GroupMemberSetToAdminNotification 发送群成员设置为管理员通知
-// 注意：proto 中没有 GroupMemberSetToAdminTips，使用 GroupMemberInfoSetTips 为每个成员发送通知
+// GroupMemberSetToAdminNotification ȺԱΪԱ֪ͨ
+// ע⣺proto û GroupMemberSetToAdminTipsʹ GroupMemberInfoSetTips ΪÿԱ֪ͨ
 func (g *GroupNotificationSender) GroupMemberSetToAdminNotification(ctx context.Context, groupID string, opUserID string, newAdminUserIDs []string) {
-	// 为每个新管理员发送单独的通知
+	// Ϊÿ¹Ա͵֪ͨ
 	for _, userID := range newAdminUserIDs {
 		tips := &sdkws.GroupMemberInfoSetTips{
 			Group: &sdkws.GroupInfo{
@@ -181,15 +181,15 @@ func (g *GroupNotificationSender) GroupMemberSetToAdminNotification(ctx context.
 				UserID: userID,
 			},
 		}
-		// 发送给群组
+		// ͸Ⱥ
 		g.NotificationWithSessionType(ctx, opUserID, groupID, protoconstant.GroupMemberSetToAdminNotification, constant.SuperGroupChatType, tips)
 	}
 }
 
-// GroupMemberSetToOrdinaryUserNotification 发送群成员设置为普通用户通知
-// 注意：proto 中没有 GroupMemberSetToOrdinaryUserTips，使用 GroupMemberInfoSetTips 为每个成员发送通知
+// GroupMemberSetToOrdinaryUserNotification ȺԱΪͨû֪ͨ
+// ע⣺proto û GroupMemberSetToOrdinaryUserTipsʹ GroupMemberInfoSetTips ΪÿԱ֪ͨ
 func (g *GroupNotificationSender) GroupMemberSetToOrdinaryUserNotification(ctx context.Context, groupID string, opUserID string, setToOrdinaryUserIDs []string) {
-	// 为每个被设置为普通用户的成员发送单独的通知
+	// ΪÿΪͨûĳԱ͵֪ͨ
 	for _, userID := range setToOrdinaryUserIDs {
 		tips := &sdkws.GroupMemberInfoSetTips{
 			Group: &sdkws.GroupInfo{
@@ -202,12 +202,12 @@ func (g *GroupNotificationSender) GroupMemberSetToOrdinaryUserNotification(ctx c
 				UserID: userID,
 			},
 		}
-		// 发送给群组
+		// ͸Ⱥ
 		g.NotificationWithSessionType(ctx, opUserID, groupID, protoconstant.GroupMemberSetToOrdinaryUserNotification, constant.SuperGroupChatType, tips)
 	}
 }
 
-// GroupApplicationAcceptedNotification 发送群组申请接受通知
+// GroupApplicationAcceptedNotification Ⱥ֪ͨ
 func (g *GroupNotificationSender) GroupApplicationAcceptedNotification(ctx context.Context, groupID string, opUserID string, applicantUserID string) {
 	tips := &sdkws.GroupApplicationAcceptedTips{
 		Group: &sdkws.GroupInfo{
@@ -218,11 +218,11 @@ func (g *GroupNotificationSender) GroupApplicationAcceptedNotification(ctx conte
 		},
 		HandleMsg: "",
 	}
-	// 发送给申请�?
+	// ͸??
 	g.Notification(ctx, opUserID, applicantUserID, protoconstant.GroupApplicationAcceptedNotification, tips)
 }
 
-// GroupApplicationRejectedNotification 发送群组申请拒绝通知
+// GroupApplicationRejectedNotification Ⱥܾ֪ͨ
 func (g *GroupNotificationSender) GroupApplicationRejectedNotification(ctx context.Context, groupID string, opUserID string, applicantUserID string, handleMsg string) {
 	tips := &sdkws.GroupApplicationRejectedTips{
 		Group: &sdkws.GroupInfo{
@@ -233,11 +233,11 @@ func (g *GroupNotificationSender) GroupApplicationRejectedNotification(ctx conte
 		},
 		HandleMsg: handleMsg,
 	}
-	// 发送给申请�?
+	// ͸??
 	g.Notification(ctx, opUserID, applicantUserID, protoconstant.GroupApplicationRejectedNotification, tips)
 }
 
-// JoinGroupApplicationNotification 发送加入群组申请通知
+// JoinGroupApplicationNotification ͼȺ֪ͨ
 func (g *GroupNotificationSender) JoinGroupApplicationNotification(ctx context.Context, groupID string, applicantUserID string) {
 	tips := &sdkws.JoinGroupApplicationTips{
 		Group: &sdkws.GroupInfo{
@@ -247,14 +247,14 @@ func (g *GroupNotificationSender) JoinGroupApplicationNotification(ctx context.C
 			UserID: applicantUserID,
 		},
 	}
-	// 发送给群组（通知管理员）
+	// ͸Ⱥ飨֪ͨԱ
 	g.NotificationWithSessionType(ctx, applicantUserID, groupID, protoconstant.JoinGroupApplicationNotification, constant.SuperGroupChatType, tips)
 }
 
-// GroupApplicationAgreeMemberEnterNotification 发送群组申请同意后成员加入通知
-// 注意：使用 GroupApplicationAcceptedTips，因为 GroupApplicationAgreedTips 不存在
+// GroupApplicationAgreeMemberEnterNotification ȺͬԱ֪ͨ
+// ע⣺ʹ GroupApplicationAcceptedTipsΪ GroupApplicationAgreedTips 
 func (g *GroupNotificationSender) GroupApplicationAgreeMemberEnterNotification(ctx context.Context, groupID string, opUserID string, newMemberUserIDs []string) {
-	// 使用 MemberEnterNotification 为每个新成员发送通知
+	// ʹ MemberEnterNotification Ϊÿ³Ա֪ͨ
 	for _, userID := range newMemberUserIDs {
 		tips := &sdkws.MemberEnterTips{
 			Group: &sdkws.GroupInfo{
@@ -264,12 +264,12 @@ func (g *GroupNotificationSender) GroupApplicationAgreeMemberEnterNotification(c
 				UserID: userID,
 			},
 		}
-		// 发送给群组
+		// ͸Ⱥ
 		g.NotificationWithSessionType(ctx, opUserID, groupID, protoconstant.MemberEnterNotification, constant.SuperGroupChatType, tips)
 	}
 }
 
-// GroupMutedNotification 发送群组禁言通知
+// GroupMutedNotification Ⱥ֪ͨ
 func (g *GroupNotificationSender) GroupMutedNotification(ctx context.Context, groupID string, opUserID string) {
 	tips := &sdkws.GroupMutedTips{
 		Group: &sdkws.GroupInfo{
@@ -279,11 +279,11 @@ func (g *GroupNotificationSender) GroupMutedNotification(ctx context.Context, gr
 			UserID: opUserID,
 		},
 	}
-	// 发送给群组
+	// ͸Ⱥ
 	g.NotificationWithSessionType(ctx, opUserID, groupID, protoconstant.GroupMutedNotification, constant.SuperGroupChatType, tips)
 }
 
-// GroupCancelMutedNotification 发送群组取消禁言通知
+// GroupCancelMutedNotification Ⱥȡ֪ͨ
 func (g *GroupNotificationSender) GroupCancelMutedNotification(ctx context.Context, groupID string, opUserID string) {
 	tips := &sdkws.GroupCancelMutedTips{
 		Group: &sdkws.GroupInfo{
@@ -293,14 +293,14 @@ func (g *GroupNotificationSender) GroupCancelMutedNotification(ctx context.Conte
 			UserID: opUserID,
 		},
 	}
-	// 发送给群组
+	// ͸Ⱥ
 	g.NotificationWithSessionType(ctx, opUserID, groupID, protoconstant.GroupCancelMutedNotification, constant.SuperGroupChatType, tips)
 }
 
-// GroupMemberMutedNotification 发送群成员禁言通知
-// 注意：GroupMemberMutedTips 只有一个 mutedUser 字段，需要为每个成员发送单独的通知
+// GroupMemberMutedNotification ȺԱ֪ͨ
+// ע⣺GroupMemberMutedTips ֻһ mutedUser ֶΣҪΪÿԱ͵֪ͨ
 func (g *GroupNotificationSender) GroupMemberMutedNotification(ctx context.Context, groupID string, opUserID string, mutedUserIDs []string) {
-	// 为每个被禁言的成员发送单独的通知
+	// ΪÿԵĳԱ͵֪ͨ
 	for _, userID := range mutedUserIDs {
 		tips := &sdkws.GroupMemberMutedTips{
 			Group: &sdkws.GroupInfo{
@@ -313,15 +313,15 @@ func (g *GroupNotificationSender) GroupMemberMutedNotification(ctx context.Conte
 				UserID: userID,
 			},
 		}
-		// 发送给群组
+		// ͸Ⱥ
 		g.NotificationWithSessionType(ctx, opUserID, groupID, protoconstant.GroupMemberMutedNotification, constant.SuperGroupChatType, tips)
 	}
 }
 
-// GroupMemberCancelMutedNotification 发送群成员取消禁言通知
-// 注意：GroupMemberCancelMutedTips 只有一个 mutedUser 字段，需要为每个成员发送单独的通知
+// GroupMemberCancelMutedNotification ȺԱȡ֪ͨ
+// ע⣺GroupMemberCancelMutedTips ֻһ mutedUser ֶΣҪΪÿԱ͵֪ͨ
 func (g *GroupNotificationSender) GroupMemberCancelMutedNotification(ctx context.Context, groupID string, opUserID string, unmutedUserIDs []string) {
-	// 为每个被取消禁言的成员发送单独的通知
+	// ΪÿȡԵĳԱ͵֪ͨ
 	for _, userID := range unmutedUserIDs {
 		tips := &sdkws.GroupMemberCancelMutedTips{
 			Group: &sdkws.GroupInfo{
@@ -334,7 +334,7 @@ func (g *GroupNotificationSender) GroupMemberCancelMutedNotification(ctx context
 				UserID: userID,
 			},
 		}
-		// 发送给群组
+		// ͸Ⱥ
 		g.NotificationWithSessionType(ctx, opUserID, groupID, protoconstant.GroupMemberCancelMutedNotification, constant.SuperGroupChatType, tips)
 	}
 }

@@ -20,9 +20,9 @@ func Mongodb() *mongo.Database {
 	return Result(
 		mongo.Connect(context.Background(),
 			options.Client().
-				ApplyURI("mongodb://openIM:openIM123@172.16.8.135:37017/openim_v3?maxPoolSize=100").
+				ApplyURI("mongodb://FDIM:FDIM123@172.16.8.135:37017/FDIM_v3?maxPoolSize=100").
 				SetConnectTimeout(5*time.Second)),
-	).Database("openim_v3")
+	).Database("FDIM_v3")
 }
 
 func TestUserSeq(t *testing.T) {

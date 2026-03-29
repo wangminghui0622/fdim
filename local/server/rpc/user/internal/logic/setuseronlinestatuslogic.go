@@ -26,12 +26,12 @@ func NewSetUserOnlineStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext
 func (l *SetUserOnlineStatusLogic) SetUserOnlineStatus(req *user.SetUserOnlineStatusReq) (*user.SetUserOnlineStatusResp, error) {
 	resp := &user.SetUserOnlineStatusResp{}
 
-	// ������֤
+	// ֤
 	if len(req.Status) == 0 {
 		return nil, fmt.Errorf("status is empty")
 	}
 
-	// ���������û�����״̬
+	// û״̬
 	for _, status := range req.Status {
 		if status.UserID == "" {
 			continue

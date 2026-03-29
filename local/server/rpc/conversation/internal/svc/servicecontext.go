@@ -27,21 +27,21 @@ type ServiceContext struct {
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	// 初始化 MongoDB
+	// 初始?MongoDB
 	mongoDB := database.NewMongoDB(c.Mongo.Url, c.Mongo.Db, "", "")
 
-	// 初始化 Redis
+	// 初始?Redis
 	redisClient := cache.NewRedisClient(c.Cache)
 
-	// 初始化 ConversationDatabase
+	// 初始?ConversationDatabase
 	conversationDB := database.NewConversationDatabase(mongoDB)
 
-	// 初始化 Msg RPC 客户端（使用 NewClient 而不是 MustNewClient，避免循环依赖启动失败）
+	// 初始?Msg RPC 客户端（使用 NewClient 而不?MustNewClient，避免循环依赖启动失败）
 	var msgClient msg.MsgClient
 	if c.MsgRpc.Etcd.Key != "" || c.MsgRpc.Target != "" {
 		// 设置超时时间
 		if c.MsgRpc.Timeout == 0 {
-			c.MsgRpc.Timeout = 10000 // 10秒
+			c.MsgRpc.Timeout = 10000 // 10?
 		}
 		
 		msgConn, err := zrpc.NewClient(c.MsgRpc)
@@ -53,13 +53,13 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		}
 	}
 
-	// 初始化 User RPC 客户端（使用 NewClient 避免启动失败）
+	// 初始?User RPC 客户端（使用 NewClient 避免启动失败?
 	var userClient user.UserClient
 	var groupClient user.GroupClient
 	if c.UserRpc.Etcd.Key != "" || c.UserRpc.Target != "" {
 		// 设置超时时间
 		if c.UserRpc.Timeout == 0 {
-			c.UserRpc.Timeout = 10000 // 10秒
+			c.UserRpc.Timeout = 10000 // 10?
 		}
 		
 		userConn, err := zrpc.NewClient(c.UserRpc)
